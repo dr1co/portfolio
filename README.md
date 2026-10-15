@@ -12,7 +12,8 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 | Area                                                | State                              |
 | --------------------------------------------------- | ---------------------------------- |
 | Tooling (lint, format, typecheck, unit + e2e tests) | Done                               |
-| Design tokens, theme, layout                        | Planned (homepage plan, steps 3–8) |
+| Design tokens, theme                                | Done                               |
+| Layout (header, nav, footer)                        | Planned (homepage plan, steps 6–8) |
 | Home page `/`                                       | In progress                        |
 | `/projects`, `/lab`, `/about`                       | Not started                        |
 
@@ -73,6 +74,22 @@ docs/           specs and feature plans
 ```
 
 Content (text, links, projects) is kept separate from components, so updating the site usually means editing `src/content/` or `src/lib/site-config.ts` only. The full planned tree is in [docs/homepage-plan.md §3](docs/homepage-plan.md).
+
+## Design system
+
+- **Tokens:** semantic CSS variables (`--background`, `--surface`, `--foreground`, `--muted`, `--accent`, ...) are defined once in [src/app/globals.css](src/app/globals.css). Light values sit on `:root` and dark values on `[data-theme="dark"]`. `@theme inline` exposes them as Tailwind utilities (`bg-surface`, `text-muted`, `border-border`, ...). Components never use raw hex values.
+- **Contrast is tested:** [src/app/tokens.test.ts](src/app/tokens.test.ts) parses `globals.css` and checks every text token against every surface for WCAG AA (4.5:1) in both themes. If you change a color, run `npm test`.
+- **Deviation from the visual-identity doc:** in the light theme the accent `#347A42` became `#327640`, and the secondary accent `#087E91` became `#077485`. Both are slightly darker so they pass 4.5:1 on the page background; the hue is unchanged.
+- **Theme:** `next-themes` sets `data-theme` on `<html>` before paint (no flash), follows the OS on the first visit and persists a manual choice in `localStorage` (`theme` key). `dark:` utilities are mapped to `[data-theme="dark"]`.
+- **Utilities:** `dot-grid` (decorative background) and `cursor-blink` (disabled under reduced motion).
+
+## Configuration and content
+
+[src/lib/site-config.ts](src/lib/site-config.ts) holds identity, hero copy, navigation routes and public links:
+
+- `routes[].enabled` controls which pages appear in navigation. Turn a route on when its page ships.
+- `links.github`, `links.linkedin` and `links.email` are rendered only when valid (`https:` URLs, a well-formed email). In `npm run dev`, a console warning lists the missing ones.
+- Helpers in [src/lib/links.ts](src/lib/links.ts) (`getContactLinks`, `getEnabledRoutes`, `getMissingLinks`) and [src/lib/hero-ctas.ts](src/lib/hero-ctas.ts) (hero buttons fall back from projects → GitHub → pipeline) turn the config into UI-ready data.
 
 ## Testing
 

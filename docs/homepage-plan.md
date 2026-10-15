@@ -3,7 +3,7 @@
 **Feature:** Foundation + Home page (`/`)
 **Source specs:** [features-specification.md](features-specification.md), [visual-identity.md](visual-identity.md)
 **Branch:** `feat/homepage`. One commit per numbered step. **The repository owner makes the commits.** Each step ends with a suggested commit message and a green check run (`lint`, `typecheck`, `test`).
-**Status:** In progress. Steps 0–2 are done. Decisions were settled in a grilling session on 2026-10-15. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress. Steps 0–5 are done. Decisions were settled in a grilling session on 2026-10-15. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -127,7 +127,7 @@ Suggested commit: `refactor: move app router into src/`
 
 1. Runtime dependencies: `npm i next-themes motion lucide-react`.
    - Result: `next-themes@0.4.6` peers accept React 19, so no fallback is needed.
-2. Dev dependencies (`@types/node` bumped to `^24` because Vitest 5 requires ≥22; the Chromium download is blocked by the corporate TLS proxy, see AGENTS.md): `npm i -D @types/node@^24 prettier prettier-plugin-tailwindcss vitest @vitejs/plugin-react jsdom @testing-library/react @testing-library/dom @testing-library/user-event @testing-library/jest-dom vite-tsconfig-paths @playwright/test @axe-core/playwright`, then `npx playwright install chromium`.
+2. Dev dependencies (`@types/node` bumped to `^24` because Vitest 5 requires ≥22; the Chromium download needs a network without TLS interception, see AGENTS.md): `npm i -D @types/node@^24 prettier prettier-plugin-tailwindcss vitest @vitejs/plugin-react jsdom @testing-library/react @testing-library/dom @testing-library/user-event @testing-library/jest-dom vite-tsconfig-paths @playwright/test @axe-core/playwright`, then `npx playwright install chromium`.
 3. `.prettierrc.json`: `{ "plugins": ["prettier-plugin-tailwindcss"], "tailwindStylesheet": "./src/app/globals.css" }`. In `.prettierignore`, list `.next`, `node_modules`, `package-lock.json`, `playwright-report`, `test-results`.
 4. Run Prettier once over the repo, as its own commit-sized change.
 5. `vitest.config.mts`, following the bundled Next guide: `plugins: [tsconfigPaths(), react()]`, `test.environment: 'jsdom'`, `test.setupFiles: ['./vitest.setup.ts']`, `test.include: ['src/**/*.test.{ts,tsx}']`.

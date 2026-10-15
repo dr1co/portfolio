@@ -36,7 +36,7 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 ## Environment gotchas
 
 - The repo lives in WSL. Run npm/node from inside WSL (`wsl.exe -d Ubuntu -- bash -ic 'cd ~/adriano/projetos/portfolio && ...'`). `-i` is needed so nvm loads. `node_modules` contains Linux-native binaries, so Windows node won't work.
-- A corporate TLS proxy blocks `npx playwright install` (`SELF_SIGNED_CERT_IN_CHAIN`). npm and Google Fonts work. E2E tests that use only the `request` fixture run without a browser; browser-based specs need Chromium installed (see README).
+- On some networks a TLS-intercepting proxy blocks `npx playwright install` (`SELF_SIGNED_CERT_IN_CHAIN`); npm and Google Fonts are unaffected. Install from another network or set `NODE_EXTRA_CA_CERTS`. Chromium is currently installed in `~/.cache/ms-playwright`.
 - `npm run typecheck` reads route types from `.next/types`. After moving or renaming routes, run `npx next typegen` (or a build) first, or tsc reports stale `../../app/*.js` errors.
 - `cacheComponents` is on: `new Date()`, `Date.now()` and `Math.random()` while rendering (server **or** client) fail prerendering. Wrap them in a `'use cache'` function or defer with `connection()`.
 - With `cacheComponents`, navigated-away routes stay mounted under `<Activity mode="hidden">`. Reset transient UI (menus, popovers) in a `useLayoutEffect` cleanup. E2E tests must use visibility-aware locators.
