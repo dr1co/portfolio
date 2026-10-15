@@ -45,3 +45,5 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - jsdom's accessible-name computation drops the space before `sr-only` text (e.g. "Open GitHub(opens in a new tab)"). Browsers don't. Match such names in unit tests with a whitespace-tolerant regex.
 - `lucide-react` 1.x has no brand icons (GitHub, LinkedIn). Use `src/components/ui/contact-icons.tsx`.
 - Next's `Link` accepts `onNavigate`, but a plain `<a>` doesn't. `AppLink` routes props accordingly. Use `AppLink` for every link instead of choosing between `Link` and `<a>` yourself.
+- `next start` runs the real server as a `next-server` child process, so `pkill -f "next start"` leaves it running. Stop servers by port: `fuser -k 3200/tcp`. Playwright reuses whatever is already listening on **3100** outside CI, so a leftover server makes e2e tests run against an old build. Free the port before trusting results. Don't kill the owner's `next dev`.
+- Props passed from server to client components must be serializable. Content that a client component renders (e.g. pipeline stages) refers to icons by string key, mapped to Lucide components on the client.

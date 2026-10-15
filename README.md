@@ -9,13 +9,13 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 
 ## Status
 
-| Area                                                | State       |
-| --------------------------------------------------- | ----------- |
-| Tooling (lint, format, typecheck, unit + e2e tests) | Done        |
-| Design tokens, theme                                | Done        |
-| Layout, metadata, 404, OG image, icon               | Done        |
-| Home page `/`                                       | In progress |
-| `/projects`, `/lab`, `/about`                       | Not started |
+| Area                                                | State                                                                           |
+| --------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Tooling (lint, format, typecheck, unit + e2e tests) | Done                                                                            |
+| Design tokens, theme                                | Done                                                                            |
+| Layout, metadata, 404, OG image, icon               | Done                                                                            |
+| Home page `/`                                       | In progress: hero and featured projects done; pipeline, skills and contact next |
+| `/projects`, `/lab`, `/about`                       | Not started                                                                     |
 
 ## Tech stack
 
@@ -91,6 +91,16 @@ Content (text, links, projects) is kept separate from components, so updating th
 - `links.github`, `links.linkedin` and `links.email` are rendered only when valid (`https:` URLs, a well-formed email). In `npm run dev`, a console warning lists the missing ones.
 - Helpers in [src/lib/links.ts](src/lib/links.ts) (`getContactLinks`, `getEnabledRoutes`, `getMissingLinks`) and [src/lib/hero-ctas.ts](src/lib/hero-ctas.ts) (hero buttons fall back from projects → GitHub → pipeline) turn the config into UI-ready data.
 
+Typed content lives in `src/content/`:
+
+| File                                   | Holds                                                              | Notes                                                                                                                                                               |
+| -------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [projects.ts](src/content/projects.ts) | `projects` list (empty for now)                                    | `getFeaturedProjects()` keeps `featured` projects that aren't `planned`, at most 4, and strips non-`https` links. The home section only appears once one qualifies. |
+| [skills.ts](src/content/skills.ts)     | Skill groups                                                       | Set `learning: true` on anything not yet used in a substantive project.                                                                                             |
+| [pipeline.ts](src/content/pipeline.ts) | The five illustrative pipeline stages (command + workflow excerpt) | Icons are string keys, because the data is passed to a client component.                                                                                            |
+
+Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(content)" src`.
+
 ## Layout and shared components
 
 - **Root layout** ([src/app/layout.tsx](src/app/layout.tsx)), in render order: skip link, sticky header, `<main id="main">`, footer. The theme and Motion (`reducedMotion="user"`) providers wrap everything.
@@ -104,7 +114,11 @@ Content (text, links, projects) is kept separate from components, so updating th
   - `Reveal`: fade-in on scroll. A `<noscript>` style keeps it visible without JavaScript.
   - `iconButtonClass`: shared style for 40×40 icon controls.
   - `contactIcons`: local GitHub, LinkedIn and Mail SVGs.
-- **Terminal panel** ([src/components/terminal/terminal-panel.tsx](src/components/terminal/terminal-panel.tsx)): presentation only. Lines starting with `$ ` render as prompts, and an optional badge labels the output as Example or Simulated.
+- **Terminal panel** ([src/components/terminal/terminal-panel.tsx](src/components/terminal/terminal-panel.tsx)): presentation only. Lines starting with `$ ` render as prompts, and an optional badge labels the output as Example or Simulated. `copyable` adds a `CopyButton` that copies the commands without their `$` and announces "Copied" through a live region.
+- **Home sections** (`src/components/home/`):
+  - `Hero`: the `h1` headline, intro, tags, adaptive buttons, and a terminal panel labelled Example. It takes `config` and `featuredCount` props so tests can inject them.
+  - `FeaturedProjects`: renders nothing while no project qualifies.
+  - `ProjectCard` (`src/components/projects/`): status badge (text + icon), up to 5 technologies, and Source / Live demo / Case study links, each rendered only when it exists. Case study also requires the `/projects` route to be enabled.
 
 ## SEO and metadata
 
