@@ -41,3 +41,7 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - `cacheComponents` is on: `new Date()`, `Date.now()` and `Math.random()` while rendering (server **or** client) fail prerendering. Wrap them in a `'use cache'` function or defer with `connection()`.
 - With `cacheComponents`, navigated-away routes stay mounted under `<Activity mode="hidden">`. Reset transient UI (menus, popovers) in a `useLayoutEffect` cleanup. E2E tests must use visibility-aware locators.
 - `@types/node` is pinned to `^24` because Vitest 5 requires ≥22.
+- From Windows tools, `mkdir -p` on the `\wsl.localhost` UNC path fails. Create directories from inside WSL (`wsl.exe ... mkdir -p`) or let the Write tool create them.
+- jsdom's accessible-name computation drops the space before `sr-only` text (e.g. "Open GitHub(opens in a new tab)"). Browsers don't. Match such names in unit tests with a whitespace-tolerant regex.
+- `lucide-react` 1.x has no brand icons (GitHub, LinkedIn). Use `src/components/ui/contact-icons.tsx`.
+- Next's `Link` accepts `onNavigate`, but a plain `<a>` doesn't. `AppLink` routes props accordingly. Use `AppLink` for every link instead of choosing between `Link` and `<a>` yourself.

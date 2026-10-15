@@ -9,13 +9,13 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 
 ## Status
 
-| Area                                                | State                              |
-| --------------------------------------------------- | ---------------------------------- |
-| Tooling (lint, format, typecheck, unit + e2e tests) | Done                               |
-| Design tokens, theme                                | Done                               |
-| Layout (header, nav, footer)                        | Planned (homepage plan, steps 6–8) |
-| Home page `/`                                       | In progress                        |
-| `/projects`, `/lab`, `/about`                       | Not started                        |
+| Area                                                | State       |
+| --------------------------------------------------- | ----------- |
+| Tooling (lint, format, typecheck, unit + e2e tests) | Done        |
+| Design tokens, theme                                | Done        |
+| Layout, metadata, 404, OG image, icon               | Done        |
+| Home page `/`                                       | In progress |
+| `/projects`, `/lab`, `/about`                       | Not started |
 
 ## Tech stack
 
@@ -90,6 +90,29 @@ Content (text, links, projects) is kept separate from components, so updating th
 - `routes[].enabled` controls which pages appear in navigation. Turn a route on when its page ships.
 - `links.github`, `links.linkedin` and `links.email` are rendered only when valid (`https:` URLs, a well-formed email). In `npm run dev`, a console warning lists the missing ones.
 - Helpers in [src/lib/links.ts](src/lib/links.ts) (`getContactLinks`, `getEnabledRoutes`, `getMissingLinks`) and [src/lib/hero-ctas.ts](src/lib/hero-ctas.ts) (hero buttons fall back from projects → GitHub → pipeline) turn the config into UI-ready data.
+
+## Layout and shared components
+
+- **Root layout** ([src/app/layout.tsx](src/app/layout.tsx)), in render order: skip link, sticky header, `<main id="main">`, footer. The theme and Motion (`reducedMotion="user"`) providers wrap everything.
+- **Header:** wordmark, routes with `enabled: true`, a "Contact" shortcut (only when a contact link exists), a GitHub icon (only when configured), the theme toggle, and a mobile menu (only when there's more than one item to show).
+- **Footer:** the copyright year comes from a `'use cache'` component, because Cache Components forbids reading `new Date()` while rendering. Also stack attribution, an optional source link, and contact icons.
+- **Links:** always use `AppLink` ([src/components/ui/app-link.tsx](src/components/ui/app-link.tsx)). Internal targets go through `next/link`. External ones get `target="_blank"`, `rel="noopener noreferrer"`, an arrow icon and screen-reader text. `ButtonLink` adds the primary and secondary button styles on top.
+- **Other building blocks** in `src/components/ui/`:
+  - `Container`: page width and gutters.
+  - `Section`: anchor id, eyebrow, `h2`, entrance animation.
+  - `Badge`: text label with an optional decorative icon.
+  - `Reveal`: fade-in on scroll. A `<noscript>` style keeps it visible without JavaScript.
+  - `iconButtonClass`: shared style for 40×40 icon controls.
+  - `contactIcons`: local GitHub, LinkedIn and Mail SVGs.
+- **Terminal panel** ([src/components/terminal/terminal-panel.tsx](src/components/terminal/terminal-panel.tsx)): presentation only. Lines starting with `$ ` render as prompts, and an optional badge labels the output as Example or Simulated.
+
+## SEO and metadata
+
+- Title template `%s · Adriano Matoba Lipski`; the description is the tagline.
+- `robots` is `noindex, nofollow` unless `NEXT_PUBLIC_ALLOW_INDEXING=true`. Set that on production only.
+- `metadataBase` and the canonical URL come from `NEXT_PUBLIC_SITE_URL`. See [.env.example](.env.example).
+- The Open Graph image ([src/app/opengraph-image.tsx](src/app/opengraph-image.tsx)) and favicon ([src/app/icon.tsx](src/app/icon.tsx)) are generated with `ImageResponse` at build time. Their hex values mirror the dark tokens, because CSS variables aren't available there.
+- [src/app/not-found.tsx](src/app/not-found.tsx) renders the 404 page.
 
 ## Testing
 

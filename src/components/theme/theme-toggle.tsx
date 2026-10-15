@@ -1,6 +1,7 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
+import { iconButtonClass } from "@/components/ui/icon-button";
 import { AnimatePresence, motion } from "motion/react";
 import { useTheme } from "next-themes";
 import { useIsMounted } from "@/lib/use-is-mounted";
@@ -16,7 +17,7 @@ export function ThemeToggle() {
       type="button"
       onClick={() => setTheme(next)}
       aria-label={mounted ? `Switch to ${next} theme` : "Toggle theme"}
-      className="inline-flex size-10 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-elevated hover:text-foreground"
+      className={iconButtonClass}
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
