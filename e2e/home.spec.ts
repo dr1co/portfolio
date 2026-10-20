@@ -1,8 +1,16 @@
-import { expect, test } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test, type Page } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
+
+async function revealAllSections(page: Page) {
+  for (const id of ["pipeline", "skills"]) {
+    await page.locator(`#${id}`).scrollIntoViewIfNeeded();
+  }
+  await expect(page.locator("[data-reveal]").last()).toHaveCSS("opacity", "1");
+}
 
 test("leads with a single headline", async ({ page }) => {
   const headings = page.getByRole("heading", { level: 1 });
@@ -11,18 +19,48 @@ test("leads with a single headline", async ({ page }) => {
   await expect(headings).toHaveText("From code to production.");
 });
 
-test("primary action falls back to the pipeline while projects and GitHub are unset", async ({
+test("shows the pipeline and skills sections", async ({ page }) => {
+  await expect(
+    page.getByRole("heading", {
+      level: 2,
+      name: "How code reaches production",
+    }),
+  ).toBeAttached();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Skills by domain" }),
+  ).toBeAttached();
+});
+
+test("primary action falls back to the pipeline and scrolls to it", async ({
   page,
 }) => {
   // Flip this expectation when featured projects or a GitHub URL are configured.
+  await page.getByRole("link", { name: "See the pipeline" }).click();
+
+  await expect(page).toHaveURL(/#pipeline$/);
   await expect(
-    page.getByRole("link", { name: "See the pipeline" }),
-  ).toBeVisible();
+    page.getByRole("tablist", { name: "Delivery pipeline stages" }),
+  ).toBeInViewport();
 });
 
-test("hides the featured projects section while no project is featured", async ({
-  page,
-}) => {
-  // Flip this expectation when content/projects.ts gets a featured entry.
+test("hides sections that have no content yet", async ({ page }) => {
+  // Flip these when content/projects.ts gets a featured entry or site-config gets contact links.
   await expect(page.locator("#projects")).toHaveCount(0);
+  await expect(page.locator("#contact")).toHaveCount(0);
 });
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`has no detectable accessibility violations in the ${colorScheme} theme`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme });
+    await page.reload();
+    await revealAllSections(page);
+
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+      .analyze();
+
+    expect(results.violations).toEqual([]);
+  });
+}

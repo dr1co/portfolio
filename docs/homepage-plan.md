@@ -3,7 +3,7 @@
 **Feature:** Foundation + Home page (`/`)
 **Source specs:** [features-specification.md](features-specification.md), [visual-identity.md](visual-identity.md)
 **Branch:** `feat/homepage`. One commit per numbered step. **The repository owner makes the commits.** Each step ends with a suggested commit message and a green check run (`lint`, `typecheck`, `test`).
-**Status:** In progress. Steps 0–12 are done. Decisions were settled in a grilling session on 2026-10-15. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** Implemented (steps 0–17). Remaining: content review and manual QA in [prepublish-checklist.md](prepublish-checklist.md). Decisions were settled in a grilling session on 2026-10-15. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 

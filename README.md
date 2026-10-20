@@ -9,13 +9,13 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 
 ## Status
 
-| Area                                                | State                                                                           |
-| --------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Tooling (lint, format, typecheck, unit + e2e tests) | Done                                                                            |
-| Design tokens, theme                                | Done                                                                            |
-| Layout, metadata, 404, OG image, icon               | Done                                                                            |
-| Home page `/`                                       | In progress: hero and featured projects done; pipeline, skills and contact next |
-| `/projects`, `/lab`, `/about`                       | Not started                                                                     |
+| Area                                                | State                                                                                            |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Tooling (lint, format, typecheck, unit + e2e tests) | Done                                                                                             |
+| Design tokens, theme                                | Done                                                                                             |
+| Layout, metadata, 404, OG image, icon               | Done                                                                                             |
+| Home page `/`                                       | Done (content still to review; see [docs/prepublish-checklist.md](docs/prepublish-checklist.md)) |
+| `/projects`, `/lab`, `/about`                       | Not started                                                                                      |
 
 ## Tech stack
 
@@ -119,6 +119,11 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
   - `Hero`: the `h1` headline, intro, tags, adaptive buttons, and a terminal panel labelled Example. It takes `config` and `featuredCount` props so tests can inject them.
   - `FeaturedProjects`: renders nothing while no project qualifies.
   - `ProjectCard` (`src/components/projects/`): status badge (text + icon), up to 5 technologies, and Source / Live demo / Case study links, each rendered only when it exists. Case study also requires the `/projects` route to be enabled.
+  - `PipelineSection`: "Simulated" disclaimer, the interactive `PipelinePreview`, and a `<noscript>` list of all stages.
+  - `SkillsSection`: one card per group. The learning group gets a dashed border and a "Currently learning" badge; individual `learning` items in other groups get a small "learning" badge.
+  - `ContactSection`: one large row per configured link (icon, label, readable address). Renders nothing until a link is set.
+  - Page order ([src/app/page.tsx](src/app/page.tsx)): Hero → Featured projects → Pipeline → Skills → Contact.
+- **Pipeline preview** ([src/components/pipeline/pipeline-preview.tsx](src/components/pipeline/pipeline-preview.tsx)): implements the WAI-ARIA tabs pattern through the generic [`useRovingTabs`](src/lib/use-roving-tabs.ts) hook. Arrows on both axes move and wrap; Home/End jump; only the selected tab is in the Tab order. Desktop shows five connected nodes in a row; mobile stacks them. A Motion `layoutId` slides the active indicator, and the details panel fades in. Each stage shows its purpose, an explanation, a copyable command and a collapsible workflow excerpt.
 
 ## SEO and metadata
 
@@ -131,7 +136,19 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 ## Testing
 
 - **Unit and component tests** sit next to the code they cover (`foo.ts` → `foo.test.ts`) and test behavior through the public interface.
-- **End-to-end tests** live in `e2e/`. Playwright runs `npm run build && npm start -p 3100`, with two projects: `desktop-chromium` and `mobile-chromium` (Pixel 7).
+- **End-to-end tests** live in `e2e/`. Playwright runs `npm run build && npm start -p 3100`, with two projects: `desktop-chromium` and `mobile-chromium` (Pixel 7). Make sure nothing else is listening on port 3100, otherwise Playwright reuses that server.
+
+  | Spec               | Covers                                                                                                                                         |
+  | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `smoke.spec.ts`    | `/` is served as English HTML                                                                                                                  |
+  | `home.spec.ts`     | single `h1`, sections present or hidden according to content, hero button scrolls to the pipeline, **axe** accessibility checks in both themes |
+  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                          |
+  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                  |
+  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags, generated images, skip link                                                                            |
+  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (`fixme` until there's a second nav item)                                                |
+
+  Some expectations encode the current content state (projects, contact and GitHub not set yet). Their comments say what to flip when the content arrives.
+
 - The project follows test-driven development: write a failing test, make it pass, repeat.
 
 ## Contributing
@@ -148,4 +165,7 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 
 ## Known limitations
 
-- Content (links, projects, skills) is not final. It's tracked with `TODO(content)` markers.
+- Content (links, projects, skills, pipeline copy) is not final. It's tracked with `TODO(content)` markers and [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
+- `/projects`, `/lab` and `/about` don't exist yet. Navigation shows only Home until their routes are enabled in `site-config.ts`.
+- The pipeline preview is select-to-reveal only. The full simulated explorer (run, pass/fail states) is planned for `/lab`.
+- No Docker image, CI workflow or deployment for this site yet (Phase 4 of the spec).

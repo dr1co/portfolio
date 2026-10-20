@@ -18,7 +18,19 @@ export type Project = {
 };
 
 // TODO(content): add the public repositories (title, repo URL, one-line summary, honest status).
-export const projects: readonly Project[] = [];
+export const projects: readonly Project[] = [
+  {
+    slug: 'tcc-engsoftware',
+    title: 'Finantial market analysis with Deep Learning Techniques',
+    summary: 'The project presented in my undergraduate thesis, covering stock market analysis using LSTM and CNN models, as well as a hybrid between these.',
+    description: '',
+    status: 'in-progress',
+    technologies: ['python', 'pytorch', 'tensorflow', 'keras', 'MetaTrader 5'],
+    categories: ['Machine Learning', 'Deep Learning', 'Artificial Intelligence', 'Stock Market'],
+    repositoryUrl: 'https://github.com/dr1co/tcc-engsoftware',
+    featured: true
+  }
+];
 
 const MAX_FEATURED = 4;
 
