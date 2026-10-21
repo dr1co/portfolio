@@ -61,3 +61,11 @@ export function getMissingLinks(links: ProfileLinks): (keyof ProfileLinks)[] {
 export function getEnabledRoutes(routes: readonly NavRoute[]): NavRoute[] {
   return routes.filter((route) => route.enabled);
 }
+
+/** Whether the route at `href` exists and is switched on. */
+export function isRouteEnabled(
+  routes: readonly NavRoute[],
+  href: NavRoute["href"],
+): boolean {
+  return getEnabledRoutes(routes).some((route) => route.href === href);
+}

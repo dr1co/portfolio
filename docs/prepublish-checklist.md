@@ -10,6 +10,9 @@ Everything the home page needs from the owner before it goes public. Each item p
 - [ ] **Projects** — two projects are in [src/content/projects.ts](../src/content/projects.ts) (Django template, thesis). Review each `summary`, `description`, `status` and `technologies` before launch.
 - [x] **Django template description** — reworded to make clear it is a generic template derived from client work. Confirm the wording.
 - [ ] **Pipeline copy** — review the stage text in [src/content/pipeline.ts](../src/content/pipeline.ts) for accuracy.
+- [ ] **Projects page intro** — review `directoryIntro` in [src/content/projects.ts](../src/content/projects.ts).
+- [ ] **Thesis technologies** — the repo README lists TensorFlow/Keras (plus Keras Tuner, pandas, scikit-learn) but not PyTorch. Remove `pytorch` from the thesis entry if it was not used.
+- [ ] **Thesis description** — drafted from the repo README (including its negative result). Confirm the wording.
 - [x] **Source link** — `sourceRepoUrl` is set. Make sure the repository is actually public before launch, or the footer link 404s.
 - [ ] `grep -rn "TODO(content)" src` returns nothing.
 

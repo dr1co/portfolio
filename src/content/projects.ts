@@ -3,6 +3,11 @@ import type { TechnologyId } from "./technologies";
 
 export type ProjectStatus = "available" | "in-progress" | "planned";
 
+/** Intro shown on the /projects directory page and used as its meta description. */
+// TODO(content): review directory intro wording.
+export const directoryIntro =
+  "Things I have built, grouped by area. Each card says what exists today and links to the source; projects with a case study explain the decisions behind them.";
+
 /** Directory groups, in display order. */
 export const projectGroups = [
   { id: "devops", title: "DevOps & Delivery" },
@@ -35,7 +40,8 @@ export const projects: readonly Project[] = [
     title: "Financial market analysis with Deep Learning Techniques",
     summary:
       "The project presented in my undergraduate thesis, covering stock market analysis using LSTM and CNN models, as well as a hybrid between these.",
-    description: "",
+    description:
+      "Undergraduate thesis (Software Engineering, UEPG) that builds and evaluates CNN, LSTM and hybrid CNN+LSTM models to predict the next hourly closing price of Brazilian mini futures (WDO and WIN) from MetaTrader 5 data. It is organized as a reproducible pipeline — extraction, cleaning, windowing, training, evaluation and backtesting — with one script per experimental scenario. None of the five approaches tested produced a statistically reliable directional edge at the one-hour horizon.",
     status: "in-progress",
     technologies: ["python", "pytorch", "tensorflow", "keras", "metatrader5"],
     categories: [

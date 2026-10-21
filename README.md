@@ -15,7 +15,9 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 | Design tokens, theme                                | Done                                                                                             |
 | Layout, metadata, 404, OG image, icon               | Done                                                                                             |
 | Home page `/`                                       | Done (content still to review; see [docs/prepublish-checklist.md](docs/prepublish-checklist.md)) |
-| `/projects`, `/lab`, `/about`                       | Not started                                                                                      |
+| `/projects` directory                               | Done                                                                                             |
+| `/projects/[slug]` case studies                     | In progress ([docs/projects-plan.md](docs/projects-plan.md))                                     |
+| `/lab`, `/about`                                    | Not started                                                                                      |
 
 ## Tech stack
 
@@ -127,6 +129,13 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
   - Page order ([src/app/page.tsx](src/app/page.tsx)): Hero → Featured projects → Pipeline → Skills → Contact.
 - **Pipeline preview** ([src/components/pipeline/pipeline-preview.tsx](src/components/pipeline/pipeline-preview.tsx)): implements the WAI-ARIA tabs pattern through the generic [`useRovingTabs`](src/lib/use-roving-tabs.ts) hook. Arrows on both axes move and wrap; Home/End jump; only the selected tab is in the Tab order. Desktop shows five connected nodes in a row; mobile stacks them. A Motion `layoutId` slides the active indicator, and the details panel fades in. Each stage shows its purpose, an explanation, a copyable command and a collapsible workflow excerpt.
 
+## Projects directory
+
+- **Route:** [src/app/projects/page.tsx](src/app/projects/page.tsx) renders an h1, the `directoryIntro` from `projects.ts`, and `ProjectDirectory`.
+- **`ProjectDirectory`** ([src/components/projects/project-directory.tsx](src/components/projects/project-directory.tsx)): one labelled `<section>` per group (h2 + two-column card grid). The first group renders immediately; the rest fade in with `Reveal`.
+- **Card links:** when the `/projects` route is enabled and a project has a `caseStudy`, both the card title and a "Case study" link point to `/projects/<slug>`. Case-study pages are addressed by **slug**; `caseStudy` only names the MDX file.
+- **`isRouteEnabled(routes, href)`** in `src/lib/links.ts` is the single check for "is this page live", used by the cards and featured section.
+
 ## SEO and metadata
 
 - Title template `%s · Adriano Matoba Lipski`; the description is the tagline.
@@ -170,6 +179,7 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 ## Known limitations
 
 - Content (links, projects, skills, pipeline copy) is not final. It's tracked with `TODO(content)` markers and [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
-- `/projects`, `/lab` and `/about` don't exist yet. Navigation shows only Home until their routes are enabled in `site-config.ts`.
+- `/lab` and `/about` don't exist yet; their nav items stay hidden until the routes are enabled in `site-config.ts`.
+- The projects directory has no filters (deferred until there are ≥ 6 published projects).
 - The pipeline preview is select-to-reveal only. The full simulated explorer (run, pass/fail states) is planned for `/lab`.
 - No Docker image, CI workflow or deployment for this site yet (Phase 4 of the spec).

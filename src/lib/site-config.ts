@@ -37,7 +37,7 @@ export const siteConfig: SiteConfig = {
   heroTags: ["Docker", "CI/CD", "Python", "Linux"],
   routes: [
     { href: "/", label: "Home", enabled: true },
-    { href: "/projects", label: "Projects", enabled: false },
+    { href: "/projects", label: "Projects", enabled: true },
     { href: "/lab", label: "Lab", enabled: false },
     { href: "/about", label: "About", enabled: false },
   ],
