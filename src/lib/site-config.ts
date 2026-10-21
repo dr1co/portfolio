@@ -41,8 +41,11 @@ export const siteConfig: SiteConfig = {
     { href: "/lab", label: "Lab", enabled: false },
     { href: "/about", label: "About", enabled: false },
   ],
-  // TODO(content): fill in public profile links and contact email.
-  links: { github: "", linkedin: "", email: "" },
+  links: {
+    github: "https://github.com/dr1co",
+    linkedin: "https://linkedin.com/in/amlipski",
+    email: "adrianolipski@gmail.com"
+  },
   // TODO(content): set once this repository is public.
-  sourceRepoUrl: "",
+  sourceRepoUrl: "https://github.com/dr1co/portfolio",
 };

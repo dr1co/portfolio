@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Project rules
 
-Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specification.md`. Design system: `docs/visual-identity.md`. Active feature plan: `docs/homepage-plan.md`.
+Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specification.md`. Design system: `docs/visual-identity.md`. Feature plans: `docs/homepage-plan.md` (done), `docs/projects-plan.md` (active, gated: read its §0 before starting).
 
 **Keep this file current.** When a convention changes or you hit a gotcha that would trip the next agent, update this file in the same change. An outdated AGENTS.md is worse than none.
 
