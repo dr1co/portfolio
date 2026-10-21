@@ -58,3 +58,5 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - Dynamic routes under Cache Components: `dynamicParams` is rejected, and `notFound()` after the shell has streamed leaves a `200`. Unknown slugs are filtered in `src/proxy.ts` before rendering. When adding another dynamic route with a known set of params, extend the proxy (and its test) rather than relying on `notFound()` alone.
 - `wsl.exe -d Ubuntu -- bash -ic '...'` loses `$var` / `$!` expansions in some invocations. For anything with shell variables or loops, write a script file and run `bash <file>` instead.
 - Tests that need Node APIs (e.g. `NextRequest` for the proxy) declare `// @vitest-environment node` at the top. `vitest.setup.ts` only stubs browser globals when `window` exists.
+- Shiki's `github-light` theme fails WCAG AA (orange tokens are 3.48:1 on white). Use `github-light-default`. Axe in `e2e/projects.spec.ts` checks real case-study code, so a theme change that breaks contrast fails the e2e run.
+- Anything that scrolls horizontally must be focusable (axe `scrollable-region-focusable`). Wrap it in `ScrollArea` rather than a bare `overflow-x-auto` div.

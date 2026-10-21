@@ -3,7 +3,7 @@
 **Feature:** Project directory (`/projects`) and case studies (`/projects/[slug]`)
 **Source specs:** [features-specification.md §5](features-specification.md), [visual-identity.md §5.6–5.7](visual-identity.md)
 **Branch:** `feat/projects`. The owner makes all commits. Each step ends with a suggested commit message and a green check run.
-**Status:** In progress. Gate (§0) met on 2026-10-21 (Django template added, network available); Steps 0–6 done. Decisions were settled in a grilling session on 2026-10-20. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress. Gate (§0) met on 2026-10-21 (Django template added, network available); Steps 0–7 done. Decisions were settled in a grilling session on 2026-10-20. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 

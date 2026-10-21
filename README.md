@@ -9,30 +9,30 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 
 ## Status
 
-| Area                                                | State                                                                                                                 |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Tooling (lint, format, typecheck, unit + e2e tests) | Done                                                                                                                  |
-| Design tokens, theme                                | Done                                                                                                                  |
-| Layout, metadata, 404, OG image, icon               | Done                                                                                                                  |
-| Home page `/`                                       | Done (content still to review; see [docs/prepublish-checklist.md](docs/prepublish-checklist.md))                      |
-| `/projects` directory                               | Done                                                                                                                  |
-| `/projects/[slug]` case studies                     | Route done; thesis case study is a placeholder until drafted ([docs/projects-plan.md](docs/projects-plan.md), Step 7) |
-| `/lab`, `/about`                                    | Not started                                                                                                           |
+| Area                                                | State                                                                                            |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Tooling (lint, format, typecheck, unit + e2e tests) | Done                                                                                             |
+| Design tokens, theme                                | Done                                                                                             |
+| Layout, metadata, 404, OG image, icon               | Done                                                                                             |
+| Home page `/`                                       | Done (content still to review; see [docs/prepublish-checklist.md](docs/prepublish-checklist.md)) |
+| `/projects` directory                               | Done                                                                                             |
+| `/projects/[slug]` case studies                     | Done; thesis case study drafted from its repo, awaiting review                                   |
+| `/lab`, `/about`                                    | Not started                                                                                      |
 
 ## Tech stack
 
-| Concern              | Choice                                   | Notes                                                                                                                                                                                    |
-| -------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework            | Next.js 16 (App Router)                  | `cacheComponents` and partial prefetching are enabled. See [Next.js 16 notes](#nextjs-16-notes).                                                                                         |
-| Language             | TypeScript (strict)                      | `@/*` is an alias for `src/*`.                                                                                                                                                           |
-| Styling              | Tailwind CSS v4                          | Compiled through `@tailwindcss/turbopack`. Colors only through semantic tokens.                                                                                                          |
-| Theme                | `next-themes`                            | Light/dark, follows the OS on first visit, choice persisted.                                                                                                                             |
-| Motion               | `motion`                                 | Only where it explains a state change; respects reduced motion.                                                                                                                          |
-| Icons                | `lucide-react`                           |                                                                                                                                                                                          |
-| Case studies         | MDX via `@next/mdx`                      | Pinned to the installed `next` version. `remark-gfm` adds tables; `rehype-slug` adds heading ids; `@shikijs/rehype` highlights code at build time (dual light/dark theme, no client JS). |
-| Unit/component tests | Vitest + React Testing Library + jsdom   |                                                                                                                                                                                          |
-| E2E tests            | Playwright + `@axe-core/playwright`      | Runs against a production build on port 3100.                                                                                                                                            |
-| Formatting           | Prettier + `prettier-plugin-tailwindcss` |                                                                                                                                                                                          |
+| Concern              | Choice                                   | Notes                                                                                                                                                                                                                                  |
+| -------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework            | Next.js 16 (App Router)                  | `cacheComponents` and partial prefetching are enabled. See [Next.js 16 notes](#nextjs-16-notes).                                                                                                                                       |
+| Language             | TypeScript (strict)                      | `@/*` is an alias for `src/*`.                                                                                                                                                                                                         |
+| Styling              | Tailwind CSS v4                          | Compiled through `@tailwindcss/turbopack`. Colors only through semantic tokens.                                                                                                                                                        |
+| Theme                | `next-themes`                            | Light/dark, follows the OS on first visit, choice persisted.                                                                                                                                                                           |
+| Motion               | `motion`                                 | Only where it explains a state change; respects reduced motion.                                                                                                                                                                        |
+| Icons                | `lucide-react`                           |                                                                                                                                                                                                                                        |
+| Case studies         | MDX via `@next/mdx`                      | Pinned to the installed `next` version. `remark-gfm` adds tables; `rehype-slug` adds heading ids; `@shikijs/rehype` highlights code at build time (`github-light-default` / `github-dark`, chosen for WCAG AA contrast; no client JS). |
+| Unit/component tests | Vitest + React Testing Library + jsdom   |                                                                                                                                                                                                                                        |
+| E2E tests            | Playwright + `@axe-core/playwright`      | Runs against a production build on port 3100.                                                                                                                                                                                          |
+| Formatting           | Prettier + `prettier-plugin-tailwindcss` |                                                                                                                                                                                                                                        |
 
 ## Getting started
 
@@ -157,6 +157,8 @@ Components available without importing:
 | `Diagram` | Boxes-and-arrows architecture diagram; nodes are box centres in viewBox units, edges are directed with optional labels. Generates a text description for screen readers. | `<Diagram title="Build flow" width={640} height={110} nodes={[{ id: "a", label: "Git push", x: 100, y: 70 }, …]} edges={[{ from: "a", to: "b", label: "triggers" }]} />` |
 
 Code-fence filenames (` ```yaml title="ci.yml" `) are **not** supported: Turbopack only accepts serializable Shiki options, so the panel shows the language instead.
+
+Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-area.tsx](src/components/ui/scroll-area.tsx)), a focusable, labelled region, so keyboard users can scroll it and the page itself never overflows. Tables (min width 36rem) and diagrams use it automatically; Shiki code blocks are already focusable.
 
 ## SEO and metadata
 

@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type DiagramNode = { id: string; label: string; x: number; y: number };
 type DiagramEdge = { from: string; to: string; label?: string };
@@ -59,7 +60,10 @@ export function Diagram({
 
   return (
     <figure className="my-8">
-      <div className="overflow-x-auto rounded-lg border border-border bg-surface p-4">
+      <ScrollArea
+        label={`${title} (scrollable)`}
+        className="rounded-lg border border-border bg-surface p-4"
+      >
         <svg
           role="img"
           aria-labelledby={`${id}-title`}
@@ -133,7 +137,7 @@ export function Diagram({
             );
           })}
         </svg>
-      </div>
+      </ScrollArea>
       <figcaption className="mt-2 text-center text-sm text-muted">
         {title}
       </figcaption>

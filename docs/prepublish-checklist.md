@@ -11,9 +11,9 @@ Everything the home page needs from the owner before it goes public. Each item p
 - [x] **Django template description** — reworded to make clear it is a generic template derived from client work. Confirm the wording.
 - [ ] **Pipeline copy** — review the stage text in [src/content/pipeline.ts](../src/content/pipeline.ts) for accuracy.
 - [ ] **Projects page intro** — review `directoryIntro` in [src/content/projects.ts](../src/content/projects.ts).
-- [ ] **Thesis technologies** — the repo README lists TensorFlow/Keras (plus Keras Tuner, pandas, scikit-learn) but not PyTorch. Remove `pytorch` from the thesis entry if it was not used.
+- [ ] **Thesis technologies** — confirmed: the repo's `requirements.txt` has no PyTorch (stack is TensorFlow/Keras, Keras Tuner, pandas, scikit-learn). Remove `pytorch` from the thesis entry in `projects.ts`, and consider adding `scikit-learn`/`pandas` to `technologies.ts`.
 - [ ] **Thesis description** — drafted from the repo README (including its negative result). Confirm the wording.
-- [ ] **Thesis case study** — [src/content/case-studies/tcc-engsoftware.mdx](../src/content/case-studies/tcc-engsoftware.mdx) is a placeholder; the full draft comes in projects-plan Step 7 and needs your review.
+- [ ] **Thesis case study** — [src/content/case-studies/tcc-engsoftware.mdx](../src/content/case-studies/tcc-engsoftware.mdx) was drafted from the public repo (README, `src/`, scenario docstrings). Every number comes from the repo's own reported results; check wording, the "Limitations" list and that you are comfortable publishing the negative result.
 - [x] **Source link** — `sourceRepoUrl` is set. Make sure the repository is actually public before launch, or the footer link 404s.
 - [ ] `grep -rn "TODO(content)" src` returns nothing.
 

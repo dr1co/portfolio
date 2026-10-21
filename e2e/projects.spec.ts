@@ -148,3 +148,15 @@ test.describe("case study", () => {
     });
   }
 });
+
+test("case study never overflows the viewport on mobile", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-chromium", "mobile layout only");
+  await page.goto("/projects/tcc-engsoftware");
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});

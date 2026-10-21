@@ -5,6 +5,7 @@ import { CodeBlock } from "@/components/mdx/code-block";
 import { Diagram } from "@/components/mdx/diagram";
 import { Figure } from "@/components/mdx/figure";
 import { AppLink } from "@/components/ui/app-link";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/cn";
 
 const components: MDXComponents = {
@@ -56,9 +57,12 @@ const components: MDXComponents = {
   ),
   pre: CodeBlock,
   table: (props) => (
-    <div className="my-6 overflow-x-auto">
-      <table {...props} className="w-full border-collapse text-left text-sm" />
-    </div>
+    <ScrollArea label="Table" className="my-6">
+      <table
+        {...props}
+        className="w-full min-w-[36rem] border-collapse text-left text-sm"
+      />
+    </ScrollArea>
   ),
   th: (props) => (
     <th {...props} className="border-b border-border px-3 py-2 font-semibold" />
