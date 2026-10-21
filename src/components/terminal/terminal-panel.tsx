@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { CopyButton } from "./copy-button";
+import { PanelFrame } from "./panel-frame";
 
 /**
  * Theme-aware terminal presentation (never executes anything).
@@ -24,21 +25,18 @@ export function TerminalPanel({
     .map((line) => line.slice(2));
 
   return (
-    <figure className="overflow-hidden rounded-lg border border-border bg-surface">
-      <div className="flex min-h-10 items-center gap-3 border-b border-border px-4 py-1">
-        <span aria-hidden className="flex gap-1.5">
-          {[0, 1, 2].map((dot) => (
-            <span key={dot} className="size-2.5 rounded-full bg-border" />
-          ))}
-        </span>
-        <span className="truncate font-mono text-xs text-muted">{title}</span>
-        <span className="ml-auto flex shrink-0 items-center gap-2">
+    <PanelFrame
+      title={title}
+      caption={caption}
+      actions={
+        <>
           {badge}
           {copyable && commands.length > 0 && (
             <CopyButton text={commands.join("\n")} label="Copy command" />
           )}
-        </span>
-      </div>
+        </>
+      }
+    >
       <pre className="overflow-x-auto p-4 font-mono text-sm leading-relaxed">
         <code>
           {lines.map((line, index) =>
@@ -57,7 +55,6 @@ export function TerminalPanel({
           )}
         </code>
       </pre>
-      {caption && <figcaption className="sr-only">{caption}</figcaption>}
-    </figure>
+    </PanelFrame>
   );
 }

@@ -33,7 +33,12 @@ export function AppLink({
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
       {children}
-      {externalIcon && <ArrowUpRight aria-hidden className="size-4 shrink-0" />}
+      {externalIcon && (
+        <ArrowUpRight
+          aria-hidden
+          className="inline size-4 shrink-0 align-text-bottom"
+        />
+      )}
       <span className="sr-only"> (opens in a new tab)</span>
     </a>
   );

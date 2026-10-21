@@ -53,3 +53,5 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - Shiki code blocks render as `<pre class="shiki">` with per-token `--shiki-light`/`--shiki-dark` variables. Colors are chosen in `globals.css` by `data-theme`, so don't set Shiki's `defaultColor`.
 - When writing files containing backticks (MD/MDX code fences) from a shell, double-quoted `bash -ic "..."` executes them as command substitution. Use the Write tool for such files.
 - Don't call `python3` from the Windows-side Git Bash: it resolves to the Microsoft Store stub and hangs until the tool timeout. Use the Edit tool, `sed`, or run Python inside WSL.
+- Tailwind's preflight sets `svg { display: block }`. Icons that sit inside running text (e.g. the external-link arrow in `AppLink`) need `inline` plus a vertical alignment class, or they wrap onto their own line.
+- MDX case-study visuals (code themes, diagrams, tables) aren't covered by jsdom. Check them in a real build: render a throwaway `src/app/mdx-smoke/` route, screenshot it, then delete it and run `npx next typegen`.
