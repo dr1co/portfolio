@@ -8,7 +8,7 @@ Everything the home page needs from the owner before it goes public. Each item p
 - [ ] **Intro and hero tags** — review `intro` and `heroTags` in `site-config.ts`.
 - [ ] **Skills** — review [src/content/skills.ts](../src/content/skills.ts). Only list technologies you can discuss, and check the `learning` flags.
 - [ ] **Projects** — two projects are in [src/content/projects.ts](../src/content/projects.ts) (Django template, thesis). Review each `summary`, `description`, `status` and `technologies` before launch.
-- [ ] **Django template description** — it currently reads as if the repo was built for Princesa dos Campos; it is a generic template derived from that work. Reword it (e.g. "A generic Django starter derived from a template I built for a client…").
+- [x] **Django template description** — reworded to make clear it is a generic template derived from client work. Confirm the wording.
 - [ ] **Pipeline copy** — review the stage text in [src/content/pipeline.ts](../src/content/pipeline.ts) for accuracy.
 - [x] **Source link** — `sourceRepoUrl` is set. Make sure the repository is actually public before launch, or the footer link 404s.
 - [ ] `grep -rn "TODO(content)" src` returns nothing.

@@ -1,7 +1,7 @@
+import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   experimental: {
     agentFeedback: true,
   },
@@ -17,4 +17,19 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withMDX = createMDX({
+  options: {
+    rehypePlugins: [
+      "rehype-slug",
+      [
+        "@shikijs/rehype",
+        {
+          themes: { light: "github-light", dark: "github-dark" },
+          defaultColor: false,
+        },
+      ],
+    ],
+  },
+});
+
+export default withMDX(nextConfig);

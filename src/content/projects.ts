@@ -42,7 +42,7 @@ export const projects: readonly Project[] = [
     summary:
       "My go-to template for Django projects, featuring integration with tailwind, structured tests, and more!",
     description:
-      "Template built for Princesa dos Campos, to standardize Fullstack Web Development projects.",
+      "A generic Django starter derived from a template I originally built for Princesa dos Campos to standardize their full-stack web projects. It packages the same conventions (Tailwind integration, structured tests, containerized setup) without any company-specific code.",
     status: "available",
     technologies: ["python", "django", "tailwind", "docker", "github-packages"],
     categories: ["DevOps"],

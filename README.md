@@ -19,17 +19,18 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 
 ## Tech stack
 
-| Concern              | Choice                                   | Notes                                                                                            |
-| -------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Framework            | Next.js 16 (App Router)                  | `cacheComponents` and partial prefetching are enabled. See [Next.js 16 notes](#nextjs-16-notes). |
-| Language             | TypeScript (strict)                      | `@/*` is an alias for `src/*`.                                                                   |
-| Styling              | Tailwind CSS v4                          | Compiled through `@tailwindcss/turbopack`. Colors only through semantic tokens.                  |
-| Theme                | `next-themes`                            | Light/dark, follows the OS on first visit, choice persisted.                                     |
-| Motion               | `motion`                                 | Only where it explains a state change; respects reduced motion.                                  |
-| Icons                | `lucide-react`                           |                                                                                                  |
-| Unit/component tests | Vitest + React Testing Library + jsdom   |                                                                                                  |
-| E2E tests            | Playwright + `@axe-core/playwright`      | Runs against a production build on port 3100.                                                    |
-| Formatting           | Prettier + `prettier-plugin-tailwindcss` |                                                                                                  |
+| Concern              | Choice                                   | Notes                                                                                                                                                          |
+| -------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework            | Next.js 16 (App Router)                  | `cacheComponents` and partial prefetching are enabled. See [Next.js 16 notes](#nextjs-16-notes).                                                               |
+| Language             | TypeScript (strict)                      | `@/*` is an alias for `src/*`.                                                                                                                                 |
+| Styling              | Tailwind CSS v4                          | Compiled through `@tailwindcss/turbopack`. Colors only through semantic tokens.                                                                                |
+| Theme                | `next-themes`                            | Light/dark, follows the OS on first visit, choice persisted.                                                                                                   |
+| Motion               | `motion`                                 | Only where it explains a state change; respects reduced motion.                                                                                                |
+| Icons                | `lucide-react`                           |                                                                                                                                                                |
+| Case studies         | MDX via `@next/mdx`                      | Pinned to the installed `next` version. `rehype-slug` adds heading ids; `@shikijs/rehype` highlights code at build time (dual light/dark theme, no client JS). |
+| Unit/component tests | Vitest + React Testing Library + jsdom   |                                                                                                                                                                |
+| E2E tests            | Playwright + `@axe-core/playwright`      | Runs against a production build on port 3100.                                                                                                                  |
+| Formatting           | Prettier + `prettier-plugin-tailwindcss` |                                                                                                                                                                |
 
 ## Getting started
 
@@ -161,6 +162,8 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 
 - **Cache Components:** reading the current time or a random value while rendering fails prerendering. Use a `'use cache'` function or `connection()`.
 - **Activity:** routes you navigate away from stay mounted but hidden. Transient UI must reset itself, and tests must use visibility-aware locators.
+- **MDX under Turbopack:** remark/rehype plugins are configured in `next.config.ts` **by name (strings) with serializable options only**, because functions can't cross into Turbopack. `src/mdx-components.tsx` is required by `@next/mdx`.
+- **Shiki theming:** with `defaultColor: false`, every token carries `--shiki-light` / `--shiki-dark` variables; `globals.css` picks one based on `data-theme`.
 - The bundled docs in `node_modules/next/dist/docs/` are the reference for this version.
 
 ## Known limitations
