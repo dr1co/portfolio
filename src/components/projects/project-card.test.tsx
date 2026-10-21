@@ -12,6 +12,7 @@ const base: Project = {
   status: "available",
   technologies: ["django", "docker", "postgresql"],
   categories: ["templates"],
+  group: "devops",
   featured: true,
 };
 

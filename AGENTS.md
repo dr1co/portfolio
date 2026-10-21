@@ -52,3 +52,4 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - MDX: `next.config.ts` wraps the config with `createMDX`. Add remark/rehype plugins **as strings** (`"rehype-slug"`, `["@shikijs/rehype", {...}]`) with JSON-serializable options only (Turbopack restriction). Keep `@next/mdx` pinned to the same version as `next`.
 - Shiki code blocks render as `<pre class="shiki">` with per-token `--shiki-light`/`--shiki-dark` variables. Colors are chosen in `globals.css` by `data-theme`, so don't set Shiki's `defaultColor`.
 - When writing files containing backticks (MD/MDX code fences) from a shell, double-quoted `bash -ic "..."` executes them as command substitution. Use the Write tool for such files.
+- Don't call `python3` from the Windows-side Git Bash: it resolves to the Microsoft Store stub and hangs until the tool timeout. Use the Edit tool, `sed`, or run Python inside WSL.
