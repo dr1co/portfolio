@@ -7,13 +7,13 @@ const groups: SkillGroup[] = [
   {
     id: "delivery",
     title: "Containers & Delivery",
-    skills: [{ name: "Docker" }, { name: "Podman", learning: true }],
+    skills: [{ tech: "docker" }, { tech: "docker-compose", learning: true }],
   },
   {
     id: "learning",
     title: "Learning Next",
     learning: true,
-    skills: [{ name: "Kubernetes", learning: true }],
+    skills: [{ tech: "kubernetes", learning: true }],
   },
 ];
 
@@ -37,7 +37,7 @@ describe("SkillsSection", () => {
       within(learningGroup).getByText("Currently learning"),
     ).toBeInTheDocument();
 
-    const podman = screen.getByText("Podman").closest("li")!;
-    expect(within(podman).getByText("learning")).toBeInTheDocument();
+    const compose = screen.getByText("Docker Compose").closest("li")!;
+    expect(within(compose).getByText("learning")).toBeInTheDocument();
   });
 });

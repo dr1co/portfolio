@@ -2,6 +2,7 @@ import { CheckCircle2, Clock, type LucideIcon } from "lucide-react";
 import { AppLink } from "@/components/ui/app-link";
 import { Badge } from "@/components/ui/badge";
 import type { Project, ProjectStatus } from "@/content/projects";
+import { techName } from "@/content/technologies";
 
 const STATUS: Record<
   Exclude<ProjectStatus, "planned">,
@@ -40,7 +41,7 @@ export function ProjectCard({
       <ul aria-label="Technologies" className="mt-4 flex flex-wrap gap-2">
         {project.technologies.slice(0, MAX_TECHNOLOGIES).map((tech) => (
           <li key={tech}>
-            <Badge>{tech}</Badge>
+            <Badge>{techName(tech)}</Badge>
           </li>
         ))}
       </ul>

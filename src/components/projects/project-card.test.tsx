@@ -10,7 +10,7 @@ const base: Project = {
   summary: "Containerized Django starter with a reproducible local setup.",
   description: "",
   status: "available",
-  technologies: ["Django", "Docker", "PostgreSQL"],
+  technologies: ["django", "docker", "postgresql"],
   categories: ["templates"],
   featured: true,
 };

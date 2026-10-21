@@ -94,11 +94,12 @@ Content (text, links, projects) is kept separate from components, so updating th
 
 Typed content lives in `src/content/`:
 
-| File                                   | Holds                                                              | Notes                                                                                                                                                               |
-| -------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [projects.ts](src/content/projects.ts) | `projects` list (empty for now)                                    | `getFeaturedProjects()` keeps `featured` projects that aren't `planned`, at most 4, and strips non-`https` links. The home section only appears once one qualifies. |
-| [skills.ts](src/content/skills.ts)     | Skill groups                                                       | Set `learning: true` on anything not yet used in a substantive project.                                                                                             |
-| [pipeline.ts](src/content/pipeline.ts) | The five illustrative pipeline stages (command + workflow excerpt) | Icons are string keys, because the data is passed to a client component.                                                                                            |
+| File                                           | Holds                                                              | Notes                                                                                                                                                               |
+| ---------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [projects.ts](src/content/projects.ts)         | `projects` list (empty for now)                                    | `getFeaturedProjects()` keeps `featured` projects that aren't `planned`, at most 4, and strips non-`https` links. The home section only appears once one qualifies. |
+| [skills.ts](src/content/skills.ts)             | Skill groups                                                       | Set `learning: true` on anything not yet used in a substantive project.                                                                                             |
+| [technologies.ts](src/content/technologies.ts) | Canonical technology id → display name map                         | Projects (`technologies`) and skills (`tech`) reference ids, so names are spelled the same everywhere. A typo fails `typecheck`. Add new technologies here first.   |
+| [pipeline.ts](src/content/pipeline.ts)         | The five illustrative pipeline stages (command + workflow excerpt) | Icons are string keys, because the data is passed to a client component.                                                                                            |
 
 Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(content)" src`.
 

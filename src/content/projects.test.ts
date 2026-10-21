@@ -8,7 +8,7 @@ function project(overrides: Partial<Project>): Project {
     summary: "A sample project.",
     description: "A longer description.",
     status: "available",
-    technologies: ["Docker"],
+    technologies: ["docker"],
     categories: ["templates"],
     featured: true,
     ...overrides,

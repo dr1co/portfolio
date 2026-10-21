@@ -1,4 +1,5 @@
 import { isHttpsUrl } from "@/lib/links";
+import type { TechnologyId } from "./technologies";
 
 export type ProjectStatus = "available" | "in-progress" | "planned";
 
@@ -8,7 +9,7 @@ export type Project = {
   summary: string;
   description: string;
   status: ProjectStatus;
-  technologies: readonly string[];
+  technologies: readonly TechnologyId[];
   categories: readonly string[];
   repositoryUrl?: string;
   demoUrl?: string;
@@ -17,17 +18,16 @@ export type Project = {
   lastUpdated?: string;
 };
 
-// TODO(content): add the public repositories (title, repo URL, one-line summary, honest status).
+// TODO(content): review summaries, statuses and technologies before publishing.
 export const projects: readonly Project[] = [
   {
     slug: "tcc-engsoftware",
-    title: "Finantial market analysis with Deep Learning Techniques",
+    title: "Financial market analysis with Deep Learning Techniques",
     summary:
       "The project presented in my undergraduate thesis, covering stock market analysis using LSTM and CNN models, as well as a hybrid between these.",
     description: "",
     status: "in-progress",
-    technologies: ["python", "pytorch", "tensorflow", "keras", "MetaTrader 5"],
-    categories: [
+    technologies: ["python", "pytorch", "tensorflow", "keras", "metatrader5"],    categories: [
       "Machine Learning",
       "Deep Learning",
       "Artificial Intelligence",
