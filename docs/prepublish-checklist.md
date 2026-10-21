@@ -4,14 +4,13 @@ Everything the home page needs from the owner before it goes public. Each item p
 
 ## Content
 
-- [ ] **Links** — fill `links.github`, `links.linkedin` and `links.email` in [src/lib/site-config.ts](../src/lib/site-config.ts), or leave any you won't publish empty (empty links are never rendered).
-  - Once set: the header GitHub icon, the "Contact" nav item, the Contact section, the footer icons and the hero's "Get in touch" / "Open GitHub" buttons appear automatically.
-  - Then update `e2e/home.spec.ts` ("primary action…", "hides sections…") and enable the `test.fixme` in `e2e/mobile.spec.ts`.
+- [x] **Links** — GitHub, LinkedIn and email are set in [src/lib/site-config.ts](../src/lib/site-config.ts). The header GitHub icon, "Contact" nav item, Contact section, footer icons and the hero's "Get in touch" button are live.
 - [ ] **Intro and hero tags** — review `intro` and `heroTags` in `site-config.ts`.
 - [ ] **Skills** — review [src/content/skills.ts](../src/content/skills.ts). Only list technologies you can discuss, and check the `learning` flags.
-- [ ] **Projects** — add real public repositories to [src/content/projects.ts](../src/content/projects.ts) with honest `status` values and `featured: true`. Then flip the `#projects` expectation in `e2e/home.spec.ts`.
+- [ ] **Projects** — two projects are in [src/content/projects.ts](../src/content/projects.ts) (Django template, thesis). Review each `summary`, `description`, `status` and `technologies` before launch.
+- [ ] **Django template description** — it currently reads as if the repo was built for Princesa dos Campos; it is a generic template derived from that work. Reword it (e.g. "A generic Django starter derived from a template I built for a client…").
 - [ ] **Pipeline copy** — review the stage text in [src/content/pipeline.ts](../src/content/pipeline.ts) for accuracy.
-- [ ] **Source link** — set `sourceRepoUrl` in `site-config.ts` if this repository is public.
+- [x] **Source link** — `sourceRepoUrl` is set. Make sure the repository is actually public before launch, or the footer link 404s.
 - [ ] `grep -rn "TODO(content)" src` returns nothing.
 
 ## Deployment configuration

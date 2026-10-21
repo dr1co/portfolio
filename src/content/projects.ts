@@ -20,16 +20,35 @@ export type Project = {
 // TODO(content): add the public repositories (title, repo URL, one-line summary, honest status).
 export const projects: readonly Project[] = [
   {
-    slug: 'tcc-engsoftware',
-    title: 'Finantial market analysis with Deep Learning Techniques',
-    summary: 'The project presented in my undergraduate thesis, covering stock market analysis using LSTM and CNN models, as well as a hybrid between these.',
-    description: '',
-    status: 'in-progress',
-    technologies: ['python', 'pytorch', 'tensorflow', 'keras', 'MetaTrader 5'],
-    categories: ['Machine Learning', 'Deep Learning', 'Artificial Intelligence', 'Stock Market'],
-    repositoryUrl: 'https://github.com/dr1co/tcc-engsoftware',
-    featured: true
-  }
+    slug: "tcc-engsoftware",
+    title: "Finantial market analysis with Deep Learning Techniques",
+    summary:
+      "The project presented in my undergraduate thesis, covering stock market analysis using LSTM and CNN models, as well as a hybrid between these.",
+    description: "",
+    status: "in-progress",
+    technologies: ["python", "pytorch", "tensorflow", "keras", "MetaTrader 5"],
+    categories: [
+      "Machine Learning",
+      "Deep Learning",
+      "Artificial Intelligence",
+      "Stock Market",
+    ],
+    repositoryUrl: "https://github.com/dr1co/tcc-engsoftware",
+    featured: true,
+  },
+  {
+    slug: "django-project-template",
+    title: "Django Project Template for automated project building",
+    summary:
+      "My go-to template for Django projects, featuring integration with tailwind, structured tests, and more!",
+    description:
+      "Template built for Princesa dos Campos, to standardize Fullstack Web Development projects.",
+    status: "available",
+    technologies: ["python", "django", "tailwind", "docker", "github-packages"],
+    categories: ["DevOps"],
+    repositoryUrl: "https://github.com/dr1co/django-project-template",
+    featured: true,
+  },
 ];
 
 const MAX_FEATURED = 4;

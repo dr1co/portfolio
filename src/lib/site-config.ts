@@ -44,8 +44,7 @@ export const siteConfig: SiteConfig = {
   links: {
     github: "https://github.com/dr1co",
     linkedin: "https://linkedin.com/in/amlipski",
-    email: "adrianolipski@gmail.com"
+    email: "adrianolipski@gmail.com",
   },
-  // TODO(content): set once this repository is public.
   sourceRepoUrl: "https://github.com/dr1co/portfolio",
 };

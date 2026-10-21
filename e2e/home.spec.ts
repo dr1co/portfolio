@@ -6,10 +6,11 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function revealAllSections(page: Page) {
-  for (const id of ["pipeline", "skills"]) {
-    await page.locator(`#${id}`).scrollIntoViewIfNeeded();
+  const reveals = page.locator("[data-reveal]");
+  for (const reveal of await reveals.all()) {
+    await reveal.scrollIntoViewIfNeeded();
+    await expect(reveal).toHaveCSS("opacity", "1");
   }
-  await expect(page.locator("[data-reveal]").last()).toHaveCSS("opacity", "1");
 }
 
 test("leads with a single headline", async ({ page }) => {
@@ -31,22 +32,22 @@ test("shows the pipeline and skills sections", async ({ page }) => {
   ).toBeAttached();
 });
 
-test("primary action falls back to the pipeline and scrolls to it", async ({
-  page,
-}) => {
-  // Flip this expectation when featured projects or a GitHub URL are configured.
-  await page.getByRole("link", { name: "See the pipeline" }).click();
+test("primary action leads to the featured projects", async ({ page }) => {
+  await page.getByRole("link", { name: "Explore Projects" }).click();
 
-  await expect(page).toHaveURL(/#pipeline$/);
+  await expect(page).toHaveURL(/#projects$/);
   await expect(
-    page.getByRole("tablist", { name: "Delivery pipeline stages" }),
+    page.getByRole("heading", { level: 2, name: "Featured projects" }),
   ).toBeInViewport();
 });
 
-test("hides sections that have no content yet", async ({ page }) => {
-  // Flip these when content/projects.ts gets a featured entry or site-config gets contact links.
-  await expect(page.locator("#projects")).toHaveCount(0);
-  await expect(page.locator("#contact")).toHaveCount(0);
+test("secondary action leads to the contact section", async ({ page }) => {
+  await page.getByRole("link", { name: "Get in touch" }).click();
+
+  await expect(page).toHaveURL(/#contact$/);
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Get in touch" }),
+  ).toBeInViewport();
 });
 
 for (const colorScheme of ["light", "dark"] as const) {
