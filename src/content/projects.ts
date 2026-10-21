@@ -52,6 +52,7 @@ export const projects: readonly Project[] = [
     ],
     group: "ml",
     repositoryUrl: "https://github.com/dr1co/tcc-engsoftware",
+    caseStudy: "tcc-engsoftware",
     featured: true,
   },
   {

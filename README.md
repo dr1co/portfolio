@@ -9,15 +9,15 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 
 ## Status
 
-| Area                                                | State                                                                                            |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Tooling (lint, format, typecheck, unit + e2e tests) | Done                                                                                             |
-| Design tokens, theme                                | Done                                                                                             |
-| Layout, metadata, 404, OG image, icon               | Done                                                                                             |
-| Home page `/`                                       | Done (content still to review; see [docs/prepublish-checklist.md](docs/prepublish-checklist.md)) |
-| `/projects` directory                               | Done                                                                                             |
-| `/projects/[slug]` case studies                     | In progress ([docs/projects-plan.md](docs/projects-plan.md))                                     |
-| `/lab`, `/about`                                    | Not started                                                                                      |
+| Area                                                | State                                                                                                                 |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Tooling (lint, format, typecheck, unit + e2e tests) | Done                                                                                                                  |
+| Design tokens, theme                                | Done                                                                                                                  |
+| Layout, metadata, 404, OG image, icon               | Done                                                                                                                  |
+| Home page `/`                                       | Done (content still to review; see [docs/prepublish-checklist.md](docs/prepublish-checklist.md))                      |
+| `/projects` directory                               | Done                                                                                                                  |
+| `/projects/[slug]` case studies                     | Route done; thesis case study is a placeholder until drafted ([docs/projects-plan.md](docs/projects-plan.md), Step 7) |
+| `/lab`, `/about`                                    | Not started                                                                                                           |
 
 ## Tech stack
 
@@ -135,6 +135,14 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 - **`ProjectDirectory`** ([src/components/projects/project-directory.tsx](src/components/projects/project-directory.tsx)): one labelled `<section>` per group (h2 + two-column card grid). The first group renders immediately; the rest fade in with `Reveal`.
 - **Card links:** when the `/projects` route is enabled and a project has a `caseStudy`, both the card title and a "Case study" link point to `/projects/<slug>`. Case-study pages are addressed by **slug**; `caseStudy` only names the MDX file.
 - **`isRouteEnabled(routes, href)`** in `src/lib/links.ts` is the single check for "is this page live", used by the cards and featured section.
+
+## Case-study pages
+
+- **Route:** [src/app/projects/[slug]/page.tsx](src/app/projects/[slug]/page.tsx). `generateStaticParams` returns `getCaseStudySlugs()`, so every case study is prerendered at build. The page loads the MDX body with a dynamic import and reads the same file to build the table of contents (`getHeadings` in [src/lib/headings.ts](src/lib/headings.ts), which uses `github-slugger` so ids match `rehype-slug`).
+- **Layout:** "All projects" back link → `CaseStudyHeader` (group, title, description or summary, status, technologies, Source/Live demo, "Updated" date) → article (max 70ch) with a table of contents: a sticky sidebar on `lg+`, a collapsible "On this page" panel on smaller screens.
+- **Metadata:** title, description and canonical URL per project, plus a generated OG image (`opengraph-image.tsx`) showing the project title and group. Both OG images share [src/lib/og-image.tsx](src/lib/og-image.tsx).
+- **Unknown slugs → real 404:** with Cache Components the page shell streams before `notFound()` runs, which would commit a `200`. [src/proxy.ts](src/proxy.ts) (matcher `/projects/:slug`) rewrites any slug without a published case study to the static not-found page first, so the status is always `404`. Projects that only have a card (no `caseStudy`) also get a 404 at their URL.
+- **Adding a case study:** create `src/content/case-studies/<name>.mdx`, set `caseStudy: "<name>"` on the project, and run `npm test`. The registry test fails if a file is missing, orphaned, or if no case study exists at all (Cache Components needs at least one static param).
 
 ## Writing case studies (MDX)
 

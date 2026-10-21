@@ -1,16 +1,8 @@
-import { CheckCircle2, Clock, type LucideIcon } from "lucide-react";
 import { AppLink } from "@/components/ui/app-link";
 import { Badge } from "@/components/ui/badge";
-import type { Project, ProjectStatus } from "@/content/projects";
+import type { Project } from "@/content/projects";
 import { techName } from "@/content/technologies";
-
-const STATUS: Record<
-  Exclude<ProjectStatus, "planned">,
-  { label: string; icon: LucideIcon; tone: "accent" | "info" }
-> = {
-  available: { label: "Available", icon: CheckCircle2, tone: "accent" },
-  "in-progress": { label: "In progress", icon: Clock, tone: "info" },
-};
+import { StatusBadge } from "./status-badge";
 
 const MAX_TECHNOLOGIES = 5;
 const linkClass =
@@ -24,8 +16,6 @@ export function ProjectCard({
   project: Project;
   showCaseStudy?: boolean;
 }) {
-  const status =
-    project.status === "planned" ? undefined : STATUS[project.status];
   const caseStudyHref =
     showCaseStudy && project.caseStudy
       ? `/projects/${project.slug}`
@@ -46,11 +36,7 @@ export function ProjectCard({
             project.title
           )}
         </h3>
-        {status && (
-          <Badge icon={status.icon} tone={status.tone} className="shrink-0">
-            {status.label}
-          </Badge>
-        )}
+        <StatusBadge status={project.status} />
       </div>
       <p className="mt-2 text-muted">{project.summary}</p>
       <ul aria-label="Technologies" className="mt-4 flex flex-wrap gap-2">

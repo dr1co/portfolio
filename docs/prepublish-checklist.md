@@ -13,6 +13,7 @@ Everything the home page needs from the owner before it goes public. Each item p
 - [ ] **Projects page intro** — review `directoryIntro` in [src/content/projects.ts](../src/content/projects.ts).
 - [ ] **Thesis technologies** — the repo README lists TensorFlow/Keras (plus Keras Tuner, pandas, scikit-learn) but not PyTorch. Remove `pytorch` from the thesis entry if it was not used.
 - [ ] **Thesis description** — drafted from the repo README (including its negative result). Confirm the wording.
+- [ ] **Thesis case study** — [src/content/case-studies/tcc-engsoftware.mdx](../src/content/case-studies/tcc-engsoftware.mdx) is a placeholder; the full draft comes in projects-plan Step 7 and needs your review.
 - [x] **Source link** — `sourceRepoUrl` is set. Make sure the repository is actually public before launch, or the footer link 404s.
 - [ ] `grep -rn "TODO(content)" src` returns nothing.
 

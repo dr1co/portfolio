@@ -3,7 +3,7 @@
 **Feature:** Project directory (`/projects`) and case studies (`/projects/[slug]`)
 **Source specs:** [features-specification.md §5](features-specification.md), [visual-identity.md §5.6–5.7](visual-identity.md)
 **Branch:** `feat/projects`. The owner makes all commits. Each step ends with a suggested commit message and a green check run.
-**Status:** In progress. Gate (§0) met on 2026-10-21 (Django template added, network available); Steps 0–5 done. Decisions were settled in a grilling session on 2026-10-20. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress. Gate (§0) met on 2026-10-21 (Django template added, network available); Steps 0–6 done. Decisions were settled in a grilling session on 2026-10-20. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -50,7 +50,7 @@ If either is unmet, stop and tell the owner. Don't stub DevOps projects to get p
 ## 2. Next.js 16 constraints (verified in `node_modules/next/dist/docs/`)
 
 1. **Cache Components and dynamic routes:** `generateStaticParams` must return **at least one** param, or the build fails (`api-reference/functions/generate-static-params.md`, "With Cache Components"). A content test enforces at least one case study (Step 6).
-2. Unknown slugs aren't prerendered. The page calls `notFound()` when `getProject(slug)` finds no project with a case study. Check what the e2e test sees for that case.
+2. Unknown slugs aren't prerendered, and `notFound()` after streaming starts keeps a `200`. **Amended in Step 6 (owner decision):** `src/proxy.ts` rewrites slugs without a published case study to the static not-found page, so they always return 404. `dynamicParams = false` is not allowed with Cache Components.
 3. **`params` is a Promise:** `const { slug } = await params`.
 4. **MDX** (`guides/mdx.md`):
    - `mdx-components.tsx` is **required** and lives in `src/`.
