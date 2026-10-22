@@ -2,13 +2,13 @@
 
 ## Overview
 
-This is my undergraduate thesis in Software Engineering at UEPG. It builds and evaluates three deep-learning architectures — a 1D CNN, a stacked LSTM and a hybrid CNN+LSTM — to predict the next closing price of two Brazilian mini futures contracts, the mini dollar (WDO) and the mini index (WIN), from one-hour (H1) candles.
+This is my undergraduate thesis in Software Engineering at UEPG. It builds and evaluates three deep-learning architectures: a 1D CNN, a stacked LSTM and a hybrid CNN+LSTM. The models were used to predict the next closing price of two Brazilian mini futures contracts, the mini dollar (WDO) and the mini index (WIN), from one-hour (H1) candles.
 
 Beyond the models themselves, the work is organized as a reproducible experiment: every scenario I tested has its own script, every model generation is saved side by side, and every result is evaluated both with error metrics and with a trading backtest that includes transaction costs and significance tests.
 
 ## Problem and goals
 
-Price prediction papers often report low error on a test set and stop there. A low RMSE on prices does not mean a model knows which way the market will move, and it says nothing about whether acting on its predictions would make money after costs. The goals were to:
+Price prediction papers often covers long horizon predictions, which shows promising results in those scenarios. Although, with a stock market more and more accessible for the regular investor, especially derivative markets, more often the investors are exposed to high, volatile operations with little to no preparation. This study covers Deep Learning application as an analysis tool for intraday operations in temporal series. The goals of the study are:
 
 - compare CNN, LSTM and hybrid architectures on the same data and the same preprocessing;
 - evaluate them on **direction**, not only on price error;
@@ -80,11 +80,11 @@ val_scaled = scaler.transform(df_val.values)
 test_scaled = scaler.transform(df_test.values)
 ```
 
-Each of the six combinations (2 markets × 3 architectures) trains for up to 200 epochs with early stopping (patience 12). Trained models, scalers and metrics are saved per **generation** — `_log`, `_tuned`, `_features` — so later experiments never overwrite earlier ones and every comparison stays reproducible.
+Each of the six combinations (2 markets × 3 architectures) trains for up to 200 epochs with early stopping (patience 12). Trained models, scalers and metrics are saved per **generation**, resulting in the generations `_log`, `_tuned`, `_features`. This is so later experiments never overwrite earlier ones and every comparison stays reproducible.
 
 ## Technical decisions
 
-**Log returns instead of absolute prices.** The first version scaled raw prices. For a strongly trending series such as WIN, test-period prices can sit far above anything seen in training, so a Min-Max scaler fitted on training data pushes the model to extrapolate outside its domain. Log returns are stationary — their distribution does not shift with the price level — which removes the problem regardless of how far the price moves.
+**Log returns instead of absolute prices.** The first version scaled raw prices. For a strongly trending series, such as WIN in the last 5 years, test-period prices can sit far above anything seen in training, so a Min-Max scaler fitted on training data pushes the model to extrapolate outside its domain. Log returns are stationary — their distribution does not shift with the price level — which removes the problem regardless of how far the price moves.
 
 **Evaluate on direction and money, not just error.** Price RMSE is reported, but the decisive metrics are directional accuracy and a backtest: two strategies (single-bar and multi-bar holding) with a fixed round-trip transaction cost per market, an annualized Sharpe ratio, maximum drawdown, historical VaR at 95%, and a one-sample t-test on per-trade returns.
 
@@ -115,7 +115,6 @@ Six scenarios were run in sequence, each building on what the previous one showe
 ## Limitations and future work
 
 - The repository has no automated test suite, linter or formatter; validation happens through the scenario scripts and their reported metrics.
-- The detailed rationale for each decision lives in a personal notes file that is not versioned, so the public repository only carries the summaries in docstrings and the thesis PDF.
 - Only the one-hour horizon and two contracts were tested, and transaction costs are approximated as a fixed round-trip value per market.
 - Re-extracting data requires a MetaTrader 5 terminal reachable through a local bridge; the committed CSVs are needed to reproduce results without it.
 
