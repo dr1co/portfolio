@@ -116,4 +116,12 @@ describe("FeaturedProjects", () => {
     ).toBeInTheDocument();
     expect(screen.getAllByRole("article")).toHaveLength(2);
   });
+
+  it("links to the full directory while the projects page is enabled", () => {
+    render(<FeaturedProjects projects={[base]} />);
+
+    expect(
+      screen.getByRole("link", { name: "View all projects" }),
+    ).toHaveAttribute("href", "/projects");
+  });
 });

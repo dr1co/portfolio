@@ -1,17 +1,19 @@
+import { ArrowRight } from "lucide-react";
 import { ProjectCard } from "@/components/projects/project-card";
+import { AppLink } from "@/components/ui/app-link";
 import { Section } from "@/components/ui/section";
 import { getFeaturedProjects, type Project } from "@/content/projects";
 import { isRouteEnabled } from "@/lib/links";
 import { siteConfig } from "@/lib/site-config";
 
-/** Featured project cards; renders nothing until a project is featured. */
+/** Featured project cards, plus a link to the directory once it is live; renders nothing until a project is featured. */
 export function FeaturedProjects({
   projects = getFeaturedProjects(),
 }: {
   projects?: readonly Project[];
 }) {
   if (projects.length === 0) return null;
-  const showCaseStudy = isRouteEnabled(siteConfig.routes, "/projects");
+  const directoryLive = isRouteEnabled(siteConfig.routes, "/projects");
 
   return (
     <Section id="projects" eyebrow="// projects" title="Featured projects">
@@ -20,10 +22,19 @@ export function FeaturedProjects({
           <ProjectCard
             key={project.slug}
             project={project}
-            showCaseStudy={showCaseStudy}
+            showCaseStudy={directoryLive}
           />
         ))}
       </div>
+      {directoryLive && (
+        <AppLink
+          href="/projects"
+          className="mt-8 inline-flex items-center gap-2 font-medium text-accent hover:underline"
+        >
+          View all projects
+          <ArrowRight aria-hidden className="size-4" />
+        </AppLink>
+      )}
     </Section>
   );
 }

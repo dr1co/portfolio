@@ -65,3 +65,24 @@ for (const colorScheme of ["light", "dark"] as const) {
     expect(results.violations).toEqual([]);
   });
 }
+
+test("links from featured projects to the full directory", async ({ page }) => {
+  await page.getByRole("link", { name: "View all projects" }).click();
+
+  await expect(page).toHaveURL(/\/projects$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Projects" }),
+  ).toBeVisible();
+});
+
+test("opens a featured project's case study from its card title", async ({
+  page,
+}) => {
+  const featured = page.locator("#projects");
+  await featured
+    .getByRole("heading", { level: 3 })
+    .getByRole("link", { name: /Financial market analysis/ })
+    .click();
+
+  await expect(page).toHaveURL(/\/projects\/tcc-engsoftware$/);
+});

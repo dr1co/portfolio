@@ -121,7 +121,7 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 - **Terminal panel** ([src/components/terminal/terminal-panel.tsx](src/components/terminal/terminal-panel.tsx)): presentation only. Lines starting with `$ ` render as prompts, and an optional badge labels the output as Example or Simulated. `copyable` adds a `CopyButton` that copies the commands without their `$` and announces "Copied" through a live region.
 - **Home sections** (`src/components/home/`):
   - `Hero`: the `h1` headline, intro, tags, adaptive buttons, and a terminal panel labelled Example. It takes `config` and `featuredCount` props so tests can inject them.
-  - `FeaturedProjects`: renders nothing while no project qualifies.
+  - `FeaturedProjects`: renders nothing while no project qualifies. While `/projects` is enabled, it ends with a "View all projects" link and card titles open their case studies.
   - `ProjectCard` (`src/components/projects/`): status badge (text + icon), up to 5 technologies, and Source / Live demo / Case study links, each rendered only when it exists. Case study also requires the `/projects` route to be enabled.
   - `PipelineSection`: "Simulated" disclaimer, the interactive `PipelinePreview`, and a `<noscript>` list of all stages.
   - `SkillsSection`: one card per group. The learning group gets a dashed border and a "Currently learning" badge; individual `learning` items in other groups get a small "learning" badge.
