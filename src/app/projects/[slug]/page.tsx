@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { CaseStudyHeader } from "@/components/projects/case-study-header";
 import { TableOfContents } from "@/components/projects/table-of-contents";
 import { AppLink } from "@/components/ui/app-link";
@@ -30,9 +31,31 @@ export async function generateMetadata({
   };
 }
 
-export default async function CaseStudyPage({
+/** Static shell (back link) renders instantly; the slug-dependent case study streams inside Suspense. */
+export default function CaseStudyPage({
   params,
 }: PageProps<"/projects/[slug]">) {
+  return (
+    <Container className="py-12 md:py-16">
+      <AppLink
+        href="/projects"
+        className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground"
+      >
+        <ArrowLeft aria-hidden className="size-4" />
+        All projects
+      </AppLink>
+      <Suspense
+        fallback={<p className="mt-8 text-muted">Loading case study…</p>}
+      >
+        <CaseStudy params={params} />
+      </Suspense>
+    </Container>
+  );
+}
+
+async function CaseStudy({
+  params,
+}: Pick<PageProps<"/projects/[slug]">, "params">) {
   const project = getProject((await params).slug);
   if (!project?.caseStudy) notFound();
 
@@ -44,14 +67,7 @@ export default async function CaseStudyPage({
   );
 
   return (
-    <Container className="py-12 md:py-16">
-      <AppLink
-        href="/projects"
-        className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground"
-      >
-        <ArrowLeft aria-hidden className="size-4" />
-        All projects
-      </AppLink>
+    <>
       <div className="mt-8">
         <CaseStudyHeader project={project} />
       </div>
@@ -75,6 +91,6 @@ export default async function CaseStudyPage({
           </div>
         </aside>
       </div>
-    </Container>
+    </>
   );
 }

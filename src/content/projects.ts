@@ -43,7 +43,7 @@ export const projects: readonly Project[] = [
     description:
       "Undergraduate thesis (Software Engineering, UEPG) that builds and evaluates CNN, LSTM and hybrid CNN+LSTM models to predict the next hourly closing price of Brazilian mini futures (WDO and WIN) from MetaTrader 5 data. It is organized as a reproducible pipeline — extraction, cleaning, windowing, training, evaluation and backtesting — with one script per experimental scenario. None of the five approaches tested produced a statistically reliable directional edge at the one-hour horizon.",
     status: "in-progress",
-    technologies: ["python", "pytorch", "tensorflow", "keras", "metatrader5"],
+    technologies: ["python", "tensorflow", "keras", "metatrader5"],
     categories: [
       "Machine Learning",
       "Deep Learning",

@@ -4,7 +4,8 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 
 - Product requirements: [docs/features-specification.md](docs/features-specification.md)
 - Visual identity ("Terminal Modern"): [docs/visual-identity.md](docs/visual-identity.md)
-- Current feature plan (home page): [docs/homepage-plan.md](docs/homepage-plan.md)
+- Feature plans: [docs/homepage-plan.md](docs/homepage-plan.md) (home page, done) and [docs/projects-plan.md](docs/projects-plan.md) (projects directory and case studies, done)
+- Pre-publish checklist (content still to review): [docs/prepublish-checklist.md](docs/prepublish-checklist.md)
 - Rules for contributors and AI agents: [AGENTS.md](AGENTS.md)
 
 ## Status
@@ -68,15 +69,18 @@ npx playwright install chromium
 
 ```text
 src/
-  app/          routes, root layout, global styles and design tokens
-  components/   UI grouped by domain (layout, navigation, theme, pipeline, home, ui, ...)
-  content/      typed content: projects, skills, pipeline stages
-  lib/          site config and small pure helpers
-e2e/            Playwright specs
-docs/           specs and feature plans
+  app/                routes (/, /projects, /projects/[slug]), root layout, OG images, global styles and tokens
+  components/         UI grouped by domain: layout, navigation, theme, home, projects, pipeline, terminal, mdx, ui
+  content/            typed content: projects, technologies, skills, pipeline stages
+    case-studies/     one MDX file per case study
+  lib/                site config and small pure helpers (links, headings, OG layout, hooks)
+  mdx-components.tsx  Markdown element → component mapping for case studies
+  proxy.ts            sends unknown case-study slugs to a real 404
+e2e/                  Playwright specs
+docs/                 specs, feature plans and the pre-publish checklist
 ```
 
-Content (text, links, projects) is kept separate from components, so updating the site usually means editing `src/content/` or `src/lib/site-config.ts` only. The full planned tree is in [docs/homepage-plan.md §3](docs/homepage-plan.md).
+Content (text, links, projects, case studies) is kept separate from components, so updating the site usually means editing `src/content/` or `src/lib/site-config.ts` only.
 
 ## Design system
 
@@ -108,7 +112,7 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 ## Layout and shared components
 
 - **Root layout** ([src/app/layout.tsx](src/app/layout.tsx)), in render order: skip link, sticky header, `<main id="main">`, footer. The theme and Motion (`reducedMotion="user"`) providers wrap everything.
-- **Header:** wordmark, routes with `enabled: true`, a "Contact" shortcut (only when a contact link exists), a GitHub icon (only when configured), the theme toggle, and a mobile menu (only when there's more than one item to show).
+- **Header:** wordmark, routes with `enabled: true`, a "Contact" shortcut (only when a contact link exists), a GitHub icon (only when configured), the theme toggle, and a mobile menu (only when there's more than one item to show). `NavLink` marks its own page with `aria-current="page"` and its section's child pages (e.g. Projects on a case study) with `aria-current="true"`, both shown by underline and strong text.
 - **Footer:** the copyright year comes from a `'use cache'` component, because Cache Components forbids reading `new Date()` while rendering. Also stack attribution, an optional source link, and contact icons.
 - **Links:** always use `AppLink` ([src/components/ui/app-link.tsx](src/components/ui/app-link.tsx)). Internal targets go through `next/link`. External ones get `target="_blank"`, `rel="noopener noreferrer"`, an arrow icon and screen-reader text. `ButtonLink` adds the primary and secondary button styles on top.
 - **Other building blocks** in `src/components/ui/`:
@@ -136,9 +140,17 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 - **Card links:** when the `/projects` route is enabled and a project has a `caseStudy`, both the card title and a "Case study" link point to `/projects/<slug>`. Case-study pages are addressed by **slug**; `caseStudy` only names the MDX file.
 - **`isRouteEnabled(routes, href)`** in `src/lib/links.ts` is the single check for "is this page live", used by the cards and featured section.
 
+**Adding a project:**
+
+1. Add any new technology to `src/content/technologies.ts`.
+2. Append an entry to `projects` in `src/content/projects.ts`: `slug`, `title`, one-sentence `summary`, optional `description` (case-study lead), honest `status`, `group`, technology ids, `categories`, optional `repositoryUrl` / `demoUrl` (`https` only), `featured`, optional `lastUpdated` (ISO date).
+3. Optionally write a case study (next section).
+4. Run `npm run check`. If the home page's featured set changes, check `e2e/home.spec.ts` still describes it.
+
 ## Case-study pages
 
 - **Route:** [src/app/projects/[slug]/page.tsx](src/app/projects/[slug]/page.tsx). `generateStaticParams` returns `getCaseStudySlugs()`, so every case study is prerendered at build. The page loads the MDX body with a dynamic import and reads the same file to build the table of contents (`getHeadings` in [src/lib/headings.ts](src/lib/headings.ts), which uses `github-slugger` so ids match `rehype-slug`).
+- **Instant navigation:** the page itself renders only the static shell (the back link). Everything that reads `params` lives in a `CaseStudy` component inside `<Suspense>`, as the Next 16 instant-navigation validation requires. Known slugs are still fully prerendered, so the fallback is practically never seen.
 - **Layout:** "All projects" back link → `CaseStudyHeader` (group, title, description or summary, status, technologies, Source/Live demo, "Updated" date) → article (max 70ch) with a table of contents: a sticky sidebar on `lg+`, a collapsible "On this page" panel on smaller screens.
 - **Metadata:** title, description and canonical URL per project, plus a generated OG image (`opengraph-image.tsx`) showing the project title and group. Both OG images share [src/lib/og-image.tsx](src/lib/og-image.tsx).
 - **Unknown slugs → real 404:** with Cache Components the page shell streams before `notFound()` runs, which would commit a `200`. [src/proxy.ts](src/proxy.ts) (matcher `/projects/:slug`) rewrites any slug without a published case study to the static not-found page first, so the status is always `404`. Projects that only have a card (no `caseStudy`) also get a 404 at their URL.
@@ -173,16 +185,19 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 - **Unit and component tests** sit next to the code they cover (`foo.ts` → `foo.test.ts`) and test behavior through the public interface.
 - **End-to-end tests** live in `e2e/`. Playwright runs `npm run build && npm start -p 3100`, with two projects: `desktop-chromium` and `mobile-chromium` (Pixel 7). Make sure nothing else is listening on port 3100, otherwise Playwright reuses that server.
 
-  | Spec               | Covers                                                                                                                                         |
-  | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `smoke.spec.ts`    | `/` is served as English HTML                                                                                                                  |
-  | `home.spec.ts`     | single `h1`, sections present or hidden according to content, hero button scrolls to the pipeline, **axe** accessibility checks in both themes |
-  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                          |
-  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                  |
-  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags, generated images, skip link                                                                            |
-  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (`fixme` until there's a second nav item)                                                |
+  | Spec               | Covers                                                                                                                                                                                                |
+  | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `smoke.spec.ts`    | `/` is served as English HTML                                                                                                                                                                         |
+  | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, **axe** in both themes                                                        |
+  | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown and card-only slugs, no mobile overflow, **axe** in both themes |
+  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                 |
+  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                                                                         |
+  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags, generated images, skip link                                                                                                                                   |
+  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                      |
 
-  Some expectations encode the current content state (projects, contact and GitHub not set yet). Their comments say what to flip when the content arrives.
+  Some expectations depend on content (hero buttons exist only while projects and contact links are configured). If you remove content, update the specs with it.
+
+- **Dev-only validation:** `next dev` checks every route for instant navigation and reports `params` read outside `<Suspense>` (message `instant-shell-url-data`). Keep routes free of these warnings; the case-study page shows the pattern.
 
 - The project follows test-driven development: write a failing test, make it pass, repeat.
 
@@ -197,12 +212,15 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 - **Cache Components:** reading the current time or a random value while rendering fails prerendering. Use a `'use cache'` function or `connection()`.
 - **Activity:** routes you navigate away from stay mounted but hidden. Transient UI must reset itself, and tests must use visibility-aware locators.
 - **MDX under Turbopack:** remark/rehype plugins are configured in `next.config.ts` **by name (strings) with serializable options only**, because functions can't cross into Turbopack. `src/mdx-components.tsx` is required by `@next/mdx`.
+- **Dynamic routes:** `generateStaticParams` must return at least one param, `dynamicParams` is not allowed, and `notFound()` after streaming starts keeps a `200`. Hence the registry test (at least one case study) and `src/proxy.ts`.
+- **Instant navigation:** `params` reads belong inside `<Suspense>` so client navigations have an instant shell (see "Case-study pages").
 - **Shiki theming:** with `defaultColor: false`, every token carries `--shiki-light` / `--shiki-dark` variables; `globals.css` picks one based on `data-theme`.
 - The bundled docs in `node_modules/next/dist/docs/` are the reference for this version.
 
 ## Known limitations
 
-- Content (links, projects, skills, pipeline copy) is not final. It's tracked with `TODO(content)` markers and [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
+- On wide screens the case-study table of contents comes after the article in the Tab order (it mirrors the visual order); on smaller screens the collapsible "On this page" panel sits before the article.
+- Content (projects, skills, pipeline copy, the thesis case study) is not final. It's tracked with `TODO(content)` markers and [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
 - `/lab` and `/about` don't exist yet; their nav items stay hidden until the routes are enabled in `site-config.ts`.
 - The projects directory has no filters (deferred until there are ≥ 6 published projects).
 - The pipeline preview is select-to-reveal only. The full simulated explorer (run, pass/fail states) is planned for `/lab`.

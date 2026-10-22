@@ -100,6 +100,19 @@ test.describe("case study", () => {
     ).toBeInViewport();
   });
 
+  test("keeps Projects marked as the current section", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile-chromium", "desktop nav");
+    await page.goto(path);
+
+    await expect(
+      page
+        .getByRole("navigation", { name: "Main" })
+        .getByRole("link", { name: "Projects" }),
+    ).toHaveAttribute("aria-current", "true");
+  });
+
   test("links back to the directory", async ({ page }) => {
     await page.goto(path);
     await page.getByRole("link", { name: "All projects" }).click();

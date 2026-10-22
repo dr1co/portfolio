@@ -3,7 +3,7 @@
 **Feature:** Project directory (`/projects`) and case studies (`/projects/[slug]`)
 **Source specs:** [features-specification.md §5](features-specification.md), [visual-identity.md §5.6–5.7](visual-identity.md)
 **Branch:** `feat/projects`. The owner makes all commits. Each step ends with a suggested commit message and a green check run.
-**Status:** In progress. Gate (§0) met on 2026-10-21 (Django template added, network available); Steps 0–8 done. Decisions were settled in a grilling session on 2026-10-20. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** Done (Steps 0–9, 2026-10-22). Follow-ups after Step 8: instant-navigation fix for the case-study page (params read inside `<Suspense>`) and section-aware nav state (`aria-current="true"` on child pages). Gate (§0) met on 2026-10-21 (Django template added, network available); Decisions were settled in a grilling session on 2026-10-20. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -257,13 +257,13 @@ Suggested commit: `[docs] projects feature documentation`
 
 ## 6. Definition of done
 
-- [ ] Gate (§0) was met before Step 1.
-- [ ] `/projects` and every `/projects/<slug>` render, prerendered at build.
-- [ ] Nav shows Projects; the mobile menu works and its e2e test is enabled.
-- [ ] Every link is valid or absent; no planned or placeholder projects are published.
-- [ ] Case studies contain no invented claims; drafts are marked `TODO(content)`.
-- [ ] `npm run check`, `npm run build` and `npm run test:e2e` pass, including axe in both themes.
-- [ ] README, AGENTS.md and the checklist are updated.
+- [x] Gate (§0) was met before Step 1.
+- [x] `/projects` and every `/projects/<slug>` render, prerendered at build.
+- [x] Nav shows Projects; the mobile menu works and its e2e test is enabled.
+- [x] Every link is valid or absent; no planned or placeholder projects are published.
+- [x] Case studies contain no invented claims; drafts are marked `TODO(content)`.
+- [x] `npm run check`, `npm run build` and `npm run test:e2e` pass, including axe in both themes.
+- [x] README, AGENTS.md and the checklist are updated.
 
 ## 7. Not in this plan
 

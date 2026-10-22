@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Project rules
 
-Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specification.md`. Design system: `docs/visual-identity.md`. Feature plans: `docs/homepage-plan.md` (done), `docs/projects-plan.md` (active, gated: read its §0 before starting).
+Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specification.md`. Design system: `docs/visual-identity.md`. Feature plans: `docs/homepage-plan.md` (done), `docs/projects-plan.md` (done). Remaining content work is tracked in `docs/prepublish-checklist.md`.
 
 **Keep this file current.** When a convention changes or you hit a gotcha that would trip the next agent, update this file in the same change. An outdated AGENTS.md is worse than none.
 
@@ -60,3 +60,5 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - Tests that need Node APIs (e.g. `NextRequest` for the proxy) declare `// @vitest-environment node` at the top. `vitest.setup.ts` only stubs browser globals when `window` exists.
 - Shiki's `github-light` theme fails WCAG AA (orange tokens are 3.48:1 on white). Use `github-light-default`. Axe in `e2e/projects.spec.ts` checks real case-study code, so a theme change that breaks contrast fails the e2e run.
 - Anything that scrolls horizontally must be focusable (axe `scrollable-region-focusable`). Wrap it in `ScrollArea` rather than a bare `overflow-x-auto` div.
+- `next dev` validates instant navigation on every route and warns when `params`/`searchParams` are read outside `<Suspense>` (`instant-shell-url-data`). Keep the page component synchronous and move param-dependent work into a child inside `<Suspense>` (see `src/app/projects/[slug]/page.tsx`). These warnings only appear in dev: check by running a separate `next dev -p 3300`, visiting the route directly and via client navigation, and reading the server log and browser console.
+- `NavLink` sets `aria-current="page"` on exact matches and `"true"` on child pages of its section. E2E tests asserting nav state must pick the right value.
