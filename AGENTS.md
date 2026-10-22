@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Project rules
 
-Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specification.md`. Design system: `docs/visual-identity.md`. Active feature plan: `docs/homepage-plan.md`.
+Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specification.md`. Design system: `docs/visual-identity.md`. Feature plans: `docs/homepage-plan.md` (done), `docs/projects-plan.md` (done). Remaining content work is tracked in `docs/prepublish-checklist.md`.
 
 **Keep this file current.** When a convention changes or you hit a gotcha that would trip the next agent, update this file in the same change. An outdated AGENTS.md is worse than none.
 
@@ -48,4 +48,17 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - `next start` runs the real server as a `next-server` child process, so `pkill -f "next start"` leaves it running. Stop servers by port: `fuser -k 3200/tcp`. Playwright reuses whatever is already listening on **3100** outside CI, so a leftover server makes e2e tests run against an old build. Free the port before trusting results. Don't kill the owner's `next dev`.
 - Props passed from server to client components must be serializable. Content that a client component renders (e.g. pipeline stages) refers to icons by string key, mapped to Lucide components on the client.
 - Content inside `Section` is wrapped in `Reveal` (Motion `whileInView`). It starts at `opacity: 0`, and the stubbed `IntersectionObserver` never fires in jsdom, so `toBeVisible()` fails in unit tests. Assert `toBeInTheDocument()` there. In Playwright, scroll sections into view before visual or axe checks (see `revealAllSections` in `e2e/home.spec.ts`).
-- Expectations in `e2e/home.spec.ts` and `e2e/mobile.spec.ts` encode the current _content state_ (no projects, contact or GitHub). When content lands, update them as described in `docs/prepublish-checklist.md`.
+- Some e2e expectations depend on content (e.g. hero buttons "Explore Projects" / "Get in touch", which only exist while projects and contact links are configured). If you remove content from `projects.ts` or `site-config.ts`, update `e2e/home.spec.ts` and `e2e/mobile.spec.ts` with it.
+- MDX: `next.config.ts` wraps the config with `createMDX`. Add remark/rehype plugins **as strings** (`"rehype-slug"`, `["@shikijs/rehype", {...}]`) with JSON-serializable options only (Turbopack restriction). Keep `@next/mdx` pinned to the same version as `next`.
+- Shiki code blocks render as `<pre class="shiki">` with per-token `--shiki-light`/`--shiki-dark` variables. Colors are chosen in `globals.css` by `data-theme`, so don't set Shiki's `defaultColor`.
+- When writing files containing backticks (MD/MDX code fences) from a shell, double-quoted `bash -ic "..."` executes them as command substitution. Use the Write tool for such files.
+- Don't call `python3` from the Windows-side Git Bash: it resolves to the Microsoft Store stub and hangs until the tool timeout. Use the Edit tool, `sed`, or run Python inside WSL.
+- Tailwind's preflight sets `svg { display: block }`. Icons that sit inside running text (e.g. the external-link arrow in `AppLink`) need `inline` plus a vertical alignment class, or they wrap onto their own line.
+- MDX case-study visuals (code themes, diagrams, tables) aren't covered by jsdom. Check them in a real build: render a throwaway `src/app/mdx-smoke/` route, screenshot it, then delete it and run `npx next typegen`.
+- Dynamic routes under Cache Components: `dynamicParams` is rejected, and `notFound()` after the shell has streamed leaves a `200`. Unknown slugs are filtered in `src/proxy.ts` before rendering. When adding another dynamic route with a known set of params, extend the proxy (and its test) rather than relying on `notFound()` alone.
+- `wsl.exe -d Ubuntu -- bash -ic '...'` loses `$var` / `$!` expansions in some invocations. For anything with shell variables or loops, write a script file and run `bash <file>` instead.
+- Tests that need Node APIs (e.g. `NextRequest` for the proxy) declare `// @vitest-environment node` at the top. `vitest.setup.ts` only stubs browser globals when `window` exists.
+- Shiki's `github-light` theme fails WCAG AA (orange tokens are 3.48:1 on white). Use `github-light-default`. Axe in `e2e/projects.spec.ts` checks real case-study code, so a theme change that breaks contrast fails the e2e run.
+- Anything that scrolls horizontally must be focusable (axe `scrollable-region-focusable`). Wrap it in `ScrollArea` rather than a bare `overflow-x-auto` div.
+- `next dev` validates instant navigation on every route and warns when `params`/`searchParams` are read outside `<Suspense>` (`instant-shell-url-data`). Keep the page component synchronous and move param-dependent work into a child inside `<Suspense>` (see `src/app/projects/[slug]/page.tsx`). These warnings only appear in dev: check by running a separate `next dev -p 3300`, visiting the route directly and via client navigation, and reading the server log and browser console.
+- `NavLink` sets `aria-current="page"` on exact matches and `"true"` on child pages of its section. E2E tests asserting nav state must pick the right value.

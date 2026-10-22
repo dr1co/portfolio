@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getContactLinks, getEnabledRoutes, getMissingLinks } from "./links";
+import {
+  getContactLinks,
+  getEnabledRoutes,
+  getMissingLinks,
+  isRouteEnabled,
+} from "./links";
 
 describe("getMissingLinks", () => {
   it("lists the profile links that are empty or invalid", () => {
@@ -72,5 +77,18 @@ describe("getEnabledRoutes", () => {
       { href: "/", label: "Home", enabled: true },
       { href: "/about", label: "About", enabled: true },
     ]);
+  });
+});
+
+describe("isRouteEnabled", () => {
+  const routes = [
+    { href: "/", label: "Home", enabled: true },
+    { href: "/projects", label: "Projects", enabled: false },
+  ] as const;
+
+  it("tells whether a known route is switched on", () => {
+    expect(isRouteEnabled(routes, "/")).toBe(true);
+    expect(isRouteEnabled(routes, "/projects")).toBe(false);
+    expect(isRouteEnabled(routes, "/lab")).toBe(false);
   });
 });

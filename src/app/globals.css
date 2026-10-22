@@ -64,8 +64,21 @@
     outline-offset: 2px;
   }
 
-  section[id] {
+  section[id],
+  h2[id],
+  h3[id] {
     scroll-margin-top: 5rem;
+  }
+
+  .shiki,
+  .shiki span {
+    color: var(--shiki-light);
+    background-color: transparent;
+  }
+
+  [data-theme="dark"] .shiki,
+  [data-theme="dark"] .shiki span {
+    color: var(--shiki-dark);
   }
 
   @media (prefers-reduced-motion: no-preference) {

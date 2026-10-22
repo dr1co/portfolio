@@ -2,6 +2,7 @@ import { Sprout } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Section } from "@/components/ui/section";
 import { skillGroups, type SkillGroup } from "@/content/skills";
+import { techName } from "@/content/technologies";
 import { cn } from "@/lib/cn";
 
 /** Skills grouped by practical domain; learning areas are labelled in text, never implied. */
@@ -36,8 +37,8 @@ export function SkillsSection({
             )}
             <ul className="mt-4 flex flex-col gap-2 font-mono text-sm">
               {group.skills.map((skill) => (
-                <li key={skill.name} className="flex items-center gap-2">
-                  {skill.name}
+                <li key={skill.tech} className="flex items-center gap-2">
+                  {techName(skill.tech)}
                   {skill.learning && !group.learning && (
                     <Badge icon={Sprout}>learning</Badge>
                   )}

@@ -21,18 +21,20 @@ test("pipeline stages stack vertically", async ({ page }) => {
   expect(Math.abs(second!.x - first!.x)).toBeLessThan(2);
 });
 
-test("the menu button is hidden while Home is the only destination", async ({
+test("the mobile menu opens, closes on Escape and on link click", async ({
   page,
 }) => {
-  await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
-});
+  const menu = page.getByRole("navigation", { name: "Mobile" });
+  const toggle = page.getByRole("button", { name: "Open menu" });
 
-test.fixme("the mobile menu opens, closes on Escape and on link click", async ({
-  page,
-}) => {
-  // Enable once a second route or a contact link exists (see MobileNav unit tests for the behaviour).
-  await page.getByRole("button", { name: "Open menu" }).click();
-  await expect(page.getByRole("navigation", { name: "Mobile" })).toBeVisible();
+  await toggle.click();
+  await expect(menu).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("navigation", { name: "Mobile" })).toBeHidden();
+  await expect(menu).toBeHidden();
+  await expect(toggle).toBeFocused();
+
+  await toggle.click();
+  await menu.getByRole("link", { name: "Contact" }).click();
+  await expect(menu).toBeHidden();
+  await expect(page).toHaveURL(/#contact$/);
 });

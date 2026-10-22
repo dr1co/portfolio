@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Project } from "@/content/projects";
 import { FeaturedProjects } from "@/components/home/featured-projects";
@@ -10,8 +10,9 @@ const base: Project = {
   summary: "Containerized Django starter with a reproducible local setup.",
   description: "",
   status: "available",
-  technologies: ["Django", "Docker", "PostgreSQL"],
+  technologies: ["django", "docker", "postgresql"],
   categories: ["templates"],
+  group: "devops",
   featured: true,
 };
 
@@ -61,6 +62,36 @@ describe("ProjectCard", () => {
       "/projects/django-docker-template",
     );
   });
+
+  it("links the title to the case study page, addressed by slug", () => {
+    render(
+      <ProjectCard
+        project={{
+          ...base,
+          slug: "django-template",
+          caseStudy: "django-template-story",
+        }}
+        showCaseStudy
+      />,
+    );
+
+    const heading = screen.getByRole("heading", { level: 3 });
+    expect(
+      within(heading).getByRole("link", { name: "Django Docker Template" }),
+    ).toHaveAttribute("href", "/projects/django-template");
+    expect(screen.getByRole("link", { name: "Case study" })).toHaveAttribute(
+      "href",
+      "/projects/django-template",
+    );
+  });
+
+  it("keeps the title as plain text when there is no case study page", () => {
+    render(<ProjectCard project={{ ...base, caseStudy: "story" }} />);
+
+    expect(
+      within(screen.getByRole("heading", { level: 3 })).queryByRole("link"),
+    ).toBeNull();
+  });
 });
 
 describe("FeaturedProjects", () => {
@@ -84,5 +115,13 @@ describe("FeaturedProjects", () => {
       screen.getByRole("heading", { level: 2, name: "Featured projects" }),
     ).toBeInTheDocument();
     expect(screen.getAllByRole("article")).toHaveLength(2);
+  });
+
+  it("links to the full directory while the projects page is enabled", () => {
+    render(<FeaturedProjects projects={[base]} />);
+
+    expect(
+      screen.getByRole("link", { name: "View all projects" }),
+    ).toHaveAttribute("href", "/projects");
   });
 });

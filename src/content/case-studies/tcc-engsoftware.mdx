@@ -1,0 +1,127 @@
+{/* TODO(content): drafted from the public repository (README, src/, src/pipelines/ docstrings). Review every section before publishing. */}
+
+## Overview
+
+This is my undergraduate thesis in Software Engineering at UEPG. It builds and evaluates three deep-learning architectures: a 1D CNN, a stacked LSTM and a hybrid CNN+LSTM. The models were used to predict the next closing price of two Brazilian mini futures contracts, the mini dollar (WDO) and the mini index (WIN), from one-hour (H1) candles.
+
+Beyond the models themselves, the work is organized as a reproducible experiment: every scenario I tested has its own script, every model generation is saved side by side, and every result is evaluated both with error metrics and with a trading backtest that includes transaction costs and significance tests.
+
+## Problem and goals
+
+Price prediction papers often covers long horizon predictions, which shows promising results in those scenarios. Although, with a stock market more and more accessible for the regular investor, especially derivative markets, more often the investors are exposed to high, volatile operations with little to no preparation. This study covers Deep Learning application as an analysis tool for intraday operations in temporal series. The goals of the study are:
+
+- compare CNN, LSTM and hybrid architectures on the same data and the same preprocessing;
+- evaluate them on **direction**, not only on price error;
+- test whether any combination produces a trading edge that survives transaction costs **and** a statistical significance test;
+- keep every experiment reproducible from a single command.
+
+## Architecture
+
+<Diagram
+  title="Experiment pipeline"
+  width={720}
+  height={230}
+  nodes={[
+    { id: "extract", label: "MetaTrader 5 data", x: 90, y: 50 },
+    { id: "clean", label: "Cleaning", x: 270, y: 50 },
+    { id: "returns", label: "Log returns", x: 450, y: 50 },
+    { id: "split", label: "Split + scale", x: 630, y: 50 },
+    { id: "windows", label: "60-bar windows", x: 630, y: 180 },
+    { id: "models", label: "CNN · LSTM · Hybrid", x: 450, y: 180 },
+    { id: "evaluate", label: "Error metrics", x: 270, y: 180 },
+    { id: "backtest", label: "Backtest", x: 90, y: 180 },
+  ]}
+  edges={[
+    { from: "extract", to: "clean", label: "OHLCV H1" },
+    { from: "clean", to: "returns" },
+    { from: "returns", to: "split", label: "70/15/15" },
+    { from: "split", to: "windows" },
+    { from: "windows", to: "models" },
+    { from: "models", to: "evaluate" },
+    { from: "evaluate", to: "backtest" },
+  ]}
+/>
+
+Each stage is a separate module, so it can be rerun or swapped independently:
+
+| Stage      | Module                            | Responsibility                                                                     |
+| ---------- | --------------------------------- | ---------------------------------------------------------------------------------- |
+| Extraction | `src/extract_data.py`             | Pull OHLCV candles from a MetaTrader 5 terminal (optional; the CSVs are committed) |
+| Cleaning   | `src/data_formatting.py`          | Sort, drop duplicates and inconsistent candles, handle missing values              |
+| Features   | `src/train.py`, `src/features.py` | Log returns; optional RSI, SMA and MACD indicators                                 |
+| Windowing  | `src/utils.py`                    | Sliding windows of 60 candles × N features                                         |
+| Models     | `src/models.py`                   | Keras CNN, LSTM and hybrid architectures                                           |
+| Training   | `src/train.py`                    | Chronological split, scaling, early stopping, saving models and scalers            |
+| Evaluation | `src/evaluate.py`                 | RMSE, MAE and directional accuracy in real price units                             |
+| Backtest   | `src/backtest.py`                 | Sharpe ratio, maximum drawdown, VaR and a t-test per strategy                      |
+| Scenarios  | `src/pipelines/`                  | One replicable script per experimental scenario                                    |
+
+## Implementation
+
+The models predict the **log return** of the next candle; the price is reconstructed afterwards from the last known close. Prices are converted to log returns before scaling:
+
+```python
+def prepare_features(df):
+    df = df.copy()
+    for col in PRICE_COLS:
+        df[col] = np.log(df[col] / df[col].shift(1))
+    df = df.iloc[1:].reset_index(drop=True)
+    return df
+```
+
+The data is split chronologically into 70% training, 15% validation and 15% test, and the scaler is fitted **on the training slice only**, so nothing from the future leaks into training:
+
+```python
+df_train, df_val, df_test = split_chronological(df)
+
+scaler = MinMaxScaler(feature_range=(0, 1))
+train_scaled = scaler.fit_transform(df_train.values)
+val_scaled = scaler.transform(df_val.values)
+test_scaled = scaler.transform(df_test.values)
+```
+
+Each of the six combinations (2 markets × 3 architectures) trains for up to 200 epochs with early stopping (patience 12). Trained models, scalers and metrics are saved per **generation**, resulting in the generations `_log`, `_tuned`, `_features`. This is so later experiments never overwrite earlier ones and every comparison stays reproducible.
+
+## Technical decisions
+
+**Log returns instead of absolute prices.** The first version scaled raw prices. For a strongly trending series, such as WIN in the last 5 years, test-period prices can sit far above anything seen in training, so a Min-Max scaler fitted on training data pushes the model to extrapolate outside its domain. Log returns are stationary — their distribution does not shift with the price level — which removes the problem regardless of how far the price moves.
+
+**Evaluate on direction and money, not just error.** Price RMSE is reported, but the decisive metrics are directional accuracy and a backtest: two strategies (single-bar and multi-bar holding) with a fixed round-trip transaction cost per market, an annualized Sharpe ratio, maximum drawdown, historical VaR at 95%, and a one-sample t-test on per-trade returns.
+
+**One script per scenario.** Each experiment in `src/pipelines/` documents its motivation, flow, produced artifacts and reference result in its docstring, and can be rerun with `python -m src.pipelines.<name>`.
+
+**Correct for multiple comparisons.** The final scenario ran 216 hypothesis tests. At p < 0.05, about 10.8 false positives are expected by chance alone, so results were also checked against a Bonferroni-corrected threshold (0.05 / 216 ≈ 0.000231).
+
+## Testing and validation
+
+Six scenarios were run in sequence, each building on what the previous one showed:
+
+| #   | Scenario                                                   | Reported result                                                                                                                                                       |
+| --- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Baseline (`_log`, 5 log-return features)                   | Directional accuracy ~0.49–0.50 for all six models; Sharpe negative in all 12 combinations, 10 of 12 statistically significant — consistent losses, not an edge       |
+| 2   | Confidence filter by predicted-return magnitude            | 7 of 72 combinations with positive Sharpe, all with p > 0.4; all 41 significant combinations had negative Sharpe                                                      |
+| 3   | Ensemble agreement (all three architectures agree)         | All 4 combinations negative, 3 of 4 significant (p < 0.001); agreement rate 60–82% of windows                                                                         |
+| 4   | Hyperparameter search (Keras Tuner, `_tuned`)              | Directional accuracy ~0.49–0.50; Sharpe negative in 12 of 12, 11 significant                                                                                          |
+| 5   | Technical indicators (RSI, SMA, MACD, `_features`)         | Directional accuracy ~0.49–0.50; Sharpe negative in 12 of 12, 11 significant                                                                                          |
+| 6   | Confidence filter on `_tuned` and `_features` + Bonferroni | 3 combinations had positive Sharpe (+10.5 to +12.3) with p between 0.017 and 0.041, all at the most extreme filter (88 trades); none survives the corrected threshold |
+
+<Callout kind="note">
+  The honest conclusion is a negative one: no combination of architecture,
+  hyperparameters, feature set or trade-selection rule produced a statistically
+  defensible directional edge for WIN or WDO at the one-hour horizon. The value
+  of the project is the method that makes this conclusion trustworthy.
+</Callout>
+
+## Limitations and future work
+
+- The repository has no automated test suite, linter or formatter; validation happens through the scenario scripts and their reported metrics.
+- Only the one-hour horizon and two contracts were tested, and transaction costs are approximated as a fixed round-trip value per market.
+- Re-extracting data requires a MetaTrader 5 terminal reachable through a local bridge; the committed CSVs are needed to reproduce results without it.
+
+Natural next steps would be adding tests around the data-preparation and backtest functions, and evaluating other horizons with the same statistical safeguards.
+
+## Evidence and links
+
+- [Source repository](https://github.com/dr1co/tcc-engsoftware) — code, scenario scripts, saved models and result tables.
+- The thesis document, `TCC_Adriano_2026.pdf`, is in the repository root.
+- Replicate the baseline with `python -m src.pipelines.01_baseline_log` after installing `requirements.txt`.

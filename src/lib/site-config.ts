@@ -37,12 +37,14 @@ export const siteConfig: SiteConfig = {
   heroTags: ["Docker", "CI/CD", "Python", "Linux"],
   routes: [
     { href: "/", label: "Home", enabled: true },
-    { href: "/projects", label: "Projects", enabled: false },
+    { href: "/projects", label: "Projects", enabled: true },
     { href: "/lab", label: "Lab", enabled: false },
     { href: "/about", label: "About", enabled: false },
   ],
-  // TODO(content): fill in public profile links and contact email.
-  links: { github: "", linkedin: "", email: "" },
-  // TODO(content): set once this repository is public.
-  sourceRepoUrl: "",
+  links: {
+    github: "https://github.com/dr1co",
+    linkedin: "https://linkedin.com/in/amlipski",
+    email: "adrianolipski@gmail.com",
+  },
+  sourceRepoUrl: "https://github.com/dr1co/portfolio",
 };

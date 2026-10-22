@@ -7,7 +7,10 @@ import { cn } from "@/lib/cn";
 
 export type NavItem = { href: string; label: string };
 
-/** Navigation link that marks itself `aria-current="page"` (underline + strong text) on its own route. */
+/**
+ * Navigation link with underline + strong text when current: `aria-current="page"` on its own route,
+ * `aria-current="true"` on pages inside its section (e.g. Projects on a case study).
+ */
 export function NavLink({
   href,
   children,
@@ -19,12 +22,19 @@ export function NavLink({
   className?: string;
   onNavigate?: () => void;
 }) {
-  const current = usePathname() === href;
+  const pathname = usePathname();
+  const ariaCurrent =
+    pathname === href
+      ? "page"
+      : href !== "/" && pathname.startsWith(`${href}/`)
+        ? "true"
+        : undefined;
+  const current = ariaCurrent !== undefined;
   return (
     <AppLink
       href={href}
       onNavigate={onNavigate}
-      aria-current={current ? "page" : undefined}
+      aria-current={ariaCurrent}
       className={cn(
         "text-sm font-medium underline-offset-8 transition-colors hover:text-foreground",
         current

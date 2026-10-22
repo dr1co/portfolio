@@ -17,7 +17,7 @@ describe("pipeline content", () => {
 describe("skills content", () => {
   it("lists each technology in only one group", () => {
     const names = skillGroups.flatMap((group) =>
-      group.skills.map((skill) => skill.name),
+      group.skills.map((skill) => skill.tech),
     );
 
     expect(new Set(names).size).toBe(names.length);
