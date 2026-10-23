@@ -3,7 +3,7 @@
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
 **Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** In progress (Steps 0–2 done; Step 3 written, Docker verification pending, see Step 3). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress (Steps 0–2 done; Steps 3–4 written. Docker verification and the first real CI run are pending). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -151,7 +151,7 @@ Suggested commit: `[build] production Docker image with health check and smoke s
 - Pin actions by SHA (D11). Set `timeout-minutes` on every job.
 - `typecheck` needs `.next/types` (AGENTS.md gotcha): run `npx next typegen` before `tsc` in the quality job.
 
-**Acceptance:** `actionlint` passes locally (`docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint`). The owner pushes the branch and opens a PR, and both jobs are green on the real run.
+**Acceptance:** actionlint (with shellcheck) and hadolint pass locally from their release binaries, since the proxy blocks the images. The owner pushes the branch and opens a PR, and both jobs are green on the real run. Amended: the linters run as digest-pinned images rather than third-party actions, and the home-page axe tests are marked `test.slow()` (about 11 s each, which went past 30 s under parallel load).
 **Owner, after the first green run:** protect `main` with required checks `quality` and `e2e`.
 Suggested commit: `[ci] quality and e2e workflow`
 

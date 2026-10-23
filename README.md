@@ -182,6 +182,20 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 - The Open Graph image ([src/app/opengraph-image.tsx](src/app/opengraph-image.tsx)) and favicon ([src/app/icon.tsx](src/app/icon.tsx)) are generated with `ImageResponse` at build time. Their hex values mirror the dark tokens, because CSS variables aren't available there.
 - [src/app/not-found.tsx](src/app/not-found.tsx) renders the 404 page.
 
+## Continuous integration
+
+[.github/workflows/ci.yml](.github/workflows/ci.yml) runs on every pull request and every push to `main`:
+
+| Job       | Steps                                                                                                                                   |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `quality` | `npm ci`, lint, route types + typecheck, format check, unit tests, actionlint (workflows, with shellcheck), hadolint (Dockerfile)       |
+| `e2e`     | `npm ci`, cached Playwright Chromium, full Playwright suite (both projects, axe) against a production build; report uploaded on failure |
+
+- Permissions are `contents: read` only. Superseded PR runs are cancelled; `main` runs always finish.
+- Third-party actions are pinned to full commit SHAs (`# vX.Y.Z` comment), and the linter images by digest.
+- `quality` and `e2e` are the required checks on `main`.
+- Run the same linters locally with the release binaries (no Docker needed): [actionlint](https://github.com/rhysd/actionlint/releases), [shellcheck](https://github.com/koalaman/shellcheck/releases) (actionlint uses it for `run:` scripts) and [hadolint](https://github.com/hadolint/hadolint/releases).
+
 ## Docker image
 
 The [Dockerfile](Dockerfile) builds a production image around Next's standalone server. Vercel serves the live site; the image is a verified artifact that runs anywhere Docker does.

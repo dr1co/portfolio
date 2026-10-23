@@ -54,6 +54,8 @@ for (const colorScheme of ["light", "dark"] as const) {
   test(`has no detectable accessibility violations in the ${colorScheme} theme`, async ({
     page,
   }) => {
+    // Reload, scroll through every section and a full axe pass: ~11 s alone, past 30 s under parallel load.
+    test.slow();
     await page.emulateMedia({ colorScheme });
     await page.reload();
     await revealAllSections(page);
