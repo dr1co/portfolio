@@ -37,7 +37,7 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 
 ## Getting started
 
-Prerequisites: **Node.js ≥ 20.9** (developed on Node 24) and npm.
+Prerequisites: **Node.js ≥ 20.9** and npm. CI, Docker and Vercel all use Node 24, pinned in [.nvmrc](.nvmrc) (`nvm use` picks it up).
 
 ```bash
 npm install
