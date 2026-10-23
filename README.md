@@ -6,7 +6,8 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 
 - Product requirements: [docs/features-specification.md](docs/features-specification.md)
 - Visual identity ("Terminal Modern"): [docs/visual-identity.md](docs/visual-identity.md)
-- Feature plans: [docs/homepage-plan.md](docs/homepage-plan.md) (home page, done) and [docs/projects-plan.md](docs/projects-plan.md) (projects directory and case studies, done)
+- Feature plans: [docs/homepage-plan.md](docs/homepage-plan.md) (home page, done), [docs/projects-plan.md](docs/projects-plan.md) (projects directory and case studies, done) and [docs/delivery-plan.md](docs/delivery-plan.md) (CI/CD and deployment)
+- Operations runbook (deploy, verify, roll back, rotate secrets): [docs/operations.md](docs/operations.md)
 - Pre-publish checklist (content still to review): [docs/prepublish-checklist.md](docs/prepublish-checklist.md)
 - Rules for contributors and AI agents: [AGENTS.md](AGENTS.md)
 
@@ -20,6 +21,7 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 | Home page `/`                                       | Done (content still to review; see [docs/prepublish-checklist.md](docs/prepublish-checklist.md)) |
 | `/projects` directory                               | Done                                                                                             |
 | `/projects/[slug]` case studies                     | Done; thesis case study drafted from its repo, awaiting review                                   |
+| CI/CD: checks, Docker image on GHCR, Vercel deploys | Done; see [docs/operations.md](docs/operations.md)                                               |
 | `/lab`, `/about`                                    | Not started                                                                                      |
 
 ## Tech stack
@@ -288,4 +290,6 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 - `/lab` and `/about` don't exist yet; their nav items stay hidden until the routes are enabled in `site-config.ts`.
 - The projects directory has no filters (deferred until there are ≥ 6 published projects).
 - The pipeline preview is select-to-reveal only. The full simulated explorer (run, pass/fail states) is planned for `/lab`.
-- No Docker image, CI workflow or deployment for this site yet (Phase 4 of the spec).
+- The Docker image is a verified, published artifact, but Vercel serves the site. The image is about 300 MB: deleting npm in the runtime stage hides it from scans but doesn't shrink the base layer.
+- No SBOM, provenance attestation or image signing yet. The linter, Trivy and Vercel CLI pins aren't covered by Dependabot (see [docs/operations.md](docs/operations.md)).
+- The production domain isn't chosen yet, so canonical URLs fall back until `NEXT_PUBLIC_SITE_URL` is set, and indexing stays off until launch.

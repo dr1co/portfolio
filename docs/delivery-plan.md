@@ -3,7 +3,7 @@
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
 **Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** In progress (Steps 0–5 and 8 done and green in CI, with the container also verified locally; Step 6 done except branch protection and the optional SITE_URL variable; Step 7 deploys a preview; unknown-slug 404 fix pending re-run). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress. Steps 0–9 done, and every PR job is green in CI (including a Vercel preview with a passing smoke test). Remaining: the first `main` run (publish to GHCR and production deploy with smoke test), then tick §6. Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
