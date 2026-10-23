@@ -3,7 +3,7 @@
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
 **Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** In progress (Steps 0–2 done). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress (Steps 0–2 done; Step 3 written, Docker verification pending, see Step 3). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -128,14 +128,14 @@ Suggested commit: `[test] smoke spec runnable against any deployment`
 2. `Dockerfile`, multi-stage, with `node:24-alpine@sha256:…` in every stage:
    - `deps`: `npm ci` with a cache mount.
    - `build`: `ARG NEXT_PUBLIC_SITE_URL`, `ARG COMMIT_SHA`, `ENV BUILD_STANDALONE=1 NEXT_TELEMETRY_DISABLED=1`, then `npm run build`.
-   - `runtime`: copy `.next/standalone`, `.next/static` and `public` only. Run as `USER node`, `ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0`, `EXPOSE 3000`, `HEALTHCHECK CMD node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"`, `CMD ["node","server.js"]`.
+   - `runtime`: copy `.next/standalone` and `.next/static` only (`public/` once it exists). Run as `USER node`, `ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0`, `EXPOSE 3000`, `HEALTHCHECK CMD node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"`, `CMD ["node","server.js"]`.
    - OCI labels: `org.opencontainers.image.source=https://github.com/dr1co/portfolio` (links the GHCR package to the repo) and `revision=$COMMIT_SHA`.
    - No secrets, no `.env*` files in any layer.
-3. `.dockerignore`: `node_modules`, `.next`, `.git`, `e2e`, `test-results`, `playwright-report`, `.env*` (but keep `.env.example`), `docs`, `*.md` (but keep the MDX case studies).
+3. `.dockerignore` as an **allowlist** (amended: safer than a denylist): `package.json`, `package-lock.json`, `next.config.ts`, `next-env.d.ts`, `tsconfig.json`, `src/` minus tests, `public/`.
 4. `scripts/smoke-container.sh` (bash, `set -euo pipefail`): build with a tag, run on port **3200** detached, wait up to 60 s for `healthy`, assert `docker exec … id -u` ≠ 0, run `BASE_URL=http://localhost:3200 EXPECTED_SHA=… npm run test:smoke`, then always `docker rm -f` through a `trap`. `npm run docker:smoke` wraps it.
 5. Record the image size in the README. Target < 200 MB. It's not a hard gate.
 
-**Acceptance:** `npm run docker:smoke` passes in WSL, and `hadolint Dockerfile` is clean (run via `docker run --rm -i hadolint/hadolint < Dockerfile`).
+**Acceptance:** `npm run docker:smoke` passes, and hadolint is clean. The standalone server was verified with Node directly (all `@smoke` checks pass, MDX traced, 54 MB). The proxy on the owner's current network blocks image pulls, so the Docker run happens on another network or in CI (Step 5).
 Suggested commit: `[build] production Docker image with health check and smoke script`
 
 ### Step 4 — Quality workflow (PR)

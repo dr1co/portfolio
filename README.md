@@ -64,6 +64,7 @@ npx playwright install chromium
 | `npm test` / `test:watch`         | Vitest unit and component tests                                           |
 | `npm run test:e2e`                | Playwright; builds and starts the app automatically                       |
 | `npm run test:smoke`              | Only the `@smoke` checks (desktop); pair with `BASE_URL` for a deployment |
+| `npm run docker:smoke`            | Build the image, run it, wait for healthy, check non-root, run `@smoke`   |
 | `npm run check`                   | lint + typecheck + format check + unit tests (run before every commit)    |
 
 ## Project structure
@@ -180,6 +181,23 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 - `metadataBase` and the canonical URL come from `NEXT_PUBLIC_SITE_URL`. See [.env.example](.env.example).
 - The Open Graph image ([src/app/opengraph-image.tsx](src/app/opengraph-image.tsx)) and favicon ([src/app/icon.tsx](src/app/icon.tsx)) are generated with `ImageResponse` at build time. Their hex values mirror the dark tokens, because CSS variables aren't available there.
 - [src/app/not-found.tsx](src/app/not-found.tsx) renders the 404 page.
+
+## Docker image
+
+The [Dockerfile](Dockerfile) builds a production image around Next's standalone server. Vercel serves the live site; the image is a verified artifact that runs anywhere Docker does.
+
+- **Stages:** `deps` (`npm ci`) → `build` (`BUILD_STANDALONE=1 npm run build`) → `runtime` (only `.next/standalone` and `.next/static`, on `node:24-alpine` pinned by digest).
+- **Runtime:** runs as the `node` user on port 3000, `HEALTHCHECK` = `GET /` answers 200 (via Node's `fetch`; the image has no curl).
+- **Build args:** `COMMIT_SHA` (footer version and the `org.opencontainers.image.revision` label) and `NEXT_PUBLIC_SITE_URL`. Both are inlined at build, so one image serves one origin. Indexing is never enabled in the image.
+- **Build context** is an allowlist ([.dockerignore](.dockerignore)): config files, `src/` without tests, and `public/`. No `.env` file can reach a layer. A new root config file that the build needs must be added there.
+- `output: "standalone"` is switched on only by `BUILD_STANDALONE=1`, so `npm start`, Playwright and Vercel use the regular output. `outputFileTracingIncludes` keeps the case-study MDX in the standalone bundle, because the page reads it from disk.
+
+```bash
+docker build --build-arg COMMIT_SHA="$(git rev-parse HEAD)" -t portfolio .
+docker run --rm -p 3000:3000 portfolio     # http://localhost:3000
+npm run docker:smoke                       # build + health + non-root + @smoke checks
+npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing image
+```
 
 ## Testing
 
