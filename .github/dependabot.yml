@@ -1,0 +1,38 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Skip versions younger than a week: most malicious npm releases are caught and pulled by then.
+    cooldown:
+      default-days: 7
+    groups:
+      # @next/mdx and eslint-config-next must stay on the same version as next.
+      next:
+        patterns: ["next", "@next/*", "eslint-config-next"]
+      minor-and-patch:
+        update-types: [minor, patch]
+        patterns: ["*"]
+    ignore:
+      # Tracks the Node major in .nvmrc (24); bump both together by hand.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directories: [/, /.github/actions/setup]
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # Node majors move together with .nvmrc and Vercel's Node setting.
+      - dependency-name: node
+        update-types: [version-update:semver-major]

@@ -13,6 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:smoke": "playwright test --grep @smoke --project=desktop-chromium",
+    "docker:smoke": "bash scripts/smoke-container.sh",
     "check": "npm run lint && npm run typecheck && npm run format:check && npm test"
   },
   "dependencies": {

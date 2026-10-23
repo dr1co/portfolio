@@ -1,0 +1,12 @@
+# Allowlist: only what `next build` needs enters the build context, so no .env file,
+# local build output or test artifact can end up in an image layer.
+*
+!package.json
+!package-lock.json
+!next.config.ts
+!next-env.d.ts
+!tsconfig.json
+!src/
+src/**/*.test.ts
+src/**/*.test.tsx
+!public/

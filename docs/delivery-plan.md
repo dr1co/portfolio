@@ -2,8 +2,8 @@
 
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
-**Branch:** `ops/delivery`, cut from `feat/projects` (which isn't merged into `main` yet, so a PR into `main` also carries the projects work). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** Planned. Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
+**Status:** In progress. Steps 0–9 done, and every PR job is green in CI (including a Vercel preview with a passing smoke test). Remaining: the first `main` run (publish to GHCR and production deploy with smoke test), then tick §6. Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -81,7 +81,7 @@ README.md, AGENTS.md, docs/prepublish-checklist.md   CHG
 | Seam       | Level        | Behaviours                                                                                                                                                                                                                        |
 | ---------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Build info | unit         | `getBuildInfo(env)` returns `null` for missing or invalid values (not 7–40 hex chars), and otherwise `{ short, url }` with a 7-char short SHA and a commit URL under `sourceRepoUrl`. The URL goes through `links.ts` validation. |
-| Footer     | unit         | Shows "Version abc1234" linked to the commit when build info exists; renders nothing extra otherwise.                                                                                                                             |
+| Footer     | unit         | `BuildVersion` shows "Version abc1234", linked when a URL exists (`SiteFooter` itself is async and not jsdom-renderable).                                                                                                         |
 | Smoke      | e2e (remote) | `/` 200 with `lang="en"` and one h1; `/projects` 200; a known case study 200; an unknown slug 404 (proxy); `robots` meta matches the expected indexing flag; when `EXPECTED_SHA` is set, the footer shows it.                     |
 | Container  | script       | `scripts/smoke-container.sh` exits non-zero if the image doesn't build, the container doesn't become `healthy`, it runs as root, or the smoke spec fails.                                                                         |
 | Workflow   | lint + run   | `actionlint` passes; a real PR run shows the expected jobs and skips; a `main` run publishes `sha-*` and `main` tags and deploys. Workflows can't be unit-tested, so the real runs are the acceptance test.                       |
@@ -102,8 +102,8 @@ Suggested commit: `[chore] pin Node version for delivery work`
 ### Step 1 — Build info and footer version
 
 1. **Unit first** (`src/lib/build-info.test.ts`): the cases in §4.
-2. `src/lib/build-info.ts`: `getBuildInfo(env = process.env)` reads `COMMIT_SHA`. It's server-only and read at prerender, which is safe under Cache Components because it doesn't involve `Date` or randomness.
-3. **Unit first** (`site-footer.test.tsx`): version link present or absent.
+2. `src/lib/build-info.ts`: `getBuildInfo(sha = process.env.COMMIT_SHA, repoUrl = siteConfig.sourceRepoUrl)`. It's server-only and read at prerender, which is safe under Cache Components because it doesn't involve `Date` or randomness.
+3. **Unit first** (`build-version.test.tsx`): version linked or plain text. `SiteFooter` renders the async `CopyrightYear`, so the testable seam is the small `BuildVersion` component it composes.
 4. Footer: append ` · Version <short>` (an `AppLink`, external) to the "Built with" line.
 5. `.env.example`: document `COMMIT_SHA` ("set by CI; leave empty locally").
 
@@ -111,7 +111,7 @@ Suggested commit: `[feat.] show build commit in footer`
 
 ### Step 2 — Smoke spec and remote mode
 
-1. Extend `e2e/smoke.spec.ts` with the §4 smoke checks and tag them `@smoke`. Read the case-study slug from `getCaseStudySlugs()` rather than hard-coding it.
+1. Extend `e2e/smoke.spec.ts` with the §4 smoke checks and tag them `@smoke`. Read the case-study slug from `getCaseStudySlugs()` rather than hard-coding it. The indexing expectation comes from `EXPECT_INDEXABLE=true` (default: `noindex`). Step 7 sets it on the production smoke run once indexing is enabled there.
 2. `playwright.config.ts`:
    - If `BASE_URL` is set, use it as `baseURL` and omit `webServer`.
    - If `VERCEL_AUTOMATION_BYPASS_SECRET` is set, send `x-vercel-protection-bypass` via `extraHTTPHeaders` (Vercel Deployment Protection).
@@ -128,14 +128,14 @@ Suggested commit: `[test] smoke spec runnable against any deployment`
 2. `Dockerfile`, multi-stage, with `node:24-alpine@sha256:…` in every stage:
    - `deps`: `npm ci` with a cache mount.
    - `build`: `ARG NEXT_PUBLIC_SITE_URL`, `ARG COMMIT_SHA`, `ENV BUILD_STANDALONE=1 NEXT_TELEMETRY_DISABLED=1`, then `npm run build`.
-   - `runtime`: copy `.next/standalone`, `.next/static` and `public` only. Run as `USER node`, `ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0`, `EXPOSE 3000`, `HEALTHCHECK CMD node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"`, `CMD ["node","server.js"]`.
+   - `runtime`: copy `.next/standalone` and `.next/static` only (`public/` once it exists). Run as `USER node`, `ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0`, `EXPOSE 3000`, `HEALTHCHECK CMD node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"`, `CMD ["node","server.js"]`.
    - OCI labels: `org.opencontainers.image.source=https://github.com/dr1co/portfolio` (links the GHCR package to the repo) and `revision=$COMMIT_SHA`.
    - No secrets, no `.env*` files in any layer.
-3. `.dockerignore`: `node_modules`, `.next`, `.git`, `e2e`, `test-results`, `playwright-report`, `.env*` (but keep `.env.example`), `docs`, `*.md` (but keep the MDX case studies).
+3. `.dockerignore` as an **allowlist** (amended: safer than a denylist): `package.json`, `package-lock.json`, `next.config.ts`, `next-env.d.ts`, `tsconfig.json`, `src/` minus tests, `public/`.
 4. `scripts/smoke-container.sh` (bash, `set -euo pipefail`): build with a tag, run on port **3200** detached, wait up to 60 s for `healthy`, assert `docker exec … id -u` ≠ 0, run `BASE_URL=http://localhost:3200 EXPECTED_SHA=… npm run test:smoke`, then always `docker rm -f` through a `trap`. `npm run docker:smoke` wraps it.
 5. Record the image size in the README. Target < 200 MB. It's not a hard gate.
 
-**Acceptance:** `npm run docker:smoke` passes in WSL, and `hadolint Dockerfile` is clean (run via `docker run --rm -i hadolint/hadolint < Dockerfile`).
+**Acceptance:** `npm run docker:smoke` passes, and hadolint is clean. The standalone server was verified with Node directly (all `@smoke` checks pass, MDX traced, 54 MB). The proxy on the owner's current network blocks image pulls, so the Docker run happens on another network or in CI (Step 5). **Verified in CI (Step 5 PR):** the build, health check, non-root check and `@smoke` all passed. The first Trivy gate then failed on HIGH CVEs in the base image's bundled npm tooling (`brace-expansion` 5.0.9, `undici` 6.28.0), not in the app's dependencies. Fixed by deleting npm, npx, corepack and yarn from the runtime stage.
 Suggested commit: `[build] production Docker image with health check and smoke script`
 
 ### Step 4 — Quality workflow (PR)
@@ -151,22 +151,25 @@ Suggested commit: `[build] production Docker image with health check and smoke s
 - Pin actions by SHA (D11). Set `timeout-minutes` on every job.
 - `typecheck` needs `.next/types` (AGENTS.md gotcha): run `npx next typegen` before `tsc` in the quality job.
 
-**Acceptance:** `actionlint` passes locally (`docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint`). The owner pushes the branch and opens a PR, and both jobs are green on the real run.
+**Acceptance:** actionlint (with shellcheck) and hadolint pass locally from their release binaries, since the proxy blocks the images. The owner pushes the branch and opens a PR, and both jobs are green on the real run. Amended: the linters run as digest-pinned images rather than third-party actions, and the home-page axe tests are marked `test.slow()` (about 11 s each, which went past 30 s under parallel load).
 **Owner, after the first green run:** protect `main` with required checks `quality` and `e2e`.
 Suggested commit: `[ci] quality and e2e workflow`
 
-### Step 5 — Image job (build, scan, publish)
+### Step 5 — Image jobs (build, scan, publish)
 
-Add job `image` (needs nothing; runs in parallel with the others):
+Amended during implementation: publishing moved to its own job, so `packages: write` never reaches PR runs. Trivy runs as a digest-pinned image instead of `aquasecurity/trivy-action`, in line with the linters.
 
-1. `docker/setup-buildx-action`, then `docker/metadata-action` with tags `type=sha,prefix=sha-,format=short` and `type=raw,value=main,enable={{is_default_branch}}`.
-2. Build with `load: true` and GHA cache (`cache-from/to: type=gha`), with build args `COMMIT_SHA=${{ github.sha }}` and `NEXT_PUBLIC_SITE_URL=${{ vars.SITE_URL }}`.
-3. Run `scripts/smoke-container.sh` in "use existing image" mode. The script takes the image tag as an argument and skips the build when it's given.
-4. Trivy (`aquasecurity/trivy-action`, SHA-pinned): `severity: CRITICAL,HIGH`, `ignore-unfixed: true`, `exit-code: 1`, plus a second SARIF-format pass → `github/codeql-action/upload-sarif` (needs `security-events: write`; free on public repos).
-5. **Only on `push` to `main`:** `docker/login-action` to `ghcr.io` with `GITHUB_TOKEN`, then push the same build (`packages: write`). Write the image reference and digest to the job summary.
+1. Job `image` (all events, runs in parallel with the others; `security-events: write`):
+   - Tags from `docker/metadata-action`: `sha-<7>` always, plus `main` on `main` pushes.
+   - Build with `load: true` and the GHA cache. Build args are `COMMIT_SHA=${{ github.sha }}` and `NEXT_PUBLIC_SITE_URL=${{ vars.SITE_URL }}`.
+   - Run `scripts/smoke-container.sh <tag>` against the built image.
+   - `docker save` the image, then run Trivy twice on the tarball: once for a SARIF report that goes to code scanning (non-blocking, skipped for fork PRs), and once as the gate (`--severity CRITICAL,HIGH --ignore-unfixed --exit-code 1`).
+   - On `main` pushes, upload the tarball as a 1-day artifact.
+2. Job `publish` (`main` pushes only; needs `quality`, `e2e`, `image`; `packages: write`): download the tested tarball, `docker load` it, log in to GHCR with `GITHUB_TOKEN`, push every tag, and write the tags, digest and commit to the job summary. What gets published is byte-for-byte the image that was smoke-tested and scanned.
+3. Node, npm and Playwright setup moved into the local composite action `.github/actions/setup` (input `playwright`), which `quality`, `e2e` and `image` share.
 
-**Acceptance:** a PR run builds, smoke-tests and scans without pushing. After the owner merges, the `main` run shows `ghcr.io/dr1co/portfolio:sha-<7>` and `:main`.
-**Owner:** set the GHCR package visibility to **public** (spec §11 asks for visibility to be documented) and confirm it's linked to the repo.
+**Acceptance:** a PR run builds, smoke-tests and scans without pushing. This is also the first real Docker build (Step 3 verification). After the owner merges, the `main` run publishes `ghcr.io/dr1co/portfolio:sha-<7>` and `:main`.
+**Owner:** set the GHCR package visibility to **public** (spec §11 asks for visibility to be documented) and confirm it's linked to the repo. If the repo is private without GitHub Advanced Security, the SARIF upload fails without failing the job. The Trivy gate still applies.
 Suggested commit: `[ci] build, scan and publish container image`
 
 ### Step 6 — Owner setup for Vercel (gate for Step 7)
@@ -184,20 +187,20 @@ The owner does this by hand. Claude can generate a step-by-step wizard script (`
 
 ### Step 7 — Vercel deployments
 
-1. `vercel.json`: `{ "git": { "deploymentEnabled": false } }`. Add `vercel` as a devDependency so the CLI version is locked and updated by Dependabot.
-2. Job `deploy-preview` (PR from the same repo only: `github.event.pull_request.head.repo.full_name == github.repository`; needs `quality`):
-   `vercel pull --yes --environment=preview` → `COMMIT_SHA=$GITHUB_SHA vercel build` → `vercel deploy --prebuilt` → capture the URL → `environment: { name: preview, url: <url> }` → run `test:smoke` against it with `EXPECTED_SHA` and the bypass header.
-3. Job `deploy-production` (push to `main`; needs `quality`, `e2e`, `image`; `concurrency: { group: production, cancel-in-progress: false }`; `environment: production`):
-   the same commands with `--environment=production`, `vercel build --prod` and `vercel deploy --prebuilt --prod`, then the smoke test against the deployment URL. The job summary lists the commit, the deployment URL and the GHCR image tag of the same SHA, so all three are traceable.
-4. Pass secrets through `env:` only, never on the command line. They never show in logs.
+1. `vercel.json`: `{ "git": { "deploymentEnabled": false } }`. **Amended:** the Vercel CLI is **not** a devDependency. Installing it added 28 dev-tree advisories (1 critical, all from its framework builders) and about 6,700 lockfile lines to every `npm ci`. Instead, the deploy action runs an exact pinned `npx vercel@63.1.0` (bumped by hand, like the linter images).
+2. A local composite action `.github/actions/vercel-deploy` (input `environment`) does `vercel pull` → `vercel build` (with `COMMIT_SHA`) → `vercel deploy --prebuilt`, then runs `npm run test:smoke` against the new URL with `EXPECTED_SHA` and the bypass header, and writes the URL to the job summary. `EXPECT_INDEXABLE` is read from the pulled `.vercel/.env.<environment>.local`, so the check always matches what Vercel built with and there's no second flag to keep in sync. The CLI reads `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` from the job env, so no secret is ever on a command line.
+3. Job `deploy-preview`: same-repo PRs only, needs `quality`, uses `environment: preview` (the URL shows on the PR).
+4. Job `deploy-production`: `main` pushes only. It **needs `publish`**, which needs every check, so a production deploy always has a published image of the same commit (listed in the summary). It uses `environment: production` and `concurrency: deploy-production` without cancellation.
 
-**Acceptance:** a PR gets a working preview URL with a passing smoke test and `noindex`. After merge, production is deployed, its smoke test passes, and the footer shows the merged SHA.
+**Gate:** the GitHub side of Step 6 must exist before this is pushed: repo or environment secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` and `VERCEL_AUTOMATION_BYPASS_SECRET`, and environments `preview` and `production`. Without them, `deploy-preview` fails on the PR.
+**Acceptance:** a PR gets a working preview URL with a passing smoke test and `noindex`. After merge, production is deployed, its smoke test passes, and the footer shows the merged SHA. **First preview run:** deploy, the commit SHA and `noindex` all passed, but an unknown slug returned **200**. Vercel's route table gives `/404` its 404 status before middleware runs, so the proxy's rewrite to `/404` was served as a plain static file. Fixed by rewriting to an unrouted path (`UNROUTED_PATH`), which falls through to Vercel's miss handler (status 404, not-found page).
 Suggested commit: `[cd] gated Vercel preview and production deployments`
 
 ### Step 8 — Dependabot and badge
 
 1. `.github/dependabot.yml`: `npm` (weekly; group `next`, `@next/mdx` and `eslint-config-next` as `next`; group the remaining minor/patch updates), `github-actions` (weekly) and `docker` (weekly, base-image digest).
 2. README: CI badge for `ci.yml` on `main`.
+3. Amended during implementation: the Dockerfile uses literal `FROM node:24-alpine@sha256:…` lines, because Dependabot can't bump `FROM ${ARG}`. npm updates have a 7-day cooldown, and Node majors are ignored, since they move with `.nvmrc`. The linter and Trivy images in `docker run` steps aren't visible to Dependabot and are bumped by hand.
 
 Suggested commit: `[ci] Dependabot and CI badge`
 

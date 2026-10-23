@@ -1,10 +1,13 @@
 # adriano.dev — DevOps & Automation Portfolio
 
+[![CI](https://github.com/dr1co/portfolio/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dr1co/portfolio/actions/workflows/ci.yml)
+
 Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a small technical lab that explains how code gets from a commit to production. The goal is a site that feels like a well-built developer tool. It favours evidence over claims and never presents simulated data as real.
 
 - Product requirements: [docs/features-specification.md](docs/features-specification.md)
 - Visual identity ("Terminal Modern"): [docs/visual-identity.md](docs/visual-identity.md)
-- Feature plans: [docs/homepage-plan.md](docs/homepage-plan.md) (home page, done) and [docs/projects-plan.md](docs/projects-plan.md) (projects directory and case studies, done)
+- Feature plans: [docs/homepage-plan.md](docs/homepage-plan.md) (home page, done), [docs/projects-plan.md](docs/projects-plan.md) (projects directory and case studies, done) and [docs/delivery-plan.md](docs/delivery-plan.md) (CI/CD and deployment)
+- Operations runbook (deploy, verify, roll back, rotate secrets): [docs/operations.md](docs/operations.md)
 - Pre-publish checklist (content still to review): [docs/prepublish-checklist.md](docs/prepublish-checklist.md)
 - Rules for contributors and AI agents: [AGENTS.md](AGENTS.md)
 
@@ -18,6 +21,7 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 | Home page `/`                                       | Done (content still to review; see [docs/prepublish-checklist.md](docs/prepublish-checklist.md)) |
 | `/projects` directory                               | Done                                                                                             |
 | `/projects/[slug]` case studies                     | Done; thesis case study drafted from its repo, awaiting review                                   |
+| CI/CD: checks, Docker image on GHCR, Vercel deploys | Done; see [docs/operations.md](docs/operations.md)                                               |
 | `/lab`, `/about`                                    | Not started                                                                                      |
 
 ## Tech stack
@@ -54,16 +58,18 @@ npx playwright install chromium
 
 ## Scripts
 
-| Script                            | What it does                                                           |
-| --------------------------------- | ---------------------------------------------------------------------- |
-| `npm run dev`                     | Development server                                                     |
-| `npm run build` / `npm start`     | Production build and server                                            |
-| `npm run lint`                    | ESLint (Next.js core-web-vitals + TypeScript rules)                    |
-| `npm run typecheck`               | `tsc --noEmit` (run `npx next typegen` first if routes moved)          |
-| `npm run format` / `format:check` | Prettier write / verify                                                |
-| `npm test` / `test:watch`         | Vitest unit and component tests                                        |
-| `npm run test:e2e`                | Playwright; builds and starts the app automatically                    |
-| `npm run check`                   | lint + typecheck + format check + unit tests (run before every commit) |
+| Script                            | What it does                                                              |
+| --------------------------------- | ------------------------------------------------------------------------- |
+| `npm run dev`                     | Development server                                                        |
+| `npm run build` / `npm start`     | Production build and server                                               |
+| `npm run lint`                    | ESLint (Next.js core-web-vitals + TypeScript rules)                       |
+| `npm run typecheck`               | `tsc --noEmit` (run `npx next typegen` first if routes moved)             |
+| `npm run format` / `format:check` | Prettier write / verify                                                   |
+| `npm test` / `test:watch`         | Vitest unit and component tests                                           |
+| `npm run test:e2e`                | Playwright; builds and starts the app automatically                       |
+| `npm run test:smoke`              | Only the `@smoke` checks (desktop); pair with `BASE_URL` for a deployment |
+| `npm run docker:smoke`            | Build the image, run it, wait for healthy, check non-root, run `@smoke`   |
+| `npm run check`                   | lint + typecheck + format check + unit tests (run before every commit)    |
 
 ## Project structure
 
@@ -113,7 +119,7 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 
 - **Root layout** ([src/app/layout.tsx](src/app/layout.tsx)), in render order: skip link, sticky header, `<main id="main">`, footer. The theme and Motion (`reducedMotion="user"`) providers wrap everything.
 - **Header:** wordmark, routes with `enabled: true`, a "Contact" shortcut (only when a contact link exists), a GitHub icon (only when configured), the theme toggle, and a mobile menu (only when there's more than one item to show). `NavLink` marks its own page with `aria-current="page"` and its section's child pages (e.g. Projects on a case study) with `aria-current="true"`, both shown by underline and strong text.
-- **Footer:** the copyright year comes from a `'use cache'` component, because Cache Components forbids reading `new Date()` while rendering. Also stack attribution, an optional source link, and contact icons.
+- **Footer:** the copyright year comes from a `'use cache'` component, because Cache Components forbids reading `new Date()` while rendering. Also stack attribution, an optional source link, the build version, and contact icons. The version ("Version abc1234", linked to the commit) comes from `COMMIT_SHA`, which CI sets at build time. [`getBuildInfo`](src/lib/build-info.ts) ignores missing or non-hex values, so local builds show no version.
 - **Links:** always use `AppLink` ([src/components/ui/app-link.tsx](src/components/ui/app-link.tsx)). Internal targets go through `next/link`. External ones get `target="_blank"`, `rel="noopener noreferrer"`, an arrow icon and screen-reader text. `ButtonLink` adds the primary and secondary button styles on top.
 - **Other building blocks** in `src/components/ui/`:
   - `Container`: page width and gutters.
@@ -153,7 +159,7 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 - **Instant navigation:** the page itself renders only the static shell (the back link). Everything that reads `params` lives in a `CaseStudy` component inside `<Suspense>`, as the Next 16 instant-navigation validation requires. Known slugs are still fully prerendered, so the fallback is practically never seen.
 - **Layout:** "All projects" back link → `CaseStudyHeader` (group, title, description or summary, status, technologies, Source/Live demo, "Updated" date) → article (max 70ch) with a table of contents: a sticky sidebar on `lg+`, a collapsible "On this page" panel on smaller screens.
 - **Metadata:** title, description and canonical URL per project, plus a generated OG image (`opengraph-image.tsx`) showing the project title and group. Both OG images share [src/lib/og-image.tsx](src/lib/og-image.tsx).
-- **Unknown slugs → real 404:** with Cache Components the page shell streams before `notFound()` runs, which would commit a `200`. [src/proxy.ts](src/proxy.ts) (matcher `/projects/:slug`) rewrites any slug without a published case study to the static not-found page first, so the status is always `404`. Projects that only have a card (no `caseStudy`) also get a 404 at their URL.
+- **Unknown slugs → real 404:** with Cache Components the page shell streams before `notFound()` runs, which would commit a `200`. [src/proxy.ts](src/proxy.ts) (matcher `/projects/:slug`) rewrites any slug without a published case study to a path no route serves (`UNROUTED_PATH`) before rendering. Both `next start` and Vercel answer that with the not-found page and a `404`. Don't rewrite to `/404` instead: Vercel serves that static file with a `200` when it's a rewrite target, because its `/404 → 404` status route runs before middleware. The `@smoke` check against each preview catches a regression. Projects that only have a card (no `caseStudy`) also get a 404 at their URL.
 - **Adding a case study:** create `src/content/case-studies/<name>.mdx`, set `caseStudy: "<name>"` on the project, and run `npm test`. The registry test fails if a file is missing, orphaned, or if no case study exists at all (Cache Components needs at least one static param).
 
 ## Writing case studies (MDX)
@@ -180,6 +186,53 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 - The Open Graph image ([src/app/opengraph-image.tsx](src/app/opengraph-image.tsx)) and favicon ([src/app/icon.tsx](src/app/icon.tsx)) are generated with `ImageResponse` at build time. Their hex values mirror the dark tokens, because CSS variables aren't available there.
 - [src/app/not-found.tsx](src/app/not-found.tsx) renders the 404 page.
 
+## Continuous integration
+
+[.github/workflows/ci.yml](.github/workflows/ci.yml) runs on every pull request and every push to `main`:
+
+| Job       | Steps                                                                                                                                                                                                         |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `quality` | `npm ci`, lint, route types + typecheck, format check, unit tests, actionlint (workflows, with shellcheck), hadolint (Dockerfile)                                                                             |
+| `e2e`     | `npm ci`, cached Playwright Chromium, full Playwright suite (both projects, axe) against a production build; report uploaded on failure                                                                       |
+| `image`   | Build the Docker image (GHA layer cache), `scripts/smoke-container.sh` against it, Trivy scan (SARIF to code scanning; fails on fixable CRITICAL/HIGH). On `main`, keeps the tested image as a 1-day artifact |
+| `publish` | `main` pushes only, after `quality`, `e2e` and `image` pass: loads that exact image and pushes it to `ghcr.io/dr1co/portfolio` as `sha-<7>` and `main`                                                        |
+
+- Permissions default to `contents: read`. Only `image` adds `security-events: write` (scan upload), and only `publish` adds `packages: write` (GHCR via `GITHUB_TOKEN`). Superseded PR runs are cancelled; `main` runs always finish.
+- **Image tags:** `sha-<7>` is the immutable release identifier; `main` follows the latest publish. There is no `latest`. The image's `org.opencontainers.image.revision` label holds the full commit.
+- Third-party actions are pinned to full commit SHAs (`# vX.Y.Z` comment), and the linter and Trivy images by digest. Node, npm and Playwright setup live in the local composite action [.github/actions/setup](.github/actions/setup/action.yml).
+- **Dependabot** ([.github/dependabot.yml](.github/dependabot.yml)) opens weekly PRs for:
+  - npm, with a 7-day cooldown on new releases. `next`, `@next/*` and `eslint-config-next` are grouped so they stay in lockstep, and other minor/patch updates come as one PR.
+  - GitHub Actions, in the workflows and the composite action, grouped.
+  - The `node:24-alpine` base image digest.
+    Node majors (the base image and `@types/node`) are ignored, because they move together with `.nvmrc` and Vercel's Node setting. The actionlint, hadolint and Trivy images run via `docker run` in the workflow, so Dependabot can't see them; bump their tag and digest by hand.
+- **Deployments (Vercel):**
+  - Vercel's Git auto-deploy is off ([vercel.json](vercel.json)), so only CI deploys.
+  - `deploy-preview` handles same-repo PRs once `quality` passes. `deploy-production` handles `main` once `publish` has pushed the image of the same commit.
+  - Both use [.github/actions/vercel-deploy](.github/actions/vercel-deploy/action.yml): `vercel pull` → `vercel build` → `vercel deploy --prebuilt`, then the `@smoke` checks against the new URL. Those checks cover the expected commit in the footer and robots matching the pulled `NEXT_PUBLIC_ALLOW_INDEXING`.
+  - The URL appears on the PR or commit through GitHub environments (`preview`, `production`).
+  - The CLI is a pinned `npx vercel@<version>`, not a project dependency: its builder packages would add many dev-tree advisories and slow every `npm ci`.
+  - It authenticates with `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` from secrets, and gets past Deployment Protection with `VERCEL_AUTOMATION_BYPASS_SECRET`.
+- On pull requests, `github.sha` is GitHub's temporary merge commit, so PR images and their footer version point at that commit, not the branch head. Published images come from `main`, where it is the real commit.
+- `quality` and `e2e` are the required checks on `main`.
+- Run the same linters locally with the release binaries (no Docker needed): [actionlint](https://github.com/rhysd/actionlint/releases), [shellcheck](https://github.com/koalaman/shellcheck/releases) (actionlint uses it for `run:` scripts) and [hadolint](https://github.com/hadolint/hadolint/releases).
+
+## Docker image
+
+The [Dockerfile](Dockerfile) builds a production image around Next's standalone server. Vercel serves the live site; the image is a verified artifact that runs anywhere Docker does.
+
+- **Stages:** `deps` (`npm ci`) → `build` (`BUILD_STANDALONE=1 npm run build`) → `runtime` (only `.next/standalone` and `.next/static`, on `node:24-alpine` pinned by digest).
+- **Runtime:** runs as the `node` user on port 3000, `HEALTHCHECK` = `GET /` answers 200 (via Node's `fetch`; the image has no curl). The runtime stage deletes npm, npx, corepack and yarn: the server only needs `node`, and their bundled dependencies (e.g. `brace-expansion`, `undici`) were what failed the first Trivy scan.
+- **Build args:** `COMMIT_SHA` (footer version and the `org.opencontainers.image.revision` label) and `NEXT_PUBLIC_SITE_URL`. Both are inlined at build, so one image serves one origin. Indexing is never enabled in the image.
+- **Build context** is an allowlist ([.dockerignore](.dockerignore)): config files, `src/` without tests, and `public/`. No `.env` file can reach a layer. A new root config file that the build needs must be added there.
+- `output: "standalone"` is switched on only by `BUILD_STANDALONE=1`, so `npm start`, Playwright and Vercel use the regular output. `outputFileTracingIncludes` keeps the case-study MDX in the standalone bundle, because the page reads it from disk.
+
+```bash
+docker build --build-arg COMMIT_SHA="$(git rev-parse HEAD)" -t portfolio .
+docker run --rm -p 3000:3000 portfolio     # http://localhost:3000
+npm run docker:smoke                       # build + health + non-root + @smoke checks
+npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing image
+```
+
 ## Testing
 
 - **Unit and component tests** sit next to the code they cover (`foo.ts` → `foo.test.ts`) and test behavior through the public interface.
@@ -187,7 +240,7 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 
   | Spec               | Covers                                                                                                                                                                                                |
   | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `smoke.spec.ts`    | `/` is served as English HTML                                                                                                                                                                         |
+  | `smoke.spec.ts`    | `@smoke`: `/` is English HTML with one `h1`, `/projects` and a case study answer 200, unknown slugs 404, robots matches the deployment, footer shows the expected commit                              |
   | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, **axe** in both themes                                                        |
   | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown and card-only slugs, no mobile overflow, **axe** in both themes |
   | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                 |
@@ -196,6 +249,19 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
   | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                      |
 
   Some expectations depend on content (hero buttons exist only while projects and contact links are configured). If you remove content, update the specs with it.
+
+- **Smoke checks against a deployment.** The `@smoke` tests also run against an already running site (the container, a Vercel preview, production). Setting `BASE_URL` turns off Playwright's own build and server:
+
+  ```bash
+  BASE_URL=https://example.vercel.app EXPECTED_SHA=<commit> npm run test:smoke
+  ```
+
+  | Variable                          | Effect                                                                        |
+  | --------------------------------- | ----------------------------------------------------------------------------- |
+  | `BASE_URL`                        | Target origin; no local build or server is started                            |
+  | `EXPECTED_SHA`                    | The footer must show `Version <sha7>`; that check is skipped when unset       |
+  | `EXPECT_INDEXABLE=true`           | Robots must allow indexing (production only); otherwise `noindex` is expected |
+  | `VERCEL_AUTOMATION_BYPASS_SECRET` | Sent as `x-vercel-protection-bypass` to get past Vercel Deployment Protection |
 
 - **Dev-only validation:** `next dev` checks every route for instant navigation and reports `params` read outside `<Suspense>` (message `instant-shell-url-data`). Keep routes free of these warnings; the case-study page shows the pattern.
 
@@ -224,4 +290,6 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 - `/lab` and `/about` don't exist yet; their nav items stay hidden until the routes are enabled in `site-config.ts`.
 - The projects directory has no filters (deferred until there are ≥ 6 published projects).
 - The pipeline preview is select-to-reveal only. The full simulated explorer (run, pass/fail states) is planned for `/lab`.
-- No Docker image, CI workflow or deployment for this site yet (Phase 4 of the spec).
+- The Docker image is a verified, published artifact, but Vercel serves the site. The image is about 300 MB: deleting npm in the runtime stage hides it from scans but doesn't shrink the base layer.
+- No SBOM, provenance attestation or image signing yet. The linter, Trivy and Vercel CLI pins aren't covered by Dependabot (see [docs/operations.md](docs/operations.md)).
+- The production domain isn't chosen yet, so canonical URLs fall back until `NEXT_PUBLIC_SITE_URL` is set, and indexing stays off until launch.
