@@ -6,7 +6,7 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 
 - Product requirements: [docs/features-specification.md](docs/features-specification.md)
 - Visual identity ("Terminal Modern"): [docs/visual-identity.md](docs/visual-identity.md)
-- Feature plans: [docs/homepage-plan.md](docs/homepage-plan.md) (home page, done), [docs/projects-plan.md](docs/projects-plan.md) (projects directory and case studies, done) and [docs/delivery-plan.md](docs/delivery-plan.md) (CI/CD and deployment)
+- Feature plans: [docs/homepage-plan.md](docs/homepage-plan.md) (home page, done), [docs/projects-plan.md](docs/projects-plan.md) (projects directory and case studies, done) and [docs/delivery-plan.md](docs/delivery-plan.md) (CI/CD and deployment, done)
 - Operations runbook (deploy, verify, roll back, rotate secrets): [docs/operations.md](docs/operations.md)
 - Pre-publish checklist (content still to review): [docs/prepublish-checklist.md](docs/prepublish-checklist.md)
 - Rules for contributors and AI agents: [AGENTS.md](AGENTS.md)
