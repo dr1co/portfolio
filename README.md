@@ -203,6 +203,13 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
   - GitHub Actions, in the workflows and the composite action, grouped.
   - The `node:24-alpine` base image digest.
     Node majors (the base image and `@types/node`) are ignored, because they move together with `.nvmrc` and Vercel's Node setting. The actionlint, hadolint and Trivy images run via `docker run` in the workflow, so Dependabot can't see them; bump their tag and digest by hand.
+- **Deployments (Vercel):**
+  - Vercel's Git auto-deploy is off ([vercel.json](vercel.json)), so only CI deploys.
+  - `deploy-preview` handles same-repo PRs once `quality` passes. `deploy-production` handles `main` once `publish` has pushed the image of the same commit.
+  - Both use [.github/actions/vercel-deploy](.github/actions/vercel-deploy/action.yml): `vercel pull` → `vercel build` → `vercel deploy --prebuilt`, then the `@smoke` checks against the new URL. Those checks cover the expected commit in the footer and robots matching the pulled `NEXT_PUBLIC_ALLOW_INDEXING`.
+  - The URL appears on the PR or commit through GitHub environments (`preview`, `production`).
+  - The CLI is a pinned `npx vercel@<version>`, not a project dependency: its builder packages would add many dev-tree advisories and slow every `npm ci`.
+  - It authenticates with `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` from secrets, and gets past Deployment Protection with `VERCEL_AUTOMATION_BYPASS_SECRET`.
 - On pull requests, `github.sha` is GitHub's temporary merge commit, so PR images and their footer version point at that commit, not the branch head. Published images come from `main`, where it is the real commit.
 - `quality` and `e2e` are the required checks on `main`.
 - Run the same linters locally with the release binaries (no Docker needed): [actionlint](https://github.com/rhysd/actionlint/releases), [shellcheck](https://github.com/koalaman/shellcheck/releases) (actionlint uses it for `run:` scripts) and [hadolint](https://github.com/hadolint/hadolint/releases).

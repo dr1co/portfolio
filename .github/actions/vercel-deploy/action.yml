@@ -1,0 +1,72 @@
+name: Deploy to Vercel
+description: >-
+  vercel pull → build → deploy --prebuilt for one environment, then the @smoke checks against the
+  new deployment. Expects VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID and
+  VERCEL_AUTOMATION_BYPASS_SECRET in the job env, and the project set up with Playwright.
+
+inputs:
+  environment:
+    description: Vercel environment, preview or production.
+    required: true
+  cli:
+    description: Pinned Vercel CLI package (not a project dependency; bump by hand).
+    default: vercel@63.1.0
+
+outputs:
+  url:
+    description: The deployment URL.
+    value: ${{ steps.deploy.outputs.url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Pull Vercel settings and env
+      shell: bash
+      env:
+        CLI: ${{ inputs.cli }}
+        TARGET: ${{ inputs.environment }}
+      run: npx --yes "$CLI" pull --yes --environment="$TARGET"
+    - name: Build
+      shell: bash
+      env:
+        CLI: ${{ inputs.cli }}
+        TARGET: ${{ inputs.environment }}
+        COMMIT_SHA: ${{ github.sha }}
+      run: |
+        args=()
+        if [[ "$TARGET" == production ]]; then args+=(--prod); fi
+        npx --yes "$CLI" build "${args[@]}"
+    - name: Deploy prebuilt output
+      id: deploy
+      shell: bash
+      env:
+        CLI: ${{ inputs.cli }}
+        TARGET: ${{ inputs.environment }}
+      run: |
+        args=()
+        if [[ "$TARGET" == production ]]; then args+=(--prod); fi
+        url="$(npx --yes "$CLI" deploy --prebuilt "${args[@]}")"
+        echo "url=$url" >> "$GITHUB_OUTPUT"
+    - name: Smoke-test the deployment
+      shell: bash
+      env:
+        TARGET: ${{ inputs.environment }}
+        BASE_URL: ${{ steps.deploy.outputs.url }}
+        EXPECTED_SHA: ${{ github.sha }}
+      run: |
+        # Expect exactly the indexing setting the build just used.
+        EXPECT_INDEXABLE="$(sed -n 's/^NEXT_PUBLIC_ALLOW_INDEXING="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' ".vercel/.env.$TARGET.local")"
+        export EXPECT_INDEXABLE
+        npm run test:smoke
+    - name: Summary
+      shell: bash
+      env:
+        TARGET: ${{ inputs.environment }}
+        URL: ${{ steps.deploy.outputs.url }}
+      run: |
+        {
+          echo "### Vercel $TARGET deployment"
+          echo
+          echo "- URL: $URL"
+          echo "- Commit: \`$GITHUB_SHA\`"
+        } >> "$GITHUB_STEP_SUMMARY"

@@ -3,7 +3,7 @@
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
 **Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** In progress (Steps 0–4 and 8 done; Step 3 verified in CI; Step 5 passing build and smoke, Trivy fix pending re-run; Step 6 waiting on the owner). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress (Steps 0–5 and 8 done and green in CI, with the container also verified locally; Step 6 half done (Vercel project yes, GitHub secrets and environments not yet); Step 7 written). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -187,13 +187,12 @@ The owner does this by hand. Claude can generate a step-by-step wizard script (`
 
 ### Step 7 — Vercel deployments
 
-1. `vercel.json`: `{ "git": { "deploymentEnabled": false } }`. Add `vercel` as a devDependency so the CLI version is locked and updated by Dependabot.
-2. Job `deploy-preview` (PR from the same repo only: `github.event.pull_request.head.repo.full_name == github.repository`; needs `quality`):
-   `vercel pull --yes --environment=preview` → `COMMIT_SHA=$GITHUB_SHA vercel build` → `vercel deploy --prebuilt` → capture the URL → `environment: { name: preview, url: <url> }` → run `test:smoke` against it with `EXPECTED_SHA` and the bypass header.
-3. Job `deploy-production` (push to `main`; needs `quality`, `e2e`, `image`; `concurrency: { group: production, cancel-in-progress: false }`; `environment: production`):
-   the same commands with `--environment=production`, `vercel build --prod` and `vercel deploy --prebuilt --prod`, then the smoke test against the deployment URL. The job summary lists the commit, the deployment URL and the GHCR image tag of the same SHA, so all three are traceable.
-4. Pass secrets through `env:` only, never on the command line. They never show in logs.
+1. `vercel.json`: `{ "git": { "deploymentEnabled": false } }`. **Amended:** the Vercel CLI is **not** a devDependency. Installing it added 28 dev-tree advisories (1 critical, all from its framework builders) and about 6,700 lockfile lines to every `npm ci`. Instead, the deploy action runs an exact pinned `npx vercel@63.1.0` (bumped by hand, like the linter images).
+2. A local composite action `.github/actions/vercel-deploy` (input `environment`) does `vercel pull` → `vercel build` (with `COMMIT_SHA`) → `vercel deploy --prebuilt`, then runs `npm run test:smoke` against the new URL with `EXPECTED_SHA` and the bypass header, and writes the URL to the job summary. `EXPECT_INDEXABLE` is read from the pulled `.vercel/.env.<environment>.local`, so the check always matches what Vercel built with and there's no second flag to keep in sync. The CLI reads `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` from the job env, so no secret is ever on a command line.
+3. Job `deploy-preview`: same-repo PRs only, needs `quality`, uses `environment: preview` (the URL shows on the PR).
+4. Job `deploy-production`: `main` pushes only. It **needs `publish`**, which needs every check, so a production deploy always has a published image of the same commit (listed in the summary). It uses `environment: production` and `concurrency: deploy-production` without cancellation.
 
+**Gate:** the GitHub side of Step 6 must exist before this is pushed: repo or environment secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` and `VERCEL_AUTOMATION_BYPASS_SECRET`, and environments `preview` and `production`. Without them, `deploy-preview` fails on the PR.
 **Acceptance:** a PR gets a working preview URL with a passing smoke test and `noindex`. After merge, production is deployed, its smoke test passes, and the footer shows the merged SHA.
 Suggested commit: `[cd] gated Vercel preview and production deployments`
 
