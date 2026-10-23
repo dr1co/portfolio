@@ -2,16 +2,16 @@
 
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
-**Branch:** `feat/delivery`, cut from `main` after `feat/projects` is merged. The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
+**Branch:** `ops/delivery`, cut from `feat/projects` (which isn't merged into `main` yet, so a PR into `main` also carries the projects work). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
 **Status:** Planned. Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
 ## 0. Gate (check before Step 1)
 
-- [ ] `feat/projects` is merged into `main`, and `main` is green locally (`npm run check`, `npm run build`, `npm run test:e2e`).
-- [ ] `https://github.com/dr1co/portfolio` exists and the owner can push branches and open PRs.
-- [ ] Docker works inside WSL (`docker version`; 29.5.3 is currently installed).
+- [x] The base branch (`ops/delivery`, containing the projects work) is green locally (`npm run check`, `npm run build`, `npm run test:e2e`).
+- [x] `https://github.com/dr1co/portfolio` exists and the owner can push branches and open PRs.
+- [x] Docker works inside WSL (`docker version`; 29.5.3 is currently installed).
 
 Steps 6 and 7 have their own gate: the owner's Vercel and GitHub setup (§6).
 
@@ -94,7 +94,7 @@ Work test-first where code is involved, per AGENTS.md. Each step must pass `npm 
 
 ### Step 0 — Baseline
 
-1. Verify §0. Create `feat/delivery` from `main`.
+1. Verify §0 on `ops/delivery`.
 2. Add `.nvmrc` (`24`). Run `npm run check && npm run build && npm run test:e2e`.
 
 Suggested commit: `[chore] pin Node version for delivery work`
