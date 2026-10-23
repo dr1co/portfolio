@@ -3,7 +3,7 @@
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
 **Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** In progress (Steps 0–2 done; Step 4 green in CI; Step 5 committed, waiting on its first CI run; Step 6 waiting on the owner; Step 8 written). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress (Steps 0–4 and 8 done; Step 3 verified in CI; Step 5 passing build and smoke, Trivy fix pending re-run; Step 6 waiting on the owner). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -135,7 +135,7 @@ Suggested commit: `[test] smoke spec runnable against any deployment`
 4. `scripts/smoke-container.sh` (bash, `set -euo pipefail`): build with a tag, run on port **3200** detached, wait up to 60 s for `healthy`, assert `docker exec … id -u` ≠ 0, run `BASE_URL=http://localhost:3200 EXPECTED_SHA=… npm run test:smoke`, then always `docker rm -f` through a `trap`. `npm run docker:smoke` wraps it.
 5. Record the image size in the README. Target < 200 MB. It's not a hard gate.
 
-**Acceptance:** `npm run docker:smoke` passes, and hadolint is clean. The standalone server was verified with Node directly (all `@smoke` checks pass, MDX traced, 54 MB). The proxy on the owner's current network blocks image pulls, so the Docker run happens on another network or in CI (Step 5).
+**Acceptance:** `npm run docker:smoke` passes, and hadolint is clean. The standalone server was verified with Node directly (all `@smoke` checks pass, MDX traced, 54 MB). The proxy on the owner's current network blocks image pulls, so the Docker run happens on another network or in CI (Step 5). **Verified in CI (Step 5 PR):** the build, health check, non-root check and `@smoke` all passed. The first Trivy gate then failed on HIGH CVEs in the base image's bundled npm tooling (`brace-expansion` 5.0.9, `undici` 6.28.0), not in the app's dependencies. Fixed by deleting npm, npx, corepack and yarn from the runtime stage.
 Suggested commit: `[build] production Docker image with health check and smoke script`
 
 ### Step 4 — Quality workflow (PR)

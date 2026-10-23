@@ -23,6 +23,11 @@ LABEL org.opencontainers.image.title="portfolio" \
       org.opencontainers.image.description="Adriano Matoba Lipski's portfolio (Next.js standalone server)" \
       org.opencontainers.image.source="https://github.com/dr1co/portfolio" \
       org.opencontainers.image.revision="${COMMIT_SHA}"
+# The server only needs the node binary. Package managers (and their bundled dependencies)
+# add attack surface and are what Trivy flags in the base image.
+RUN rm -rf /usr/local/lib/node_modules /opt/yarn-* \
+      /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+      /usr/local/bin/yarn /usr/local/bin/yarnpkg
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \

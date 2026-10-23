@@ -212,7 +212,7 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 The [Dockerfile](Dockerfile) builds a production image around Next's standalone server. Vercel serves the live site; the image is a verified artifact that runs anywhere Docker does.
 
 - **Stages:** `deps` (`npm ci`) → `build` (`BUILD_STANDALONE=1 npm run build`) → `runtime` (only `.next/standalone` and `.next/static`, on `node:24-alpine` pinned by digest).
-- **Runtime:** runs as the `node` user on port 3000, `HEALTHCHECK` = `GET /` answers 200 (via Node's `fetch`; the image has no curl).
+- **Runtime:** runs as the `node` user on port 3000, `HEALTHCHECK` = `GET /` answers 200 (via Node's `fetch`; the image has no curl). The runtime stage deletes npm, npx, corepack and yarn: the server only needs `node`, and their bundled dependencies (e.g. `brace-expansion`, `undici`) were what failed the first Trivy scan.
 - **Build args:** `COMMIT_SHA` (footer version and the `org.opencontainers.image.revision` label) and `NEXT_PUBLIC_SITE_URL`. Both are inlined at build, so one image serves one origin. Indexing is never enabled in the image.
 - **Build context** is an allowlist ([.dockerignore](.dockerignore)): config files, `src/` without tests, and `public/`. No `.env` file can reach a layer. A new root config file that the build needs must be added there.
 - `output: "standalone"` is switched on only by `BUILD_STANDALONE=1`, so `npm start`, Playwright and Vercel use the regular output. `outputFileTracingIncludes` keeps the case-study MDX in the standalone bundle, because the page reads it from disk.
