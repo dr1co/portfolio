@@ -186,13 +186,17 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 
 [.github/workflows/ci.yml](.github/workflows/ci.yml) runs on every pull request and every push to `main`:
 
-| Job       | Steps                                                                                                                                   |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `quality` | `npm ci`, lint, route types + typecheck, format check, unit tests, actionlint (workflows, with shellcheck), hadolint (Dockerfile)       |
-| `e2e`     | `npm ci`, cached Playwright Chromium, full Playwright suite (both projects, axe) against a production build; report uploaded on failure |
+| Job       | Steps                                                                                                                                                                                                         |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `quality` | `npm ci`, lint, route types + typecheck, format check, unit tests, actionlint (workflows, with shellcheck), hadolint (Dockerfile)                                                                             |
+| `e2e`     | `npm ci`, cached Playwright Chromium, full Playwright suite (both projects, axe) against a production build; report uploaded on failure                                                                       |
+| `image`   | Build the Docker image (GHA layer cache), `scripts/smoke-container.sh` against it, Trivy scan (SARIF to code scanning; fails on fixable CRITICAL/HIGH). On `main`, keeps the tested image as a 1-day artifact |
+| `publish` | `main` pushes only, after `quality`, `e2e` and `image` pass: loads that exact image and pushes it to `ghcr.io/dr1co/portfolio` as `sha-<7>` and `main`                                                        |
 
-- Permissions are `contents: read` only. Superseded PR runs are cancelled; `main` runs always finish.
-- Third-party actions are pinned to full commit SHAs (`# vX.Y.Z` comment), and the linter images by digest.
+- Permissions default to `contents: read`. Only `image` adds `security-events: write` (scan upload), and only `publish` adds `packages: write` (GHCR via `GITHUB_TOKEN`). Superseded PR runs are cancelled; `main` runs always finish.
+- **Image tags:** `sha-<7>` is the immutable release identifier; `main` follows the latest publish. There is no `latest`. The image's `org.opencontainers.image.revision` label holds the full commit.
+- Third-party actions are pinned to full commit SHAs (`# vX.Y.Z` comment), and the linter and Trivy images by digest. Node, npm and Playwright setup live in the local composite action [.github/actions/setup](.github/actions/setup/action.yml).
+- On pull requests, `github.sha` is GitHub's temporary merge commit, so PR images and their footer version point at that commit, not the branch head. Published images come from `main`, where it is the real commit.
 - `quality` and `e2e` are the required checks on `main`.
 - Run the same linters locally with the release binaries (no Docker needed): [actionlint](https://github.com/rhysd/actionlint/releases), [shellcheck](https://github.com/koalaman/shellcheck/releases) (actionlint uses it for `run:` scripts) and [hadolint](https://github.com/hadolint/hadolint/releases).
 

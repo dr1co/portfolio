@@ -3,7 +3,7 @@
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
 **Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** In progress (Steps 0–2 done; Steps 3–4 written. Docker verification and the first real CI run are pending). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress (Steps 0–2 done; Step 4 green in CI; Step 5 written. The first Docker build runs in its PR). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -155,18 +155,21 @@ Suggested commit: `[build] production Docker image with health check and smoke s
 **Owner, after the first green run:** protect `main` with required checks `quality` and `e2e`.
 Suggested commit: `[ci] quality and e2e workflow`
 
-### Step 5 — Image job (build, scan, publish)
+### Step 5 — Image jobs (build, scan, publish)
 
-Add job `image` (needs nothing; runs in parallel with the others):
+Amended during implementation: publishing moved to its own job, so `packages: write` never reaches PR runs. Trivy runs as a digest-pinned image instead of `aquasecurity/trivy-action`, in line with the linters.
 
-1. `docker/setup-buildx-action`, then `docker/metadata-action` with tags `type=sha,prefix=sha-,format=short` and `type=raw,value=main,enable={{is_default_branch}}`.
-2. Build with `load: true` and GHA cache (`cache-from/to: type=gha`), with build args `COMMIT_SHA=${{ github.sha }}` and `NEXT_PUBLIC_SITE_URL=${{ vars.SITE_URL }}`.
-3. Run `scripts/smoke-container.sh` in "use existing image" mode. The script takes the image tag as an argument and skips the build when it's given.
-4. Trivy (`aquasecurity/trivy-action`, SHA-pinned): `severity: CRITICAL,HIGH`, `ignore-unfixed: true`, `exit-code: 1`, plus a second SARIF-format pass → `github/codeql-action/upload-sarif` (needs `security-events: write`; free on public repos).
-5. **Only on `push` to `main`:** `docker/login-action` to `ghcr.io` with `GITHUB_TOKEN`, then push the same build (`packages: write`). Write the image reference and digest to the job summary.
+1. Job `image` (all events, runs in parallel with the others; `security-events: write`):
+   - Tags from `docker/metadata-action`: `sha-<7>` always, plus `main` on `main` pushes.
+   - Build with `load: true` and the GHA cache. Build args are `COMMIT_SHA=${{ github.sha }}` and `NEXT_PUBLIC_SITE_URL=${{ vars.SITE_URL }}`.
+   - Run `scripts/smoke-container.sh <tag>` against the built image.
+   - `docker save` the image, then run Trivy twice on the tarball: once for a SARIF report that goes to code scanning (non-blocking, skipped for fork PRs), and once as the gate (`--severity CRITICAL,HIGH --ignore-unfixed --exit-code 1`).
+   - On `main` pushes, upload the tarball as a 1-day artifact.
+2. Job `publish` (`main` pushes only; needs `quality`, `e2e`, `image`; `packages: write`): download the tested tarball, `docker load` it, log in to GHCR with `GITHUB_TOKEN`, push every tag, and write the tags, digest and commit to the job summary. What gets published is byte-for-byte the image that was smoke-tested and scanned.
+3. Node, npm and Playwright setup moved into the local composite action `.github/actions/setup` (input `playwright`), which `quality`, `e2e` and `image` share.
 
-**Acceptance:** a PR run builds, smoke-tests and scans without pushing. After the owner merges, the `main` run shows `ghcr.io/dr1co/portfolio:sha-<7>` and `:main`.
-**Owner:** set the GHCR package visibility to **public** (spec §11 asks for visibility to be documented) and confirm it's linked to the repo.
+**Acceptance:** a PR run builds, smoke-tests and scans without pushing. This is also the first real Docker build (Step 3 verification). After the owner merges, the `main` run publishes `ghcr.io/dr1co/portfolio:sha-<7>` and `:main`.
+**Owner:** set the GHCR package visibility to **public** (spec §11 asks for visibility to be documented) and confirm it's linked to the repo. If the repo is private without GitHub Advanced Security, the SARIF upload fails without failing the job. The Trivy gate still applies.
 Suggested commit: `[ci] build, scan and publish container image`
 
 ### Step 6 — Owner setup for Vercel (gate for Step 7)
