@@ -2,8 +2,8 @@
 
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
-**Branch:** `ops/delivery`, cut from `feat/projects` (which isn't merged into `main` yet, so a PR into `main` also carries the projects work). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** Planned. Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
+**Status:** In progress (Steps 0–1 done). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -81,7 +81,7 @@ README.md, AGENTS.md, docs/prepublish-checklist.md   CHG
 | Seam       | Level        | Behaviours                                                                                                                                                                                                                        |
 | ---------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Build info | unit         | `getBuildInfo(env)` returns `null` for missing or invalid values (not 7–40 hex chars), and otherwise `{ short, url }` with a 7-char short SHA and a commit URL under `sourceRepoUrl`. The URL goes through `links.ts` validation. |
-| Footer     | unit         | Shows "Version abc1234" linked to the commit when build info exists; renders nothing extra otherwise.                                                                                                                             |
+| Footer     | unit         | `BuildVersion` shows "Version abc1234", linked when a URL exists (`SiteFooter` itself is async and not jsdom-renderable).                                                                                                         |
 | Smoke      | e2e (remote) | `/` 200 with `lang="en"` and one h1; `/projects` 200; a known case study 200; an unknown slug 404 (proxy); `robots` meta matches the expected indexing flag; when `EXPECTED_SHA` is set, the footer shows it.                     |
 | Container  | script       | `scripts/smoke-container.sh` exits non-zero if the image doesn't build, the container doesn't become `healthy`, it runs as root, or the smoke spec fails.                                                                         |
 | Workflow   | lint + run   | `actionlint` passes; a real PR run shows the expected jobs and skips; a `main` run publishes `sha-*` and `main` tags and deploys. Workflows can't be unit-tested, so the real runs are the acceptance test.                       |
@@ -102,8 +102,8 @@ Suggested commit: `[chore] pin Node version for delivery work`
 ### Step 1 — Build info and footer version
 
 1. **Unit first** (`src/lib/build-info.test.ts`): the cases in §4.
-2. `src/lib/build-info.ts`: `getBuildInfo(env = process.env)` reads `COMMIT_SHA`. It's server-only and read at prerender, which is safe under Cache Components because it doesn't involve `Date` or randomness.
-3. **Unit first** (`site-footer.test.tsx`): version link present or absent.
+2. `src/lib/build-info.ts`: `getBuildInfo(sha = process.env.COMMIT_SHA, repoUrl = siteConfig.sourceRepoUrl)`. It's server-only and read at prerender, which is safe under Cache Components because it doesn't involve `Date` or randomness.
+3. **Unit first** (`build-version.test.tsx`): version linked or plain text. `SiteFooter` renders the async `CopyrightYear`, so the testable seam is the small `BuildVersion` component it composes.
 4. Footer: append ` · Version <short>` (an `AppLink`, external) to the "Built with" line.
 5. `.env.example`: document `COMMIT_SHA` ("set by CI; leave empty locally").
 

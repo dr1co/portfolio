@@ -2,13 +2,16 @@ import { AppLink } from "@/components/ui/app-link";
 import { iconButtonClass } from "@/components/ui/icon-button";
 import { contactIcons } from "@/components/ui/contact-icons";
 import { Container } from "@/components/ui/container";
+import { getBuildInfo } from "@/lib/build-info";
 import { getContactLinks, isHttpsUrl } from "@/lib/links";
 import { siteConfig } from "@/lib/site-config";
+import { BuildVersion } from "./build-version";
 import { CopyrightYear } from "./copyright-year";
 
-/** Copyright, stack attribution, optional source link and contact icons. */
+/** Copyright, stack attribution, optional source link and build version, and contact icons. */
 export function SiteFooter() {
   const contactLinks = getContactLinks(siteConfig.links);
+  const buildInfo = getBuildInfo();
 
   return (
     <footer className="border-t border-border py-8 text-sm text-muted">
@@ -29,6 +32,12 @@ export function SiteFooter() {
                 >
                   Source
                 </AppLink>
+              </>
+            )}
+            {buildInfo && (
+              <>
+                {" · "}
+                <BuildVersion info={buildInfo} />
               </>
             )}
           </p>

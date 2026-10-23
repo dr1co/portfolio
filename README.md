@@ -113,7 +113,7 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 
 - **Root layout** ([src/app/layout.tsx](src/app/layout.tsx)), in render order: skip link, sticky header, `<main id="main">`, footer. The theme and Motion (`reducedMotion="user"`) providers wrap everything.
 - **Header:** wordmark, routes with `enabled: true`, a "Contact" shortcut (only when a contact link exists), a GitHub icon (only when configured), the theme toggle, and a mobile menu (only when there's more than one item to show). `NavLink` marks its own page with `aria-current="page"` and its section's child pages (e.g. Projects on a case study) with `aria-current="true"`, both shown by underline and strong text.
-- **Footer:** the copyright year comes from a `'use cache'` component, because Cache Components forbids reading `new Date()` while rendering. Also stack attribution, an optional source link, and contact icons.
+- **Footer:** the copyright year comes from a `'use cache'` component, because Cache Components forbids reading `new Date()` while rendering. Also stack attribution, an optional source link, the build version, and contact icons. The version ("Version abc1234", linked to the commit) comes from `COMMIT_SHA`, which CI sets at build time. [`getBuildInfo`](src/lib/build-info.ts) ignores missing or non-hex values, so local builds show no version.
 - **Links:** always use `AppLink` ([src/components/ui/app-link.tsx](src/components/ui/app-link.tsx)). Internal targets go through `next/link`. External ones get `target="_blank"`, `rel="noopener noreferrer"`, an arrow icon and screen-reader text. `ButtonLink` adds the primary and secondary button styles on top.
 - **Other building blocks** in `src/components/ui/`:
   - `Container`: page width and gutters.
