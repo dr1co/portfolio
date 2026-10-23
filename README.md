@@ -54,16 +54,17 @@ npx playwright install chromium
 
 ## Scripts
 
-| Script                            | What it does                                                           |
-| --------------------------------- | ---------------------------------------------------------------------- |
-| `npm run dev`                     | Development server                                                     |
-| `npm run build` / `npm start`     | Production build and server                                            |
-| `npm run lint`                    | ESLint (Next.js core-web-vitals + TypeScript rules)                    |
-| `npm run typecheck`               | `tsc --noEmit` (run `npx next typegen` first if routes moved)          |
-| `npm run format` / `format:check` | Prettier write / verify                                                |
-| `npm test` / `test:watch`         | Vitest unit and component tests                                        |
-| `npm run test:e2e`                | Playwright; builds and starts the app automatically                    |
-| `npm run check`                   | lint + typecheck + format check + unit tests (run before every commit) |
+| Script                            | What it does                                                              |
+| --------------------------------- | ------------------------------------------------------------------------- |
+| `npm run dev`                     | Development server                                                        |
+| `npm run build` / `npm start`     | Production build and server                                               |
+| `npm run lint`                    | ESLint (Next.js core-web-vitals + TypeScript rules)                       |
+| `npm run typecheck`               | `tsc --noEmit` (run `npx next typegen` first if routes moved)             |
+| `npm run format` / `format:check` | Prettier write / verify                                                   |
+| `npm test` / `test:watch`         | Vitest unit and component tests                                           |
+| `npm run test:e2e`                | Playwright; builds and starts the app automatically                       |
+| `npm run test:smoke`              | Only the `@smoke` checks (desktop); pair with `BASE_URL` for a deployment |
+| `npm run check`                   | lint + typecheck + format check + unit tests (run before every commit)    |
 
 ## Project structure
 
@@ -187,7 +188,7 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 
   | Spec               | Covers                                                                                                                                                                                                |
   | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `smoke.spec.ts`    | `/` is served as English HTML                                                                                                                                                                         |
+  | `smoke.spec.ts`    | `@smoke`: `/` is English HTML with one `h1`, `/projects` and a case study answer 200, unknown slugs 404, robots matches the deployment, footer shows the expected commit                              |
   | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, **axe** in both themes                                                        |
   | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown and card-only slugs, no mobile overflow, **axe** in both themes |
   | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                 |
@@ -196,6 +197,19 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
   | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                      |
 
   Some expectations depend on content (hero buttons exist only while projects and contact links are configured). If you remove content, update the specs with it.
+
+- **Smoke checks against a deployment.** The `@smoke` tests also run against an already running site (the container, a Vercel preview, production). Setting `BASE_URL` turns off Playwright's own build and server:
+
+  ```bash
+  BASE_URL=https://example.vercel.app EXPECTED_SHA=<commit> npm run test:smoke
+  ```
+
+  | Variable                          | Effect                                                                        |
+  | --------------------------------- | ----------------------------------------------------------------------------- |
+  | `BASE_URL`                        | Target origin; no local build or server is started                            |
+  | `EXPECTED_SHA`                    | The footer must show `Version <sha7>`; that check is skipped when unset       |
+  | `EXPECT_INDEXABLE=true`           | Robots must allow indexing (production only); otherwise `noindex` is expected |
+  | `VERCEL_AUTOMATION_BYPASS_SECRET` | Sent as `x-vercel-protection-bypass` to get past Vercel Deployment Protection |
 
 - **Dev-only validation:** `next dev` checks every route for instant navigation and reports `params` read outside `<Suspense>` (message `instant-shell-url-data`). Keep routes free of these warnings; the case-study page shows the pattern.
 

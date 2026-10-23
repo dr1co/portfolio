@@ -3,7 +3,7 @@
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
 **Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** In progress (Steps 0–1 done). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress (Steps 0–2 done). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -111,7 +111,7 @@ Suggested commit: `[feat.] show build commit in footer`
 
 ### Step 2 — Smoke spec and remote mode
 
-1. Extend `e2e/smoke.spec.ts` with the §4 smoke checks and tag them `@smoke`. Read the case-study slug from `getCaseStudySlugs()` rather than hard-coding it.
+1. Extend `e2e/smoke.spec.ts` with the §4 smoke checks and tag them `@smoke`. Read the case-study slug from `getCaseStudySlugs()` rather than hard-coding it. The indexing expectation comes from `EXPECT_INDEXABLE=true` (default: `noindex`). Step 7 sets it on the production smoke run once indexing is enabled there.
 2. `playwright.config.ts`:
    - If `BASE_URL` is set, use it as `baseURL` and omit `webServer`.
    - If `VERCEL_AUTOMATION_BYPASS_SECRET` is set, send `x-vercel-protection-bypass` via `extraHTTPHeaders` (Vercel Deployment Protection).
