@@ -1,12 +1,10 @@
-# node:24-alpine, pinned by digest. Dependabot bumps it; keep the version in sync with .nvmrc.
-ARG NODE_IMAGE=node:24-alpine@sha256:06d7adf3e0ef61a13f1d28682726366f97a15aa1888c934d3ecec86c33918b53
-
-FROM ${NODE_IMAGE} AS deps
+# All stages use node:24-alpine pinned by digest (literal FROM lines so Dependabot can bump them; keep in sync with .nvmrc).
+FROM node:24-alpine@sha256:06d7adf3e0ef61a13f1d28682726366f97a15aa1888c934d3ecec86c33918b53 AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 
-FROM ${NODE_IMAGE} AS build
+FROM node:24-alpine@sha256:06d7adf3e0ef61a13f1d28682726366f97a15aa1888c934d3ecec86c33918b53 AS build
 WORKDIR /app
 # NEXT_PUBLIC_* values are inlined at build time. Indexing is never enabled in the image.
 ARG NEXT_PUBLIC_SITE_URL=""
@@ -19,7 +17,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM ${NODE_IMAGE} AS runtime
+FROM node:24-alpine@sha256:06d7adf3e0ef61a13f1d28682726366f97a15aa1888c934d3ecec86c33918b53 AS runtime
 ARG COMMIT_SHA=""
 LABEL org.opencontainers.image.title="portfolio" \
       org.opencontainers.image.description="Adriano Matoba Lipski's portfolio (Next.js standalone server)" \

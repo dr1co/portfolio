@@ -3,7 +3,7 @@
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
 **Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** In progress (Steps 0–2 done; Step 4 green in CI; Step 5 written. The first Docker build runs in its PR). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress (Steps 0–2 done; Step 4 green in CI; Step 5 committed, waiting on its first CI run; Step 6 waiting on the owner; Step 8 written). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -201,6 +201,7 @@ Suggested commit: `[cd] gated Vercel preview and production deployments`
 
 1. `.github/dependabot.yml`: `npm` (weekly; group `next`, `@next/mdx` and `eslint-config-next` as `next`; group the remaining minor/patch updates), `github-actions` (weekly) and `docker` (weekly, base-image digest).
 2. README: CI badge for `ci.yml` on `main`.
+3. Amended during implementation: the Dockerfile uses literal `FROM node:24-alpine@sha256:…` lines, because Dependabot can't bump `FROM ${ARG}`. npm updates have a 7-day cooldown, and Node majors are ignored, since they move with `.nvmrc`. The linter and Trivy images in `docker run` steps aren't visible to Dependabot and are bumped by hand.
 
 Suggested commit: `[ci] Dependabot and CI badge`
 

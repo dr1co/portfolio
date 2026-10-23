@@ -1,5 +1,7 @@
 # adriano.dev — DevOps & Automation Portfolio
 
+[![CI](https://github.com/dr1co/portfolio/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dr1co/portfolio/actions/workflows/ci.yml)
+
 Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a small technical lab that explains how code gets from a commit to production. The goal is a site that feels like a well-built developer tool. It favours evidence over claims and never presents simulated data as real.
 
 - Product requirements: [docs/features-specification.md](docs/features-specification.md)
@@ -196,6 +198,11 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 - Permissions default to `contents: read`. Only `image` adds `security-events: write` (scan upload), and only `publish` adds `packages: write` (GHCR via `GITHUB_TOKEN`). Superseded PR runs are cancelled; `main` runs always finish.
 - **Image tags:** `sha-<7>` is the immutable release identifier; `main` follows the latest publish. There is no `latest`. The image's `org.opencontainers.image.revision` label holds the full commit.
 - Third-party actions are pinned to full commit SHAs (`# vX.Y.Z` comment), and the linter and Trivy images by digest. Node, npm and Playwright setup live in the local composite action [.github/actions/setup](.github/actions/setup/action.yml).
+- **Dependabot** ([.github/dependabot.yml](.github/dependabot.yml)) opens weekly PRs for:
+  - npm, with a 7-day cooldown on new releases. `next`, `@next/*` and `eslint-config-next` are grouped so they stay in lockstep, and other minor/patch updates come as one PR.
+  - GitHub Actions, in the workflows and the composite action, grouped.
+  - The `node:24-alpine` base image digest.
+    Node majors (the base image and `@types/node`) are ignored, because they move together with `.nvmrc` and Vercel's Node setting. The actionlint, hadolint and Trivy images run via `docker run` in the workflow, so Dependabot can't see them; bump their tag and digest by hand.
 - On pull requests, `github.sha` is GitHub's temporary merge commit, so PR images and their footer version point at that commit, not the branch head. Published images come from `main`, where it is the real commit.
 - `quality` and `e2e` are the required checks on `main`.
 - Run the same linters locally with the release binaries (no Docker needed): [actionlint](https://github.com/rhysd/actionlint/releases), [shellcheck](https://github.com/koalaman/shellcheck/releases) (actionlint uses it for `run:` scripts) and [hadolint](https://github.com/hadolint/hadolint/releases).
