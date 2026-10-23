@@ -3,7 +3,7 @@
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
 **Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** In progress (Steps 0–5 and 8 done and green in CI, with the container also verified locally; Step 6 half done (Vercel project yes, GitHub secrets and environments not yet); Step 7 written). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** In progress (Steps 0–5 and 8 done and green in CI, with the container also verified locally; Step 6 done except branch protection and the optional SITE_URL variable; Step 7 deploys a preview; unknown-slug 404 fix pending re-run). Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -193,7 +193,7 @@ The owner does this by hand. Claude can generate a step-by-step wizard script (`
 4. Job `deploy-production`: `main` pushes only. It **needs `publish`**, which needs every check, so a production deploy always has a published image of the same commit (listed in the summary). It uses `environment: production` and `concurrency: deploy-production` without cancellation.
 
 **Gate:** the GitHub side of Step 6 must exist before this is pushed: repo or environment secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` and `VERCEL_AUTOMATION_BYPASS_SECRET`, and environments `preview` and `production`. Without them, `deploy-preview` fails on the PR.
-**Acceptance:** a PR gets a working preview URL with a passing smoke test and `noindex`. After merge, production is deployed, its smoke test passes, and the footer shows the merged SHA.
+**Acceptance:** a PR gets a working preview URL with a passing smoke test and `noindex`. After merge, production is deployed, its smoke test passes, and the footer shows the merged SHA. **First preview run:** deploy, the commit SHA and `noindex` all passed, but an unknown slug returned **200**. Vercel's route table gives `/404` its 404 status before middleware runs, so the proxy's rewrite to `/404` was served as a plain static file. Fixed by rewriting to an unrouted path (`UNROUTED_PATH`), which falls through to Vercel's miss handler (status 404, not-found page).
 Suggested commit: `[cd] gated Vercel preview and production deployments`
 
 ### Step 8 — Dependabot and badge
