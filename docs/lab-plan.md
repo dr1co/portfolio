@@ -90,8 +90,8 @@ export type Scenario = {
 resolveRun(jobs, scenario); // → Record<jobId, { state: "passed"|"failed"|"skipped"; reason: string; steps: RunState[] }>
 dependencyLevels(jobs); // → jobId[][] (level 0 = jobs with no needs); Trigger is drawn before level 0
 topologicalOrder(jobs); // → jobId[] for tabs and Prev/Next
-statesAtTick(jobs, outcome, tick); // → Record<jobId, RunState> for playback; each level takes 2 ticks
-//   (running → outcome); skipped jobs resolve without a running tick
+runFrames(jobs, outcome); // → Record<jobId, RunState>[] for playback: all pending, then per level
+//   running → outcome; skipped jobs never run; an all-skipped level takes one frame
 ```
 
 Rules for `resolveRun`:
@@ -154,7 +154,7 @@ package.json                             CHG  yaml (devDependency)
 
 | Seam             | Level       | Behaviours                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ---------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Simulation model | unit        | `resolveRun` produces the §2 matrix, including reasons; step states follow the failure and `onFailure`/`events` rules; `dependencyLevels` and `topologicalOrder` match `needs`; `statesAtTick` goes pending → running → outcome level by level, and skipped jobs never show running.                                                                                                                                         |
+| Simulation model | unit        | `resolveRun` produces the §2 matrix, including reasons; step states follow the failure and `onFailure`/`events` rules; `dependencyLevels` and `topologicalOrder` match `needs`; `runFrames` goes pending → running → outcome level by level, ends on the resolved outcome, and skipped jobs never show running.                                                                                                              |
 | Playback         | unit        | Reducer: `run` resets to tick 0, `tick` advances until done, `pause`/`resume`, `reset`, `select`/`next`/`prev` stop playback, `setScenario` stops and shows final states. The hook with fake timers: a run finishes after the expected number of ticks; reduced motion finishes immediately; unmounting or hiding clears the timer.                                                                                          |
 | Drift            | unit (node) | Every modeled job exists in `ci.yml` and vice versa; `needs` are equal; the `events` model matches each job's `if:`; step names exist in order; excerpt lines appear verbatim; no excerpt contains a pinned ref.                                                                                                                                                                                                             |
 | Content          | unit        | Every demo card has an objective, at least one concept, a mode and a valid internal `href`; external links pass `links.ts`; every scenario's `failure` names a real job and step.                                                                                                                                                                                                                                            |
@@ -211,10 +211,12 @@ Suggested commit: `[feat.] Lab pipeline model of ci.yml with drift test`
 
 ### Step 3 — Simulation model
 
-1. **Tests first** (`pipeline-run.test.ts`): one slice at a time — `topologicalOrder`, `dependencyLevels`, `resolveRun` for each scenario (the §2 matrix and reasons), step states, then `statesAtTick`.
+1. **Tests first** (`pipeline-run.test.ts`): one slice at a time — `topologicalOrder`, `dependencyLevels`, `resolveRun` for each scenario (the §2 matrix and reasons), step states, then `runFrames`.
 2. Implement `src/lib/pipeline-run.ts` as pure functions over the content types.
 
 Suggested commit: `[feat.] deterministic pipeline run model`
+
+**Done.** Amended while implementing: `statesAtTick(jobs, outcome, tick)` became `runFrames(jobs, outcome)`, which returns the whole timeline. The playback reducer (Step 6) only needs a frame index, and "done" is the last index. A level where every job is skipped takes one frame instead of an empty running frame. The event wording in reasons ("Runs only on pull requests.") comes from `eventLabels` in `src/content/lab-pipeline.ts`.
 
 ### Step 4 — `/lab` landing page
 

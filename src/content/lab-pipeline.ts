@@ -59,6 +59,12 @@ export type Scenario = {
 
 export const workflowPath = ".github/workflows/ci.yml";
 
+/** How each event reads in a sentence, e.g. "Runs only on pull requests." */
+export const eventLabels: Record<PipelineEvent, string> = {
+  "push-main": "pushes to main",
+  "pull-request": "pull requests",
+};
+
 // TODO(content): review all Lab pipeline copy. Structure and excerpts are checked against ci.yml by lab-pipeline.drift.test.ts.
 export const pipelineTrigger: PipelineTrigger = {
   label: "Trigger",
