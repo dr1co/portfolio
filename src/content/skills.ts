@@ -34,20 +34,12 @@ export const skillGroups: readonly SkillGroup[] = [
   {
     id: "databases",
     title: "Databases",
-    skills: [
-      { tech: "postgresql" },
-      { tech: "mongodb" },
-      { tech: "redis" },
-    ],
+    skills: [{ tech: "postgresql" }, { tech: "mongodb" }, { tech: "redis" }],
   },
   {
     id: "collaboration",
     title: "Development & Collaboration",
-    skills: [
-      { tech: "git" },
-      { tech: "linux" },
-      { tech: "dev-containers" }
-    ],
+    skills: [{ tech: "git" }, { tech: "linux" }, { tech: "dev-containers" }],
   },
   {
     id: "learning",

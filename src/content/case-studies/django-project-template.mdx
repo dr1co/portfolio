@@ -69,15 +69,15 @@ The generated project then runs as two containers. Nginx serves static files and
   ]}
 />
 
-| Part           | Location                                                  | Responsibility                                                                                     |
-| -------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Generator      | `Dockerfile`, `entrypoint.sh`                             | Image with Django, django-tailwind and SQLAlchemy; the script that builds a new project            |
-| Design system  | `tailwind/styles.css`, `docs/visual-identity.md`          | Design tokens, light/dark themes and components, copied over Tailwind's default stylesheet         |
-| App scaffold   | `django-template/app/`                                    | Base layout, session decorator, context processor, external DB connector, test packages            |
-| Settings       | `django-template/core/`                                   | Settings read from `.env`, SQLite database, database-backed cache, static files with hashed names  |
-| Deployment     | `django-template/Dockerfile`, `docker-compose.yml`, `nginx/` | Gunicorn web container, Nginx reverse proxy, volumes for SQLite and static files, health check  |
-| Conventions    | `django-template/AGENTS.md`                               | Written rules for the generated project: structure, naming, tests, design system, production list  |
-| Publishing     | `.github/workflows/docker-publish.yml`                    | Builds the generator image and pushes it to GHCR on every push to `main`                           |
+| Part          | Location                                                     | Responsibility                                                                                    |
+| ------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| Generator     | `Dockerfile`, `entrypoint.sh`                                | Image with Django, django-tailwind and SQLAlchemy; the script that builds a new project           |
+| Design system | `tailwind/styles.css`, `docs/visual-identity.md`             | Design tokens, light/dark themes and components, copied over Tailwind's default stylesheet        |
+| App scaffold  | `django-template/app/`                                       | Base layout, session decorator, context processor, external DB connector, test packages           |
+| Settings      | `django-template/core/`                                      | Settings read from `.env`, SQLite database, database-backed cache, static files with hashed names |
+| Deployment    | `django-template/Dockerfile`, `docker-compose.yml`, `nginx/` | Gunicorn web container, Nginx reverse proxy, volumes for SQLite and static files, health check    |
+| Conventions   | `django-template/AGENTS.md`                                  | Written rules for the generated project: structure, naming, tests, design system, production list |
+| Publishing    | `.github/workflows/docker-publish.yml`                       | Builds the generator image and pushes it to GHCR on every push to `main`                          |
 
 ## Implementation
 
