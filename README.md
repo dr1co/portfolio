@@ -182,7 +182,7 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 
 - Title template `%s · Adriano Matoba Lipski`; the description is the tagline.
 - `robots` is `noindex, nofollow` unless `NEXT_PUBLIC_ALLOW_INDEXING=true`. Set that on production only.
-- `metadataBase` and the canonical URL come from `NEXT_PUBLIC_SITE_URL`. See [.env.example](.env.example).
+- `metadataBase` and the canonical URL come from `NEXT_PUBLIC_SITE_URL`. See [.env.example](.env.example). Each page sets its own canonical with `canonicalFor(path)` ([src/lib/canonical.ts](src/lib/canonical.ts)). The root layout sets none, because Next merges metadata shallowly and a layout canonical would leak into every page that doesn't override it. The `@smoke` suite checks that each canonical points at its own page.
 - The Open Graph image ([src/app/opengraph-image.tsx](src/app/opengraph-image.tsx)) and favicon ([src/app/icon.tsx](src/app/icon.tsx)) are generated with `ImageResponse` at build time. Their hex values mirror the dark tokens, because CSS variables aren't available there.
 - [src/app/not-found.tsx](src/app/not-found.tsx) renders the 404 page.
 
