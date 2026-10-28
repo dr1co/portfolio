@@ -7,14 +7,17 @@ const request = (path: string) =>
   new NextRequest(new URL(path, "http://localhost:3000"));
 
 describe("proxy", () => {
-  it("lets published case studies through", () => {
-    const response = proxy(request("/projects/tcc-engsoftware"));
+  it.each(["/projects/tcc-engsoftware", "/projects/django-project-template"])(
+    "lets the published case study %s through",
+    (path) => {
+      const response = proxy(request(path));
 
-    expect(response.headers.get("x-middleware-next")).toBe("1");
-    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
-  });
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+    },
+  );
 
-  it.each(["/projects/does-not-exist", "/projects/django-project-template"])(
+  it.each(["/projects/does-not-exist"])(
     "rewrites %s (no published case study) to a path no route serves",
     (path) => {
       const response = proxy(request(path));

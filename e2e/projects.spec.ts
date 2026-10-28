@@ -139,37 +139,43 @@ test.describe("case study", () => {
 
     expect(response?.status()).toBe(404);
   });
+});
 
-  test("projects without a case study answer 404", async ({ page }) => {
-    const response = await page.goto("/projects/django-project-template");
+const caseStudyPaths = [
+  "/projects/tcc-engsoftware",
+  "/projects/django-project-template",
+];
 
-    expect(response?.status()).toBe(404);
-  });
+for (const path of caseStudyPaths) {
+  test.describe(`case study ${path}`, () => {
+    for (const colorScheme of ["light", "dark"] as const) {
+      test(`has no detectable accessibility violations in the ${colorScheme} theme`, async ({
+        page,
+      }) => {
+        await page.emulateMedia({ colorScheme });
+        await page.goto(path);
 
-  for (const colorScheme of ["light", "dark"] as const) {
-    test(`has no detectable accessibility violations in the ${colorScheme} theme`, async ({
+        const results = await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+          .analyze();
+
+        expect(results.violations).toEqual([]);
+      });
+    }
+
+    test("never overflows the viewport on mobile", async ({
       page,
-    }) => {
-      await page.emulateMedia({ colorScheme });
+    }, testInfo) => {
+      test.skip(
+        testInfo.project.name !== "mobile-chromium",
+        "mobile layout only",
+      );
       await page.goto(path);
 
-      const results = await new AxeBuilder({ page })
-        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
-        .analyze();
-
-      expect(results.violations).toEqual([]);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
     });
-  }
-});
-
-test("case study never overflows the viewport on mobile", async ({
-  page,
-}, testInfo) => {
-  test.skip(testInfo.project.name !== "mobile-chromium", "mobile layout only");
-  await page.goto("/projects/tcc-engsoftware");
-
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - window.innerWidth,
-  );
-  expect(overflow).toBeLessThanOrEqual(0);
-});
+  });
+}

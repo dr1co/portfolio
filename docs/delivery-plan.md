@@ -3,7 +3,7 @@
 **Feature:** CI/CD for the portfolio itself: quality workflow, production container image on GHCR, Vercel deployments with post-deploy verification, and operational docs.
 **Source specs:** [features-specification.md §11, §12, §13 Phase 4](features-specification.md)
 **Branch:** `ops/delivery`, cut from `main` (projects work merged in PR #1, Step 0 in PR #2). The owner makes all commits **and pushes**. Several acceptance criteria need a real GitHub Actions run, so those steps end with "owner pushes, then we read the run".
-**Status:** In progress. Steps 0–9 done, and every PR job is green in CI (including a Vercel preview with a passing smoke test). Remaining: the first `main` run (publish to GHCR and production deploy with smoke test), then tick §6. Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** Done (2026-10-23). The first `main` run (merge of PR #4, `f980c6a`) published `ghcr.io/dr1co/portfolio:sha-f980c6a` (public, digest `sha256:cfc4b5bb…`) and deployed production, and the production smoke test passed including the SHA check. Follow-up for the owner: add the Vercel secrets as Dependabot secrets, or Dependabot PRs fail the required `deploy-preview` check. Decisions settled with the owner on 2026-10-22. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -225,12 +225,12 @@ Suggested commit: `[docs] delivery pipeline and operations runbook`
 
 ## 6. Definition of done
 
-- [ ] Every PR runs lint, typecheck, format, unit tests, actionlint, hadolint, full e2e (with axe), an image build, a container smoke test and a Trivy scan. Same-repo PRs get a smoke-tested preview.
-- [ ] Every `main` push publishes `ghcr.io/dr1co/portfolio:sha-<7>` (and `:main`) and deploys production on Vercel only after all checks pass. The production smoke test verifies the SHA.
-- [ ] The image runs as non-root, has a health check, contains no secrets and has documented build/run commands.
-- [ ] Actions are SHA-pinned with least-privilege permissions. Dependabot covers npm, actions and docker.
-- [ ] Rollback and secret rotation are documented in `docs/operations.md`.
-- [ ] `npm run check`, `npm run build`, `npm run test:e2e` and `npm run docker:smoke` pass. README, AGENTS.md and the checklist are updated.
+- [x] Every PR runs lint, typecheck, format, unit tests, actionlint, hadolint, full e2e (with axe), an image build, a container smoke test and a Trivy scan. Same-repo PRs get a smoke-tested preview.
+- [x] Every `main` push publishes `ghcr.io/dr1co/portfolio:sha-<7>` (and `:main`) and deploys production on Vercel only after all checks pass. The production smoke test verifies the SHA.
+- [x] The image runs as non-root, has a health check, contains no secrets and has documented build/run commands.
+- [x] Actions are SHA-pinned with least-privilege permissions. Dependabot covers npm, actions and docker.
+- [x] Rollback and secret rotation are documented in `docs/operations.md`.
+- [x] `npm run check`, `npm run build`, `npm run test:e2e` and `npm run docker:smoke` pass. README, AGENTS.md and the checklist are updated.
 
 ## 7. Not in this plan
 

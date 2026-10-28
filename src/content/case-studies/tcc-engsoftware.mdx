@@ -1,14 +1,12 @@
-{/* TODO(content): drafted from the public repository (README, src/, src/pipelines/ docstrings). Review every section before publishing. */}
-
 ## Overview
 
 This is my undergraduate thesis in Software Engineering at UEPG. It builds and evaluates three deep-learning architectures: a 1D CNN, a stacked LSTM and a hybrid CNN+LSTM. The models were used to predict the next closing price of two Brazilian mini futures contracts, the mini dollar (WDO) and the mini index (WIN), from one-hour (H1) candles.
 
-Beyond the models themselves, the work is organized as a reproducible experiment: every scenario I tested has its own script, every model generation is saved side by side, and every result is evaluated both with error metrics and with a trading backtest that includes transaction costs and significance tests.
+Beyond the models themselves, the work is organized as a reproducible experiment: every scenario tested has its own script, every model generation is saved side by side, and every result is evaluated both with error metrics and with a trading backtest that includes transaction costs and significance tests.
 
 ## Problem and goals
 
-Price prediction papers often covers long horizon predictions, which shows promising results in those scenarios. Although, with a stock market more and more accessible for the regular investor, especially derivative markets, more often the investors are exposed to high, volatile operations with little to no preparation. This study covers Deep Learning application as an analysis tool for intraday operations in temporal series. The goals of the study are:
+Price prediction papers often covers long horizon predictions, which shows promising results in those scenarios. Although, with a stock market more and more accessible for the regular investor, especially derivative markets, more often the investors are exposed to high, volatile operations with little to no preparation. This study covers Deep Learning application as an analysis tool for intraday operations in brazilian temporal series. The goals of the study are:
 
 - compare CNN, LSTM and hybrid architectures on the same data and the same preprocessing;
 - evaluate them on **direction**, not only on price error;
@@ -27,7 +25,7 @@ Price prediction papers often covers long horizon predictions, which shows promi
     { id: "returns", label: "Log returns", x: 450, y: 50 },
     { id: "split", label: "Split + scale", x: 630, y: 50 },
     { id: "windows", label: "60-bar windows", x: 630, y: 180 },
-    { id: "models", label: "CNN · LSTM · Hybrid", x: 450, y: 180 },
+    { id: "models", label: "CNN | LSTM | Hybrid", x: 450, y: 180 },
     { id: "evaluate", label: "Error metrics", x: 270, y: 180 },
     { id: "backtest", label: "Backtest", x: 90, y: 180 },
   ]}
@@ -84,13 +82,13 @@ Each of the six combinations (2 markets × 3 architectures) trains for up to 200
 
 ## Technical decisions
 
-**Log returns instead of absolute prices.** The first version scaled raw prices. For a strongly trending series, such as WIN in the last 5 years, test-period prices can sit far above anything seen in training, so a Min-Max scaler fitted on training data pushes the model to extrapolate outside its domain. Log returns are stationary — their distribution does not shift with the price level — which removes the problem regardless of how far the price moves.
+**Log returns instead of absolute prices.** The first version scaled raw prices. For a strongly trending series, such as WIN in the last 5 years, test-period prices can sit far above anything seen in training, so a Min-Max scaler fitted on training data pushes the model to extrapolate outside its domain. Log returns are stationary, so their distribution does not shift with the price level, which removes the problem regardless of how far the price moves. This was a significant finding, as many studies do scale on raw prices which can lead to a less consistent model training.
 
 **Evaluate on direction and money, not just error.** Price RMSE is reported, but the decisive metrics are directional accuracy and a backtest: two strategies (single-bar and multi-bar holding) with a fixed round-trip transaction cost per market, an annualized Sharpe ratio, maximum drawdown, historical VaR at 95%, and a one-sample t-test on per-trade returns.
 
 **One script per scenario.** Each experiment in `src/pipelines/` documents its motivation, flow, produced artifacts and reference result in its docstring, and can be rerun with `python -m src.pipelines.<name>`.
 
-**Correct for multiple comparisons.** The final scenario ran 216 hypothesis tests. At p < 0.05, about 10.8 false positives are expected by chance alone, so results were also checked against a Bonferroni-corrected threshold (0.05 / 216 ≈ 0.000231).
+**Correct for multiple comparisons.** The final scenario ran 216 hypothesis tests. At p < 0.05, about 10.8 false positives are expected by chance alone, so results were also checked against a Bonferroni-corrected threshold (0.05 / 216 ≈ 0.000231) to ensure the results' validation.
 
 ## Testing and validation
 
@@ -110,6 +108,9 @@ Six scenarios were run in sequence, each building on what the previous one showe
   hyperparameters, feature set or trade-selection rule produced a statistically
   defensible directional edge for WIN or WDO at the one-hour horizon. The value
   of the project is the method that makes this conclusion trustworthy.
+
+This doesn't mean, however, that the models are inefficient. They showed great results in the literature for extended horizons, and results can vary from market to market, which means the same approach can be made for other derivatives. This is left as an open path for future studies.
+
 </Callout>
 
 ## Limitations and future work
@@ -123,5 +124,5 @@ Natural next steps would be adding tests around the data-preparation and backtes
 ## Evidence and links
 
 - [Source repository](https://github.com/dr1co/tcc-engsoftware) — code, scenario scripts, saved models and result tables.
-- The thesis document, `TCC_Adriano_2026.pdf`, is in the repository root.
+- The thesis document, `TCC_Adriano_2026.pdf`, is in the repository root, available only in _Brazilian Portuguese_.
 - Replicate the baseline with `python -m src.pipelines.01_baseline_log` after installing `requirements.txt`.

@@ -9,7 +9,6 @@ export type SkillGroup = {
   skills: readonly Skill[];
 };
 
-// TODO(content): review every entry before publishing — only list what you can discuss.
 export const skillGroups: readonly SkillGroup[] = [
   {
     id: "delivery",
@@ -23,12 +22,19 @@ export const skillGroups: readonly SkillGroup[] = [
   {
     id: "backend",
     title: "Backend & Automation",
-    skills: [{ tech: "python" }, { tech: "django" }, { tech: "flask" }],
+    skills: [
+      { tech: "python" },
+      { tech: "django" },
+      { tech: "flask" },
+      { tech: "nodejs" },
+      { tech: "express" },
+      { tech: "bash" },
+    ],
   },
   {
     id: "databases",
     title: "Databases",
-    skills: [{ tech: "postgresql" }],
+    skills: [{ tech: "postgresql" }, { tech: "mongodb" }, { tech: "redis" }],
   },
   {
     id: "collaboration",
