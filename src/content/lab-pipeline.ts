@@ -1,3 +1,5 @@
+import { siteConfig } from "@/lib/site-config";
+
 export type RunState = "pending" | "running" | "passed" | "failed" | "skipped";
 
 /** The workflow events the Lab models. Pull requests are same-repository ones; forks aren't modeled. */
@@ -58,11 +60,19 @@ export type Scenario = {
 };
 
 export const workflowPath = ".github/workflows/ci.yml";
+export const workflowUrl = `${siteConfig.sourceRepoUrl}/blob/main/${workflowPath}`;
+export const workflowRunsUrl = `${siteConfig.sourceRepoUrl}/actions/workflows/ci.yml`;
 
 /** How each event reads in a sentence, e.g. "Runs only on pull requests." */
 export const eventLabels: Record<PipelineEvent, string> = {
   "push-main": "pushes to main",
   "pull-request": "pull requests",
+};
+
+/** A single occurrence of each event, e.g. "Event: push to main". */
+export const eventNames: Record<PipelineEvent, string> = {
+  "push-main": "push to main",
+  "pull-request": "pull request",
 };
 
 // TODO(content): review the page intro and scope note.

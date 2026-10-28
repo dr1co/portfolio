@@ -1,6 +1,7 @@
 import { ArrowLeft, FlaskConical } from "lucide-react";
 import type { Metadata } from "next";
 import { OutcomeMatrix } from "@/components/lab/outcome-matrix";
+import { PipelineExplorer } from "@/components/lab/pipeline-explorer";
 import { AppLink } from "@/components/ui/app-link";
 import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
@@ -9,8 +10,12 @@ import {
   pipelineIntro,
   pipelineScenarios,
   pipelineScope,
+  pipelineTrigger,
+  workflowRunsUrl,
+  workflowUrl,
 } from "@/content/lab-pipeline";
 import { canonicalFor } from "@/lib/canonical";
+import { isHttpsUrl } from "@/lib/links";
 
 export const metadata: Metadata = {
   title: "Pipeline Explorer",
@@ -38,14 +43,36 @@ export default function PipelineExplorerPage() {
           </Badge>
           {pipelineIntro}
         </p>
-        <p className="text-base">{pipelineScope}</p>
+        <p className="text-base">
+          {pipelineScope}
+          {isHttpsUrl(workflowRunsUrl) && (
+            <>
+              {" "}
+              <AppLink
+                href={workflowRunsUrl}
+                external
+                className="font-medium text-accent hover:underline"
+              >
+                See real runs on GitHub
+              </AppLink>
+            </>
+          )}
+        </p>
       </div>
-      <section aria-labelledby="outcomes-heading" className="mt-12">
-        <h2 id="outcomes-heading" className="text-2xl font-semibold">
-          Outcomes by scenario
+      <section aria-labelledby="explorer-heading" className="mt-12">
+        <h2 id="explorer-heading" className="text-2xl font-semibold">
+          Explore a run
         </h2>
         <div className="mt-6">
-          <OutcomeMatrix jobs={ciJobs} scenarios={pipelineScenarios} />
+          <PipelineExplorer
+            trigger={pipelineTrigger}
+            jobs={ciJobs}
+            scenarios={pipelineScenarios}
+            workflowUrl={workflowUrl}
+          />
+          <noscript>
+            <OutcomeMatrix jobs={ciJobs} scenarios={pipelineScenarios} />
+          </noscript>
         </div>
       </section>
     </Container>

@@ -1,5 +1,4 @@
-import { siteConfig } from "@/lib/site-config";
-import { workflowPath } from "./lab-pipeline";
+import { workflowUrl } from "./lab-pipeline";
 
 export type LabDemo = {
   slug: string;
@@ -35,6 +34,6 @@ export const labDemos: readonly LabDemo[] = [
     ],
     mode: "simulated",
     href: "/lab/pipeline",
-    sourceUrl: `${siteConfig.sourceRepoUrl}/blob/main/${workflowPath}`,
+    sourceUrl: workflowUrl,
   },
 ];

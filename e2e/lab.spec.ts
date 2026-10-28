@@ -47,23 +47,57 @@ test.describe("lab landing", () => {
 test.describe("pipeline explorer page", () => {
   const path = "/lab/pipeline";
 
-  test("says it is a simulation and shows every scenario's outcome", async ({
-    page,
-  }) => {
+  test("says it is a simulation", async ({ page }) => {
     await page.goto(path);
 
     await expect(page.getByText("Simulated").first()).toBeVisible();
-    const table = page.getByRole("table");
-    await expect(table.getByRole("columnheader")).toContainText([
-      "Job",
-      "Push to main",
-      "Pull request",
-      "Failure on main",
-      "Vulnerable image",
-    ]);
     await expect(
-      table.getByRole("row", { name: /^E2E tests/ }).getByRole("cell"),
-    ).toContainText(["Passed", "Passed", "Failed", "Passed"]);
+      page.getByText("Nothing here triggers GitHub Actions"),
+    ).toBeVisible();
+  });
+
+  test("can be explored with the keyboard alone", async ({ page }) => {
+    await page.goto(path);
+    const panel = page.getByRole("tabpanel");
+
+    await page.getByRole("radio", { name: "Push to main" }).focus();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("ArrowRight");
+    await expect(
+      page.getByRole("radio", { name: "Failure on main" }),
+    ).toBeChecked();
+
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("tab", { name: /Trigger/ })).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("ArrowRight");
+    await expect(page.getByRole("tab", { name: /E2E tests/ })).toBeFocused();
+    await expect(panel).toContainText("An end-to-end test fails.");
+
+    await page.keyboard.press("End");
+    await expect(panel).toContainText("Needs publish, which was skipped.");
+
+    await page.keyboard.press("Tab");
+    await expect(
+      page.getByRole("button", { name: "Previous job" }),
+    ).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(
+      page.getByRole("tab", { name: /Preview deploy/ }),
+    ).toHaveAttribute("aria-selected", "true");
+  });
+
+  test("switching scenario changes the outcomes", async ({ page }) => {
+    await page.goto(path);
+    const publish = page.getByRole("tab", { name: /Publish/ });
+    await expect(publish).toContainText("Passed");
+
+    await page.getByText("Vulnerable image").click();
+
+    await expect(
+      page.getByRole("tab", { name: /Image/ }).first(),
+    ).toContainText("Failed");
+    await expect(publish).toContainText("Skipped");
   });
 
   test("keeps Lab marked as the current section", async ({
@@ -100,6 +134,26 @@ test.describe("pipeline explorer page", () => {
       () => document.documentElement.scrollWidth - window.innerWidth,
     );
     expect(overflow).toBeLessThanOrEqual(0);
+  });
+});
+
+test.describe("pipeline explorer without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("shows every scenario's outcome as a table", async ({ page }) => {
+    await page.goto("/lab/pipeline");
+
+    const table = page.getByRole("table");
+    await expect(table.getByRole("columnheader")).toContainText([
+      "Job",
+      "Push to main",
+      "Pull request",
+      "Failure on main",
+      "Vulnerable image",
+    ]);
+    await expect(
+      table.getByRole("row", { name: /^E2E tests/ }).getByRole("cell"),
+    ).toContainText(["Passed", "Passed", "Failed", "Passed"]);
   });
 });
 

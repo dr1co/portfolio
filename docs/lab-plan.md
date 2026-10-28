@@ -253,6 +253,15 @@ No playback yet: scenario picker, graph, selection, Prev/Next, panel.
 
 Suggested commit: `[feat.] Pipeline Explorer with scenarios`
 
+**Done.** Notes from implementing:
+
+- `useRovingTabs(count, control?)`: the unused `initial` parameter was replaced by an optional `{ selected, onSelect }`, so Prev/Next and the scenario picker can move the selection too.
+- The page gets an h2 "Explore a run" so the panel's h3 headings don't skip a level, plus a "See real runs on GitHub" link (`workflowRunsUrl`). `workflowUrl` and `workflowRunsUrl` live in `lab-pipeline.ts`, and `lab.ts` reuses `workflowUrl`.
+- The outcome table from Step 4 now lives only in `<noscript>` (L9). Its e2e test runs with JavaScript disabled.
+- Motion's `initial` style is also rendered on the server, so a panel animating from `opacity: 0` would stay invisible without JavaScript, and axe could catch it mid-fade (it did, as a contrast failure). The panel skips its entrance animation on first render (`useIsMounted`) and only animates later changes.
+- Each node shows its `needs` as text and the trigger shows the scenario's event (`eventNames`), so the graph reads without the connectors, which are decorative.
+- Open UX question: below `lg`, the panel sits under all seven nodes, so selecting a node on mobile changes content off-screen.
+
 ### Step 6 — Run playback
 
 1. **Reducer tests first** (`use-pipeline-playback.test.ts`): the §4 playback behaviours. Then the hook with `vi.useFakeTimers()`.
