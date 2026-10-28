@@ -229,6 +229,13 @@ Suggested commit: `[feat.] deterministic pipeline run model`
 
 Suggested commit: `[feat.] Lab landing page`
 
+**Done.** Amended while implementing:
+
+- The landing card links to `/lab/pipeline`, so this step also creates that page as a real shell: back link "Back to the Lab" (not "Lab", which would clash with the nav link), h1, Simulated badge with `pipelineIntro`, the `pipelineScope` note (L18), and the `OutcomeMatrix` as visible content under "Outcomes by scenario". No link points at a missing page at any commit. Step 5 adds the interactive Explorer above the matrix and decides whether the matrix stays visible or moves into `<noscript>`.
+- `relatedProject` was dropped from `LabDemo`: no project in `projects.ts` relates to the Pipeline Explorer (the portfolio itself isn't listed), so the option would be speculative.
+- Reasons name jobs by their `ci.yml` id ("Needs e2e, which failed."), while row headers use labels ("E2E tests"). That's deliberate: the id is what `needs:` says.
+- Also fixed: the Step 2 drift test had type errors that `npm run check` caught, but that I had reported as green because of a mangled `$?` in a `wsl.exe` one-liner (now an AGENTS.md gotcha).
+
 ### Step 5 — Explorer, static interaction
 
 No playback yet: scenario picker, graph, selection, Prev/Next, panel.

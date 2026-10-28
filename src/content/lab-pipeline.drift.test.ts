@@ -100,10 +100,12 @@ const workflowLines = new Set(source.split("\n").map((line) => line.trim()));
 const ELISION = "# …";
 const PINNED_REF = /@[0-9a-f]{40}\b|@sha256:/;
 
-describe.each([
+const excerpts: [string, readonly string[]][] = [
   ["trigger", pipelineTrigger.excerpt],
-  ...ciJobs.map((job) => [job.id, job.excerpt] as const),
-])("%s excerpt", (_, excerpt) => {
+  ...ciJobs.map((job): [string, readonly string[]] => [job.id, job.excerpt]),
+];
+
+describe.each(excerpts)("%s excerpt", (_, excerpt) => {
   it("quotes ci.yml verbatim, apart from elision markers", () => {
     const invented = excerpt.filter(
       (line) => line.trim() !== ELISION && !workflowLines.has(line.trim()),

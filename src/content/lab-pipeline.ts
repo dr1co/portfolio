@@ -65,6 +65,13 @@ export const eventLabels: Record<PipelineEvent, string> = {
   "pull-request": "pull requests",
 };
 
+// TODO(content): review the page intro and scope note.
+export const pipelineIntro =
+  "This is the CI/CD workflow that builds, tests and deploys this site, modeled job by job. Outcomes are scripted from the real workflow. Nothing here triggers GitHub Actions.";
+
+export const pipelineScope =
+  "A simplified model: runs that get cancelled, pull requests from forks and real durations aren't shown.";
+
 // TODO(content): review all Lab pipeline copy. Structure and excerpts are checked against ci.yml by lab-pipeline.drift.test.ts.
 export const pipelineTrigger: PipelineTrigger = {
   label: "Trigger",
