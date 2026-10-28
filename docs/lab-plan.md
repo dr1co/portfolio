@@ -201,6 +201,14 @@ Suggested commit: `[feat.] error badge tone and run-state badge`
 **Acceptance:** changing a job's `needs` in `ci.yml` makes the drift test fail.
 Suggested commit: `[feat.] Lab pipeline model of ci.yml with drift test`
 
+**Done.** Notes from implementing:
+
+- The model lists **every** step of each job, in order, so adding a step to `ci.yml` also fails the test. Unnamed steps are named the way GitHub shows them: the action without its `@ref` (`actions/checkout`), or the command (`docker load -i image.tar`).
+- Step conditions use the same mapping table as job conditions (`failure()` → `onFailure`, `env.IS_MAIN_PUSH == 'true'` → `["push-main"]`). The SARIF upload's same-repo condition maps to "always" because fork PRs aren't modeled (L18).
+- Excerpt lines are compared **trimmed**, so excerpts can be re-indented. A `# …` line marks omitted lines and is exempt.
+- The scenario rule ("failure names a real job and step") lives in `src/content/lab-pipeline.test.ts`, next to the scenarios, instead of Step 4's `lab.test.ts`.
+- Mutation-checked: changing a `needs`, renaming a step, or adding an unknown `if:` each fail the test.
+
 ### Step 3 — Simulation model
 
 1. **Tests first** (`pipeline-run.test.ts`): one slice at a time — `topologicalOrder`, `dependencyLevels`, `resolveRun` for each scenario (the §2 matrix and reasons), step states, then `statesAtTick`.
