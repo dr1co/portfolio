@@ -34,7 +34,7 @@ No content gate: Claude drafts all Lab copy from `ci.yml`, marks it `TODO(conten
 | L9  | No-JS fallback   | A `<noscript>` **outcome matrix**: jobs × scenarios, each cell with the outcome as text.                                                                                                                                                                                                                                                                                                               |
 | L10 | Scenario picker  | An accessible **radio group** (segmented look). Switching scenario stops playback, shows the new scenario's final states and selects `Trigger`.                                                                                                                                                                                                                                                        |
 | L11 | Job panel        | Purpose, explanation, run state + the scenario's reason (e.g. "Skipped: needs `e2e`, which failed"), `needs` and the condition in plain words, a **step checklist** (step states derive from the job), and a collapsible **real YAML excerpt** in a `TerminalPanel` titled `.github/workflows/ci.yml`.                                                                                                 |
-| L12 | Failed color     | New `--danger` semantic token in both themes, plus `danger` and `success` `Badge` tones (if `success` is missing). Every state is icon + text, never color alone. `tokens.test.ts` covers AA contrast.                                                                                                                                                                                                 |
+| L12 | Failed color     | The existing `--error` token (already AA-tested in both themes) through a new `error` `Badge` tone. Passed uses `accent`, which is the success green. Every state is icon + text, never color alone.                                                                                                                                                                                                   |
 | L13 | Drift            | Hand-written data in `src/content/lab-pipeline.ts`, plus a **Vitest drift test** that parses `ci.yml` (`yaml` dev dependency). The test asserts job ids, `needs`, event conditions and step names match, and that every excerpt line appears verbatim in the file. Excerpts **must not** contain pinned refs (`@<40-hex>`, `@sha256:`): they change with every Dependabot bump. The test rejects them. |
 | L14 | Home integration | Keep the generic home preview. Add an "Explore the real pipeline in the Lab →" link under it, and enable **Lab** in the nav. Hero buttons stay unchanged.                                                                                                                                                                                                                                              |
 | L15 | URL state        | None. Scenario, selection and playback live in client state only.                                                                                                                                                                                                                                                                                                                                      |
@@ -119,8 +119,6 @@ Expected outcomes (asserted in tests):
 ```text
 src/
   app/
-    globals.css                          CHG  --danger token (light + dark), @theme mapping
-    tokens.test.ts                       CHG  danger in the AA contrast list
     lab/page.tsx                         NEW  landing: intro + demo cards
     lab/pipeline/page.tsx                NEW  Explorer page, metadata, noscript matrix
   content/
@@ -134,7 +132,7 @@ src/
     use-roving-tabs.ts                   CHG  optional controlled mode (selected/onSelect)
     site-config.ts                       CHG  routes./lab.enabled = true
   components/
-    ui/badge.tsx                         CHG  danger (and success) tones
+    ui/badge.tsx                         CHG  error tone
     lab/lab-card.tsx (+ .test)           NEW
     lab/run-state-badge.tsx (+ .test)    NEW  state → icon + text + tone
     lab/pipeline-explorer.tsx (+ .test)  NEW  client island: picker, graph, controls, panel, live region
@@ -183,14 +181,15 @@ No commit.
 - Activity (`preserving-ui-state.md`) confirms the plan: hidden routes keep their state, and a `useLayoutEffect` cleanup is the documented way to reset transient state. Playback must pause there (Step 6), or it would resume on its own when the route is shown again.
 - Static routes need nothing new: `/lab` and `/lab/pipeline` are plain `page.tsx` files, so the proxy and `generateStaticParams` aren't involved.
 
-### Step 1 — Danger token and state badge
+### Step 1 — Error tone and state badge (done)
 
-1. **Test first** (`tokens.test.ts`): `danger` meets AA (4.5:1) on `background`, `surface` and `surface-elevated` in both themes.
-2. Add `--danger` to both theme blocks and `--color-danger` to `@theme` in `globals.css`. Pick values that pass the test (start around `#b42318` light and `#ffa198` dark).
-3. `Badge`: add a `danger` tone, and a `success` tone if `accent` isn't the success green.
-4. **Test first** (`run-state-badge.test.tsx`): each `RunState` renders its text label ("Pending", "Running", "Passed", "Failed", "Skipped"). Icons: `Clock`, `Loader` (`motion-safe:animate-spin`), `CheckCircle2`, `XCircle`, `CircleSlash`. Tones: neutral, info, success, danger, neutral.
+Amended while implementing: `--error` already existed in both themes and was already in the AA test, so no new token. `accent` is the same green as `--success`, so no `success` tone either.
 
-Suggested commit: `[feat.] danger token and run-state badge`
+1. `Badge`: add an `error` tone.
+2. **Test first** (`run-state-badge.test.tsx`): each `RunState` renders its text label ("Pending", "Running", "Passed", "Failed", "Skipped"), and the icon is decorative. Icons: `Clock`, `LoaderCircle` (`motion-safe:animate-spin`), `CircleCheck`, `CircleX`, `CircleSlash`. Tones: neutral, info, accent, error, neutral.
+3. `RunState` lives in `src/content/lab-pipeline.ts`; Step 2 adds the rest of the model there.
+
+Suggested commit: `[feat.] error badge tone and run-state badge`
 
 ### Step 2 — Pipeline content and drift test
 
@@ -271,7 +270,7 @@ Suggested commit: `[docs] Lab documentation`
 - [ ] `/lab` and `/lab/pipeline` render, are prerendered at build, and are linked from the nav and the home pipeline section.
 - [ ] The Explorer clearly identifies itself as a simulation (L19) and never claims a real deployment.
 - [ ] All four scenarios produce the §2 matrix; playback works by keyboard, touch and mouse, stops on interaction and respects reduced motion.
-- [ ] Every state is shown as icon + text; `danger` passes AA in both themes.
+- [ ] Every state is shown as icon + text; `error` passes AA in both themes.
 - [ ] The drift test fails when `ci.yml` and the model diverge.
 - [ ] No-JS visitors see the outcome matrix.
 - [ ] `npm run check`, `npm run build` and `npm run test:e2e` pass, including axe in both themes.

@@ -7,6 +7,7 @@ const TONES = {
   accent: "border-accent/40 text-accent",
   info: "border-info/40 text-info",
   warning: "border-warning/40 text-warning",
+  error: "border-error/40 text-error",
 };
 
 /** Small mono label. State badges pass an `icon`, but the text always carries the meaning. */
