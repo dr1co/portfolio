@@ -37,6 +37,21 @@ test.describe("smoke", { tag: "@smoke" }, () => {
     );
   });
 
+  test("canonical URLs, when set, point at the page itself", async ({
+    page,
+  }) => {
+    const [slug] = getCaseStudySlugs();
+
+    for (const path of ["/", "/projects", `/projects/${slug}`]) {
+      await page.goto(path);
+      const canonical = page.locator('link[rel="canonical"]');
+      if ((await canonical.count()) === 0) continue;
+
+      const href = await canonical.getAttribute("href");
+      expect(new URL(href!).pathname, `canonical of ${path}`).toBe(path);
+    }
+  });
+
   test("footer shows the expected build version", async ({ page }) => {
     test.skip(!expectedSha, "EXPECTED_SHA not set");
     await page.goto("/");

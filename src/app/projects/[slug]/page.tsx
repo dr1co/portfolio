@@ -9,6 +9,7 @@ import { TableOfContents } from "@/components/projects/table-of-contents";
 import { AppLink } from "@/components/ui/app-link";
 import { Container } from "@/components/ui/container";
 import { getCaseStudySlugs, getProject } from "@/content/projects";
+import { canonicalFor } from "@/lib/canonical";
 import { getHeadings } from "@/lib/headings";
 
 const caseStudyDir = join(process.cwd(), "src/content/case-studies");
@@ -25,9 +26,7 @@ export async function generateMetadata({
   return {
     title: project.title,
     description: project.description || project.summary,
-    alternates: process.env.NEXT_PUBLIC_SITE_URL
-      ? { canonical: `/projects/${project.slug}` }
-      : undefined,
+    alternates: canonicalFor(`/projects/${project.slug}`),
   };
 }
 

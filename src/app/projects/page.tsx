@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { ProjectDirectory } from "@/components/projects/project-directory";
 import { Container } from "@/components/ui/container";
 import { directoryIntro, getProjectDirectory } from "@/content/projects";
+import { canonicalFor } from "@/lib/canonical";
 
 export const metadata: Metadata = {
   title: "Projects",
   description: directoryIntro,
+  alternates: canonicalFor("/projects"),
 };
 
 export default function ProjectsPage() {

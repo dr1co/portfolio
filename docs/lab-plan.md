@@ -9,9 +9,11 @@
 
 ## 0. Gate (check before Step 1)
 
-- [ ] `feat/lab` exists and is based on an up-to-date `main`.
-- [ ] `npm run check`, `npm run build` and `npm run test:e2e` are green on that base.
-- [ ] The network is available (`npm i -D yaml` in Step 2, and builds need Google Fonts).
+- [x] `feat/lab` exists and is based on an up-to-date `main`.
+- [x] `npm run check`, `npm run build` and `npm run test:e2e` are green on that base.
+- [x] The network is available (`npm i -D yaml` in Step 2, and builds need Google Fonts).
+
+Gate met on 2026-10-28.
 
 No content gate: Claude drafts all Lab copy from `ci.yml`, marks it `TODO(content)` and lists it in the pre-publish checklist (L16).
 
@@ -174,6 +176,12 @@ Work test-first in vertical slices, per AGENTS.md. Each step must pass `npm run 
 2. Read `node_modules/next/dist/docs/` for anything new on static routes and metadata since the projects plan. Note findings in §7 if they change a step.
 
 No commit.
+
+**Findings (2026-10-28):**
+
+- Metadata is merged **shallowly** across segments (`generate-metadata.md`, "Merging"). The root layout sets `alternates: { canonical: "/" }` when `NEXT_PUBLIC_SITE_URL` is set, so any page that doesn't set `alternates` itself inherits canonical `/`. Fixed before Step 1: the layout no longer sets a canonical, each page calls `canonicalFor(path)` from `src/lib/canonical.ts`, and a `@smoke` test checks it. Both Lab pages must use `canonicalFor` too (Steps 4 and 5), and Step 7 adds them to that smoke test.
+- Activity (`preserving-ui-state.md`) confirms the plan: hidden routes keep their state, and a `useLayoutEffect` cleanup is the documented way to reset transient state. Playback must pause there (Step 6), or it would resume on its own when the route is shown again.
+- Static routes need nothing new: `/lab` and `/lab/pipeline` are plain `page.tsx` files, so the proxy and `generateStaticParams` aren't involved.
 
 ### Step 1 — Danger token and state badge
 
