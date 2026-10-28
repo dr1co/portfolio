@@ -22,7 +22,7 @@ describe("Hero", () => {
     );
     expect(
       tags.getAllByRole("listitem").map((item) => item.textContent),
-    ).toEqual(["Docker", "CI/CD", "Python", "Linux"]);
+    ).toEqual(["Docker", "CI/CD", "Python", "Linux", "Bash"]);
   });
 
   it("labels the terminal panel as an example rather than live output", () => {
