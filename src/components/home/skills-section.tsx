@@ -32,7 +32,7 @@ export function SkillsSection({
             </div>
             {group.learning && (
               <p className="mt-2 text-sm text-muted">
-                Active learning areas — not yet used in a substantive project.
+                Active learning areas.
               </p>
             )}
             <ul className="mt-4 flex flex-col gap-2 font-mono text-sm">

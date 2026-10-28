@@ -31,10 +31,9 @@ export const siteConfig: SiteConfig = {
   headline: "From code to production.",
   tagline:
     "Building reproducible environments, automated workflows, and reliable software delivery.",
-  // TODO(content): review intro wording.
   intro:
-    "Software developer working on backend services, containerized development environments and CI/CD automation — currently deepening that work toward DevOps.",
-  heroTags: ["Docker", "CI/CD", "Python", "Linux"],
+    "Software Engineer working on backend services, containerized development environments and CI/CD automation. Currently deepening the work toward DevOps & DevSecOps.",
+  heroTags: ["Docker", "CI/CD", "Python", "Linux", "Bash"],
   routes: [
     { href: "/", label: "Home", enabled: true },
     { href: "/projects", label: "Projects", enabled: true },

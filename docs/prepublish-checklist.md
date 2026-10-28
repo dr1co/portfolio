@@ -14,6 +14,7 @@ Everything the home page needs from the owner before it goes public. Each item p
 - [ ] **Thesis technologies** — confirmed: the repo's `requirements.txt` has no PyTorch (stack is TensorFlow/Keras, Keras Tuner, pandas, scikit-learn). Remove `pytorch` from the thesis entry in `projects.ts`, and consider adding `scikit-learn`/`pandas` to `technologies.ts`.
 - [ ] **Thesis description** — drafted from the repo README (including its negative result). Confirm the wording.
 - [ ] **Thesis case study** — [src/content/case-studies/tcc-engsoftware.mdx](../src/content/case-studies/tcc-engsoftware.mdx) was drafted from the public repo (README, `src/`, scenario docstrings). Every number comes from the repo's own reported results; check wording, the "Limitations" list and that you are comfortable publishing the negative result.
+- [ ] **Django template case study** — [src/content/case-studies/django-project-template.mdx](../src/content/case-studies/django-project-template.mdx) was drafted from the public repo and an interview with the owner. The outcome figures (2–5 devs, several projects, several days → minutes) are approximate; replace them with exact numbers if you have them. Also check that the company context (external user system, internal tools) is fine to publish.
 - [x] **Source link** — `sourceRepoUrl` is set. Make sure the repository is actually public before launch, or the footer link 404s.
 - [ ] `grep -rn "TODO(content)" src` returns nothing.
 

@@ -20,7 +20,7 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 | Layout, metadata, 404, OG image, icon               | Done                                                                                             |
 | Home page `/`                                       | Done (content still to review; see [docs/prepublish-checklist.md](docs/prepublish-checklist.md)) |
 | `/projects` directory                               | Done                                                                                             |
-| `/projects/[slug]` case studies                     | Done; thesis case study drafted from its repo, awaiting review                                   |
+| `/projects/[slug]` case studies                     | Done; thesis and Django template case studies drafted from their repos, awaiting review          |
 | CI/CD: checks, Docker image on GHCR, Vercel deploys | Done; see [docs/operations.md](docs/operations.md)                                               |
 | `/lab`, `/about`                                    | Not started                                                                                      |
 
@@ -238,15 +238,15 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 - **Unit and component tests** sit next to the code they cover (`foo.ts` → `foo.test.ts`) and test behavior through the public interface.
 - **End-to-end tests** live in `e2e/`. Playwright runs `npm run build && npm start -p 3100`, with two projects: `desktop-chromium` and `mobile-chromium` (Pixel 7). Make sure nothing else is listening on port 3100, otherwise Playwright reuses that server.
 
-  | Spec               | Covers                                                                                                                                                                                                |
-  | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `smoke.spec.ts`    | `@smoke`: `/` is English HTML with one `h1`, `/projects` and a case study answer 200, unknown slugs 404, robots matches the deployment, footer shows the expected commit                              |
-  | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, **axe** in both themes                                                        |
-  | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown and card-only slugs, no mobile overflow, **axe** in both themes |
-  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                 |
-  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                                                                         |
-  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags, generated images, skip link                                                                                                                                   |
-  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                      |
+  | Spec               | Covers                                                                                                                                                                                                          |
+  | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `smoke.spec.ts`    | `@smoke`: `/` is English HTML with one `h1`, `/projects` and a case study answer 200, unknown slugs 404, robots matches the deployment, footer shows the expected commit                                        |
+  | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, **axe** in both themes                                                                  |
+  | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown slugs, no mobile overflow and **axe** in both themes for every case study |
+  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                           |
+  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                                                                                   |
+  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags, generated images, skip link                                                                                                                                             |
+  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                                |
 
   Some expectations depend on content (hero buttons exist only while projects and contact links are configured). If you remove content, update the specs with it.
 
