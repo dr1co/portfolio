@@ -56,7 +56,10 @@ test.describe("pipeline explorer page", () => {
     ).toBeVisible();
   });
 
-  test("can be explored with the keyboard alone", async ({ page }) => {
+  test("can be explored with the keyboard alone", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile-chromium", "tabs are desktop");
     await page.goto(path);
     const panel = page.getByRole("tabpanel");
 
@@ -87,17 +90,42 @@ test.describe("pipeline explorer page", () => {
     ).toHaveAttribute("aria-selected", "true");
   });
 
-  test("switching scenario changes the outcomes", async ({ page }) => {
+  test("switching scenario changes the outcomes", async ({
+    page,
+  }, testInfo) => {
     await page.goto(path);
-    const publish = page.getByRole("tab", { name: /Publish/ });
+    const role = testInfo.project.name === "mobile-chromium" ? "button" : "tab";
+    const publish = page.getByRole(role, { name: /^Publish/ });
     await expect(publish).toContainText("Passed");
 
     await page.getByText("Vulnerable image").click();
 
-    await expect(
-      page.getByRole("tab", { name: /Image/ }).first(),
-    ).toContainText("Failed");
+    await expect(page.getByRole(role, { name: /^Image/ })).toContainText(
+      "Failed",
+    );
     await expect(publish).toContainText("Skipped");
+  });
+
+  test("on mobile, opens a job's details right below it", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile-chromium", "mobile layout");
+    await page.goto(path);
+    const publish = page.getByRole("button", { name: /^Publish/ });
+
+    await publish.click();
+
+    await expect(publish).toHaveAttribute("aria-expanded", "true");
+    const details = page.getByRole("region", { name: /^Publish/ });
+    await expect(details).toContainText("Needs: quality, e2e, image");
+    const header = (await publish.boundingBox())!;
+    const panel = (await details.boundingBox())!;
+    expect(panel.y).toBeGreaterThanOrEqual(header.y + header.height);
+    expect(panel.y - (header.y + header.height)).toBeLessThan(40);
+
+    await publish.click();
+    await expect(publish).toHaveAttribute("aria-expanded", "false");
+    await expect(details).toHaveCount(0);
   });
 
   test("keeps Lab marked as the current section", async ({

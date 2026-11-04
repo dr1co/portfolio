@@ -260,7 +260,9 @@ Suggested commit: `[feat.] Pipeline Explorer with scenarios`
 - The outcome table from Step 4 now lives only in `<noscript>` (L9). Its e2e test runs with JavaScript disabled.
 - Motion's `initial` style is also rendered on the server, so a panel animating from `opacity: 0` would stay invisible without JavaScript, and axe could catch it mid-fade (it did, as a contrast failure). The panel skips its entrance animation on first render (`useIsMounted`) and only animates later changes.
 - Each node shows its `needs` as text and the trigger shows the scenario's event (`eventNames`), so the graph reads without the connectors, which are decorative.
-- Open UX question: below `lg`, the panel sits under all seven nodes, so selecting a node on mobile changes content off-screen.
+- Mobile follow-up (owner's choice, option b): below `lg` the Explorer is an **accordion**. Each node is a button with `aria-expanded`, and the open node's details render directly beneath it as a `region`. Pressing the open node again closes it. There's no Prev/Next on narrow screens: the next header is the next step. From `lg` up it stays a tablist with the panel and Prev/Next below the graph.
+  - Semantics come from `useMediaQuery("(min-width: 64rem)")` (`src/lib/use-media-query.ts`), and layout from CSS. Before hydration both panel slots render and CSS shows the right one, so nothing shifts. After mount only the matching slot exists, so ids stay unique and unit tests see a single panel.
+  - Unit tests pick the mode with `stubMatchMedia(wide)` from `src/test/match-media.ts`, which restores the default stub when the test ends. E2E tab tests are desktop-only; mobile has its own accordion spec that checks the panel's position.
 
 ### Step 6 — Run playback
 

@@ -6,9 +6,11 @@ import {
   pipelineScenarios,
   pipelineTrigger,
 } from "@/content/lab-pipeline";
+import { stubMatchMedia } from "@/test/match-media";
 import { PipelineExplorer } from "./pipeline-explorer";
 
-function setup() {
+function setup({ wide = true } = {}) {
+  stubMatchMedia(wide);
   const user = userEvent.setup();
   render(
     <PipelineExplorer
@@ -21,10 +23,57 @@ function setup() {
   return {
     user,
     tab: (name: string) => screen.getByRole("tab", { name: new RegExp(name) }),
+    header: (name: string) =>
+      screen.getByRole("button", { name: new RegExp(`^${name}`) }),
   };
 }
 
-describe("PipelineExplorer", () => {
+describe("PipelineExplorer on narrow screens", () => {
+  it("is an accordion: no tabs, the trigger starts expanded", () => {
+    const { header } = setup({ wide: false });
+
+    expect(screen.queryByRole("tab")).not.toBeInTheDocument();
+    expect(header("Trigger")).toHaveAttribute("aria-expanded", "true");
+    expect(header("Quality")).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("opens a job's details directly below it", async () => {
+    const { user, header } = setup({ wide: false });
+
+    await user.click(header("Publish"));
+
+    const panel = screen.getByRole("region", { name: /Publish/ });
+    expect(panel).toHaveTextContent("needs: [quality, e2e, image]");
+    expect(header("Publish").compareDocumentPosition(panel)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(panel.compareDocumentPosition(header("Preview deploy"))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(header("Trigger")).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("closes the open job when its header is pressed again", async () => {
+    const { user, header } = setup({ wide: false });
+
+    await user.click(header("Trigger"));
+
+    expect(header("Trigger")).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("region")).not.toBeInTheDocument();
+  });
+
+  it("reopens the trigger when the scenario changes", async () => {
+    const { user, header } = setup({ wide: false });
+    await user.click(header("Image"));
+
+    await user.click(screen.getByRole("radio", { name: "Vulnerable image" }));
+
+    expect(header("Trigger")).toHaveAttribute("aria-expanded", "true");
+    expect(header("Image")).toHaveTextContent("Failed");
+  });
+});
+
+describe("PipelineExplorer on wide screens", () => {
   it("lists the trigger, then every job in run order, with the trigger selected", () => {
     setup();
 
