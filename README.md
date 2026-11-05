@@ -22,7 +22,8 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 | `/projects` directory                               | Done                                                                                             |
 | `/projects/[slug]` case studies                     | Done; thesis and Django template case studies drafted from their repos, awaiting review          |
 | CI/CD: checks, Docker image on GHCR, Vercel deploys | Done; see [docs/operations.md](docs/operations.md)                                               |
-| `/lab`, `/about`                                    | Not started                                                                                      |
+| `/lab` and the Pipeline Explorer                    | Done; copy drafted from `ci.yml`, awaiting review                                                |
+| `/about`                                            | Not started                                                                                      |
 
 ## Tech stack
 
@@ -75,11 +76,12 @@ npx playwright install chromium
 
 ```text
 src/
-  app/                routes (/, /projects, /projects/[slug]), root layout, OG images, global styles and tokens
-  components/         UI grouped by domain: layout, navigation, theme, home, projects, pipeline, terminal, mdx, ui
-  content/            typed content: projects, technologies, skills, pipeline stages
+  app/                routes (/, /projects, /projects/[slug], /lab, /lab/pipeline), root layout, OG images, global styles and tokens
+  components/         UI grouped by domain: layout, navigation, theme, home, projects, pipeline, lab, terminal, mdx, ui
+  content/            typed content: projects, technologies, skills, pipeline stages, Lab demos, the model of ci.yml
     case-studies/     one MDX file per case study
-  lib/                site config and small pure helpers (links, headings, OG layout, hooks)
+  lib/                site config and small pure helpers (links, headings, OG layout, pipeline run model, hooks)
+  test/               shared test helpers (e.g. stubMatchMedia)
   mdx-components.tsx  Markdown element → component mapping for case studies
   proxy.ts            sends unknown case-study slugs to a real 404
 e2e/                  Playwright specs
@@ -112,6 +114,8 @@ Typed content lives in `src/content/`:
 | [skills.ts](src/content/skills.ts)             | Skill groups                                                                                                  | Set `learning: true` on anything not yet used in a substantive project.                                                                                                                                                                                                                                                                                          |
 | [technologies.ts](src/content/technologies.ts) | Canonical technology id → display name map                                                                    | Projects (`technologies`) and skills (`tech`) reference ids, so names are spelled the same everywhere. A typo fails `typecheck`. Add new technologies here first.                                                                                                                                                                                                |
 | [pipeline.ts](src/content/pipeline.ts)         | The five illustrative pipeline stages (command + workflow excerpt)                                            | Icons are string keys, because the data is passed to a client component.                                                                                                                                                                                                                                                                                         |
+| [lab.ts](src/content/lab.ts)                   | Lab intro and demo cards                                                                                      | Each demo has an objective, concepts, a `mode` (`simulated` / `live`), optional prerequisites and source link, and its own `/lab/<slug>` route.                                                                                                                                                                                                                  |
+| [lab-pipeline.ts](src/content/lab-pipeline.ts) | The Pipeline Explorer's model of `.github/workflows/ci.yml`: trigger, jobs, steps, excerpts, scenarios        | Kept in sync with `ci.yml` by a drift test (see [Lab](#lab)). Only the prose (`purpose`, `explanation`, scenario summaries, page intro) is free to edit.                                                                                                                                                                                                         |
 
 Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(content)" src`.
 
@@ -133,7 +137,7 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
   - `Hero`: the `h1` headline, intro, tags, adaptive buttons, and a terminal panel labelled Example. It takes `config` and `featuredCount` props so tests can inject them.
   - `FeaturedProjects`: renders nothing while no project qualifies. While `/projects` is enabled, it ends with a "View all projects" link and card titles open their case studies.
   - `ProjectCard` (`src/components/projects/`): status badge (text + icon), up to 5 technologies, and Source / Live demo / Case study links, each rendered only when it exists. Case study also requires the `/projects` route to be enabled.
-  - `PipelineSection`: "Simulated" disclaimer, the interactive `PipelinePreview`, and a `<noscript>` list of all stages.
+  - `PipelineSection`: "Simulated" disclaimer, the interactive `PipelinePreview`, a `<noscript>` list of all stages, and (while `/lab` is enabled) a link to the Pipeline Explorer.
   - `SkillsSection`: one card per group. The learning group gets a dashed border and a "Currently learning" badge; individual `learning` items in other groups get a small "learning" badge.
   - `ContactSection`: one large row per configured link (icon, label, readable address). Renders nothing until a link is set.
   - Page order ([src/app/page.tsx](src/app/page.tsx)): Hero → Featured projects → Pipeline → Skills → Contact.
@@ -177,6 +181,40 @@ Components available without importing:
 Code-fence filenames (` ```yaml title="ci.yml" `) are **not** supported: Turbopack only accepts serializable Shiki options, so the panel shows the language instead.
 
 Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-area.tsx](src/components/ui/scroll-area.tsx)), a focusable, labelled region, so keyboard users can scroll it and the page itself never overflows. Tables (min width 36rem) and diagrams use it automatically; Shiki code blocks are already focusable.
+
+## Lab
+
+`/lab` lists interactive demos as cards ([src/app/lab/page.tsx](src/app/lab/page.tsx), data in `src/content/lab.ts`). Every demo says whether it is simulated or live. The first demo is the **Pipeline Explorer** at `/lab/pipeline`.
+
+### Pipeline Explorer
+
+The Explorer models **this site's real CI workflow** ([.github/workflows/ci.yml](.github/workflows/ci.yml)) job by job. Execution is simulated: outcomes are derived from the model, and nothing calls GitHub. The page says so next to its title and links to the real runs.
+
+- **Model** ([src/content/lab-pipeline.ts](src/content/lab-pipeline.ts)): a trigger, six jobs (`needs`, the events they run on, every step, a verbatim YAML excerpt) and four scenarios. A scenario only states its event and, optionally, the step that fails. Fork PRs, cancelled runs and real durations aren't modeled.
+- **Run model** ([src/lib/pipeline-run.ts](src/lib/pipeline-run.ts), pure functions):
+  - `resolveRun` derives each job's final state and reason. A job is skipped when its event doesn't match ("Runs only on pull requests.") or when a job it needs failed or was skipped.
+  - Step states follow the failing step, `if: failure()` steps and event-limited steps.
+  - `runFrames` builds the playback timeline (all pending, then each dependency level running and finishing).
+  - `describeFrame` and `summarizeRun` write the live-region text.
+- **UI** ([src/components/lab/pipeline-explorer.tsx](src/components/lab/pipeline-explorer.tsx)):
+  - A scenario picker (native radios), then the trigger and jobs in dependency columns.
+  - From `lg` up, the graph is a WAI-ARIA tablist (`useRovingTabs` in controlled mode) with the details panel and Previous/Next below. Below `lg`, it's an accordion: each job is a button with `aria-expanded`, and its details open right under it. The mode comes from `useMediaQuery`, the layout from CSS, so nothing shifts on hydration.
+  - `JobPanel` shows the purpose, the simulated outcome and reason, `needs` and events in words, a step checklist and the YAML excerpt.
+  - Without JavaScript, a `<noscript>` table lists every job's outcome in every scenario.
+- **Playback** ([src/lib/use-pipeline-playback.ts](src/lib/use-pipeline-playback.ts)): Run, Pause/Resume and Reset over `runFrames`, one frame every `TICK_MS` (800 ms).
+  - The selection follows the running jobs, but focus never moves.
+  - Choosing a job, Previous/Next or an accordion header pauses the run. Changing the scenario or Reset returns to the final outcomes.
+  - With `prefers-reduced-motion`, Run jumps straight to the end and the running icon doesn't spin.
+  - The run pauses when the route is hidden by `<Activity>`.
+  - A `role="status"` line announces each frame.
+- **Drift test** ([src/content/lab-pipeline.drift.test.ts](src/content/lab-pipeline.drift.test.ts)) parses `ci.yml` and checks:
+  - the job ids, every `needs`, and each job's and step's `if:` (through a `CONDITIONS` mapping table);
+  - every step name, in order (unnamed steps are named like GitHub does: the action without its `@ref`, or the command);
+  - that excerpt lines appear verbatim in `ci.yml` (trimmed; `# …` marks a gap), with no pinned SHAs or digests, so Dependabot bumps don't break it.
+
+**When the drift test fails** after a `ci.yml` change, update `src/content/lab-pipeline.ts` in the same change: jobs, `needs`, `events`, step names and excerpts. A new `if:` expression also needs an entry in the test's `CONDITIONS` table. If the model can't express it, simplify the job and mention it in `pipelineScope`.
+
+**Adding a demo:** add a `LabDemo` to `src/content/lab.ts` with `href: "/lab/<slug>"`, create the static route `src/app/lab/<slug>/page.tsx` with `alternates: canonicalFor("/lab/<slug>")`, and label it Simulated unless it's backed by a real service. `lab.test.ts` and the `@smoke` Lab test pick it up from `labDemos`.
 
 ## SEO and metadata
 
@@ -238,15 +276,16 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 - **Unit and component tests** sit next to the code they cover (`foo.ts` → `foo.test.ts`) and test behavior through the public interface.
 - **End-to-end tests** live in `e2e/`. Playwright runs `npm run build && npm start -p 3100`, with two projects: `desktop-chromium` and `mobile-chromium` (Pixel 7). Make sure nothing else is listening on port 3100, otherwise Playwright reuses that server.
 
-  | Spec               | Covers                                                                                                                                                                                                          |
-  | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `smoke.spec.ts`    | `@smoke`: `/` is English HTML with one `h1`, `/projects` and a case study answer 200, unknown slugs 404, robots matches the deployment, footer shows the expected commit                                        |
-  | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, **axe** in both themes                                                                  |
-  | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown slugs, no mobile overflow and **axe** in both themes for every case study |
-  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                           |
-  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                                                                                   |
-  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags, generated images, skip link                                                                                                                                             |
-  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                                |
+  | Spec               | Covers                                                                                                                                                                                                                                                                 |
+  | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `smoke.spec.ts`    | `@smoke`: `/` is English HTML with one `h1`, `/projects` and a case study answer 200, `/lab` and each demo answer 200 labelled Simulated, unknown slugs 404, canonicals point at their own page, robots matches the deployment, footer shows the expected commit       |
+  | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, pipeline → Lab link, **axe** in both themes                                                                                                    |
+  | `lab.spec.ts`      | Lab card and nav state, Explorer keyboard path (desktop tabs), scenario switch, mobile accordion position, Run playback frame by frame (`page.clock`), reduced motion, Next pauses, no-JS outcome table, back link, titles, no mobile overflow, **axe** in both themes |
+  | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown slugs, no mobile overflow and **axe** in both themes for every case study                                                        |
+  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                                                                                  |
+  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                                                                                                                                          |
+  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags, generated images, skip link                                                                                                                                                                                                    |
+  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                                                                                       |
 
   Some expectations depend on content (hero buttons exist only while projects and contact links are configured). If you remove content, update the specs with it.
 
@@ -265,6 +304,9 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 
 - **Dev-only validation:** `next dev` checks every route for instant navigation and reports `params` read outside `<Suspense>` (message `instant-shell-url-data`). Keep routes free of these warnings; the case-study page shows the pattern.
 
+- **Screen-size and motion queries in unit tests:** jsdom has no media queries. `stubMatchMedia(matches)` from [src/test/match-media.ts](src/test/match-media.ts) answers them (a boolean, or a function of the query) for one test. The Explorer tests use it to pick tabs vs. accordion and reduced motion.
+- **Timer-driven UI:** advance fake timers one tick per `act(...)`, because each frame's timer is scheduled only after React commits the previous one. Use `fireEvent` rather than `userEvent` under fake timers. Don't screenshot or run axe on a page under Playwright's `page.clock`, because Motion fades stay frozen.
+
 - The project follows test-driven development: write a failing test, make it pass, repeat.
 
 ## Contributing
@@ -276,7 +318,7 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 ## Next.js 16 notes
 
 - **Cache Components:** reading the current time or a random value while rendering fails prerendering. Use a `'use cache'` function or `connection()`.
-- **Activity:** routes you navigate away from stay mounted but hidden. Transient UI must reset itself, and tests must use visibility-aware locators.
+- **Activity:** routes you navigate away from stay mounted but hidden. Transient UI must reset itself (the Explorer pauses its run in a `useLayoutEffect` cleanup), and tests must use visibility-aware locators.
 - **MDX under Turbopack:** remark/rehype plugins are configured in `next.config.ts` **by name (strings) with serializable options only**, because functions can't cross into Turbopack. `src/mdx-components.tsx` is required by `@next/mdx`.
 - **Dynamic routes:** `generateStaticParams` must return at least one param, `dynamicParams` is not allowed, and `notFound()` after streaming starts keeps a `200`. Hence the registry test (at least one case study) and `src/proxy.ts`.
 - **Instant navigation:** `params` reads belong inside `<Suspense>` so client navigations have an instant shell (see "Case-study pages").
@@ -286,10 +328,11 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 ## Known limitations
 
 - On wide screens the case-study table of contents comes after the article in the Tab order (it mirrors the visual order); on smaller screens the collapsible "On this page" panel sits before the article.
-- Content (projects, skills, pipeline copy, the thesis case study) is not final. It's tracked with `TODO(content)` markers and [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
-- `/lab` and `/about` don't exist yet; their nav items stay hidden until the routes are enabled in `site-config.ts`.
+- Content (projects, skills, pipeline and Lab copy, the case studies) is not final. It's tracked with `TODO(content)` markers and [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
+- `/about` doesn't exist yet; its nav item stays hidden until the route is enabled in `site-config.ts`.
 - The projects directory has no filters (deferred until there are ≥ 6 published projects).
-- The pipeline preview is select-to-reveal only. The full simulated explorer (run, pass/fail states) is planned for `/lab`.
+- The Pipeline Explorer is a simplified, scripted model of `ci.yml`: no fork PRs, cancelled runs, real durations or live data from GitHub Actions. Container Explorer and an observability demo are future phases.
+- The scenario and selection in the Explorer aren't in the URL, so a particular view can't be linked to.
 - The Docker image is a verified, published artifact, but Vercel serves the site. The image is about 300 MB: deleting npm in the runtime stage hides it from scans but doesn't shrink the base layer.
 - No SBOM, provenance attestation or image signing yet. The linter, Trivy and Vercel CLI pins aren't covered by Dependabot (see [docs/operations.md](docs/operations.md)).
 - The production domain isn't chosen yet, so canonical URLs fall back until `NEXT_PUBLIC_SITE_URL` is set, and indexing stays off until launch.

@@ -39,4 +39,9 @@ Steps and context are in [operations.md](operations.md#secrets-and-configuration
 - [ ] JavaScript disabled: every section is readable, and the pipeline falls back to a static list.
 - [ ] Lighthouse (mobile): Performance ≥ 90, Accessibility 100, Best Practices ≥ 95. SEO flags `noindex` until indexing is enabled, which is expected.
 - [ ] Screen reader spot check: h1 → h2 per section → h3 per card or stage; the pipeline announces "tab, 1 of 5, selected".
+- [ ] **Lab, keyboard only (desktop):** scenario radios (arrows) → Run → job tabs (arrows, Home/End) → Previous/Next → panel → workflow excerpt. Pressing a job or Previous/Next during a run pauses it.
+- [ ] **Lab, touch (phone):** tapping a job opens its details right below it, and tapping again closes them; Run opens each running job in turn.
+- [ ] **Lab, reduced motion:** Run shows the final outcome at once; no spinning icon.
+- [ ] **Lab, screen reader:** the Explorer reads as tabs on desktop and as expandable buttons on a phone; the status line announces each step of a run ("Running: Quality, E2E tests, Image.") and the final tally.
+- [ ] **Lab, JavaScript disabled:** `/lab/pipeline` shows the outcome table for every scenario.
 - [ ] `npm run check`, `npm run build` and `npm run test:e2e` pass.

@@ -3,7 +3,7 @@
 **Feature:** Technical laboratory (`/lab`) and the Pipeline Explorer (`/lab/pipeline`)
 **Source specs:** [features-specification.md §6.1–6.2, §13 Phase 3](features-specification.md), [visual-identity.md §2.5, §5.5, §6](visual-identity.md)
 **Branch:** `feat/lab`, cut from `main`. The owner makes all commits. Each step ends with a suggested commit message and a green check run.
-**Status:** Not started. Decisions were settled in a grilling session on 2026-10-28. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** Done (Steps 0–8, 2026-11-05). Lab copy is drafted and awaits review in [prepublish-checklist.md](prepublish-checklist.md). Follow-ups after Step 5: per-page canonicals (bugfix before Step 1) and the mobile accordion (owner's choice). Decisions were settled in a grilling session on 2026-10-28. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -308,18 +308,26 @@ Suggested commit: `[feat.] link the home pipeline to the Lab`
 
 Suggested commit: `[docs] Lab documentation`
 
+**Done.** QA results (production build, scripted with Playwright, 2026-11-05):
+
+- No horizontal overflow on `/lab` or `/lab/pipeline` at 360, 768, 1024 and 1920 in either theme.
+- Long step names wrap beside their badges at 360. The 1920 layout reads well in the vulnerable-image scenario.
+- Accessibility tree (`ariaSnapshot`): narrow is expandable buttons plus a named region, wide is a "Workflow jobs" tablist with the selected tab. A real screen-reader pass is still in the pre-publish checklist.
+- Without JavaScript the outcome table is shown. It now has spacing above it (it sat flush against the last job card).
+- Open polish, not done: (1) without JavaScript the non-functional Explorer controls still render above the table; a `<noscript><style>` rule like `Reveal`'s could hide them. (2) The open accordion region's accessible name repeats the whole header text ("Image Passed needs: nothing"); pointing `aria-labelledby` at the panel's h3 would read just "Image".
+
 ---
 
 ## 6. Definition of done
 
-- [ ] `/lab` and `/lab/pipeline` render, are prerendered at build, and are linked from the nav and the home pipeline section.
-- [ ] The Explorer clearly identifies itself as a simulation (L19) and never claims a real deployment.
-- [ ] All four scenarios produce the §2 matrix; playback works by keyboard, touch and mouse, stops on interaction and respects reduced motion.
-- [ ] Every state is shown as icon + text; `error` passes AA in both themes.
-- [ ] The drift test fails when `ci.yml` and the model diverge.
-- [ ] No-JS visitors see the outcome matrix.
-- [ ] `npm run check`, `npm run build` and `npm run test:e2e` pass, including axe in both themes.
-- [ ] README, AGENTS.md and the checklist are updated; drafted copy is marked `TODO(content)`.
+- [x] `/lab` and `/lab/pipeline` render, are prerendered at build, and are linked from the nav and the home pipeline section.
+- [x] The Explorer clearly identifies itself as a simulation (L19) and never claims a real deployment.
+- [x] All four scenarios produce the §2 matrix; playback works by keyboard, touch and mouse, stops on interaction and respects reduced motion.
+- [x] Every state is shown as icon + text; `error` passes AA in both themes.
+- [x] The drift test fails when `ci.yml` and the model diverge.
+- [x] No-JS visitors see the outcome matrix.
+- [x] `npm run check`, `npm run build` and `npm run test:e2e` pass, including axe in both themes.
+- [x] README, AGENTS.md and the checklist are updated; drafted copy is marked `TODO(content)`.
 
 ## 7. Not in this plan
 

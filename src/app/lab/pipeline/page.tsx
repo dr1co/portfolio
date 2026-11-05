@@ -71,7 +71,9 @@ export default function PipelineExplorerPage() {
             workflowUrl={workflowUrl}
           />
           <noscript>
-            <OutcomeMatrix jobs={ciJobs} scenarios={pipelineScenarios} />
+            <div className="mt-8">
+              <OutcomeMatrix jobs={ciJobs} scenarios={pipelineScenarios} />
+            </div>
           </noscript>
         </div>
       </section>

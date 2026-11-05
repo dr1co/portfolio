@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Project rules
 
-Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specification.md`. Design system: `docs/visual-identity.md`. Feature plans: `docs/homepage-plan.md` (done), `docs/projects-plan.md` (done), `docs/delivery-plan.md` (done; runbook in `docs/operations.md`), `docs/lab-plan.md` (not started). Remaining content work is tracked in `docs/prepublish-checklist.md`.
+Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specification.md`. Design system: `docs/visual-identity.md`. Feature plans: `docs/homepage-plan.md` (done), `docs/projects-plan.md` (done), `docs/delivery-plan.md` (done; runbook in `docs/operations.md`), `docs/lab-plan.md` (done). Remaining content work is tracked in `docs/prepublish-checklist.md`.
 
 **Keep this file current.** When a convention changes or you hit a gotcha that would trip the next agent, update this file in the same change. An outdated AGENTS.md is worse than none.
 
@@ -73,6 +73,7 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - Keep the Dockerfile's `FROM` lines literal (`node:24-alpine@sha256:…` in each stage). Dependabot can't update a base image behind `FROM ${ARG}`. Validate `.github/*.yml` against SchemaStore with `check-jsonschema --builtin-schema vendor.dependabot|vendor.github-workflows|vendor.github-actions` (install it into a venv in WSL).
 - `output: "standalone"` is enabled only with `BUILD_STANDALONE=1` (Dockerfile). Don't make it unconditional: `next start` (Playwright's server) doesn't support it.
 - Every `page.tsx` sets `alternates: canonicalFor("<its path>")` (`src/lib/canonical.ts`). Never set a canonical in a layout: metadata merges shallowly, so child pages would inherit it. Locally there's no `NEXT_PUBLIC_SITE_URL` and no canonical is emitted. To test canonicals, build with `NEXT_PUBLIC_SITE_URL=https://example.test` and run the `@smoke` suite against `next start` via `BASE_URL`.
+- The Pipeline Explorer has two interaction modes. From `lg` (64rem) up it's a tablist (`role="tab"`, panel below, Previous/Next). Below that it's an accordion (buttons with `aria-expanded`, a `region` under the open job, no Previous/Next). E2E tests must pick roles per project (`mobile-chromium` is narrow), and unit tests choose the mode with `stubMatchMedia` from `src/test/match-media.ts`. jsdom answers every media query with `false`, i.e. narrow and no reduced motion.
 - Testing timer-driven UI (e.g. the Pipeline Explorer's Run playback):
   - The next `setTimeout` is only scheduled after React commits the previous frame. With Vitest fake timers, advance one tick per `act(...)` (see `tick()` in `pipeline-explorer.test.tsx`). One big `advanceTimersByTime` inside a single `act` fires only one frame. With Playwright's `page.clock`, `runFor` one tick and wait for the result before the next.
   - `userEvent` hangs under `vi.useFakeTimers()`. Use `fireEvent` inside `act` there.
