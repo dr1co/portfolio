@@ -9,7 +9,10 @@ import {
   GitCommitHorizontal,
   ListChecks,
   Package,
+  Pause,
+  Play,
   Rocket,
+  RotateCcw,
   type LucideIcon,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -28,9 +31,16 @@ import {
   type Scenario,
 } from "@/content/lab-pipeline";
 import { cn } from "@/lib/cn";
-import { dependencyLevels, resolveRun } from "@/lib/pipeline-run";
+import {
+  dependencyLevels,
+  describeFrame,
+  resolveRun,
+  runFrames,
+  summarizeRun,
+} from "@/lib/pipeline-run";
 import { useIsMounted } from "@/lib/use-is-mounted";
 import { useMediaQuery } from "@/lib/use-media-query";
+import { usePipelinePlayback } from "@/lib/use-pipeline-playback";
 import { useRovingTabs } from "@/lib/use-roving-tabs";
 import { JobPanel, TriggerPanel } from "./job-panel";
 import { RunStateBadge } from "./run-state-badge";
@@ -47,6 +57,7 @@ const ICONS: Record<LabIcon, LucideIcon> = {
 };
 
 const WIDE_QUERY = "(min-width: 64rem)";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const BELOW_ID = "pipeline-panel";
 const INLINE_ID = "pipeline-panel-inline";
 
@@ -75,6 +86,11 @@ export function PipelineExplorer({
   const wide = useMediaQuery(WIDE_QUERY);
   const scenario = scenarios.find((s) => s.id === scenarioId)!;
   const outcome = useMemo(() => resolveRun(jobs, scenario), [jobs, scenario]);
+  const frames = useMemo(() => runFrames(jobs, outcome), [jobs, outcome]);
+  const playback = usePipelinePlayback(frames, {
+    reducedMotion: useMediaQuery(REDUCED_MOTION_QUERY),
+    onFrame: followRun,
+  });
 
   const levels = useMemo(
     () =>
@@ -85,7 +101,7 @@ export function PipelineExplorer({
   );
   const ordered = levels.flat();
   const count = ordered.length + 1;
-  const { tabProps } = useRovingTabs(count, { selected, onSelect: select });
+  const { tabProps } = useRovingTabs(count, { selected, onSelect: choose });
   const job = selected > 0 ? ordered[selected - 1] : null;
   const tabId = (index: number) => `pipeline-node-${index}`;
   // Before hydration both panel slots render and CSS shows the right one; afterwards only that one exists.
@@ -97,10 +113,44 @@ export function PipelineExplorer({
     setOpen(true);
   }
 
+  /** A selection made by the visitor, which pauses a run in progress. */
+  function choose(index: number) {
+    playback.pause();
+    select(index);
+  }
+
+  function followRun(frame: number) {
+    const running = ordered.findIndex(
+      (item) => frames[frame][item.id] === "running",
+    );
+    if (running >= 0) select(running + 1);
+  }
+
+  function run() {
+    select(0);
+    playback.run();
+  }
+
   function chooseScenario(id: Scenario["id"]) {
+    playback.reset();
     setScenarioId(id);
     select(0);
   }
+
+  const control =
+    playback.status === "running"
+      ? { label: "Pause", icon: Pause, action: playback.pause }
+      : playback.status === "paused"
+        ? { label: "Resume", icon: Play, action: playback.resume }
+        : { label: "Run", icon: Play, action: run };
+  const message =
+    playback.status === "idle"
+      ? "Press Run to replay this scenario step by step."
+      : playback.status === "paused"
+        ? "Paused."
+        : playback.status === "done"
+          ? summarizeRun(outcome)
+          : describeFrame(jobs, frames, playback.frame);
 
   const panel = (
     <motion.div
@@ -113,6 +163,7 @@ export function PipelineExplorer({
         <JobPanel
           job={job}
           outcome={outcome[job.id]}
+          state={playback.states[job.id]}
           workflowUrl={workflowUrl}
         />
       ) : (
@@ -141,8 +192,11 @@ export function PipelineExplorer({
           type: "button" as const,
           "aria-expanded": expanded,
           "aria-controls": expanded ? INLINE_ID : undefined,
-          onClick: () =>
-            current === selected ? setOpen(!open) : select(current),
+          onClick: () => {
+            if (current !== selected) return choose(current);
+            playback.pause();
+            setOpen(!open);
+          },
         };
     return (
       <Fragment key={current}>
@@ -191,6 +245,28 @@ export function PipelineExplorer({
           onSelect={chooseScenario}
         />
         <p className="mt-3 max-w-prose text-muted">{scenario.summary}</p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={control.action}
+            className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90"
+          >
+            <control.icon aria-hidden className="size-4" />
+            {control.label}
+          </button>
+          <button
+            type="button"
+            onClick={playback.reset}
+            disabled={playback.status === "idle"}
+            className={navButtonClass}
+          >
+            <RotateCcw aria-hidden className="size-4" />
+            Reset
+          </button>
+          <p role="status" className="font-mono text-sm text-muted">
+            {message}
+          </p>
+        </div>
       </div>
 
       <div
@@ -215,7 +291,7 @@ export function PipelineExplorer({
                 ordered.indexOf(item) + 1,
                 item.label,
                 item.icon,
-                <RunStateBadge state={outcome[item.id].state} />,
+                <RunStateBadge state={playback.states[item.id]} />,
                 item.needs.length > 0
                   ? `needs: ${item.needs.join(", ")}`
                   : "needs: nothing",
@@ -232,7 +308,7 @@ export function PipelineExplorer({
               type="button"
               aria-label="Previous job"
               disabled={selected === 0}
-              onClick={() => select(selected - 1)}
+              onClick={() => choose(selected - 1)}
               className={navButtonClass}
             >
               <ChevronLeft aria-hidden className="size-4" />
@@ -245,7 +321,7 @@ export function PipelineExplorer({
               type="button"
               aria-label="Next job"
               disabled={selected === count - 1}
-              onClick={() => select(selected + 1)}
+              onClick={() => choose(selected + 1)}
               className={navButtonClass}
             >
               Next

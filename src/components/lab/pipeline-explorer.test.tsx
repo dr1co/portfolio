@@ -1,16 +1,28 @@
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ciJobs,
   pipelineScenarios,
   pipelineTrigger,
 } from "@/content/lab-pipeline";
+import { TICK_MS } from "@/lib/use-pipeline-playback";
 import { stubMatchMedia } from "@/test/match-media";
 import { PipelineExplorer } from "./pipeline-explorer";
 
-function setup({ wide = true } = {}) {
-  stubMatchMedia(wide);
+const tick = (times = 1) => {
+  for (let i = 0; i < times; i++) act(() => vi.advanceTimersByTime(TICK_MS));
+};
+const status = () => screen.getByRole("status");
+
+function setup({ wide = true, reducedMotion = false } = {}) {
+  stubMatchMedia((query) =>
+    query.includes("min-width")
+      ? wide
+      : query.includes("prefers-reduced-motion")
+        ? reducedMotion
+        : false,
+  );
   const user = userEvent.setup();
   render(
     <PipelineExplorer
@@ -27,6 +39,92 @@ function setup({ wide = true } = {}) {
       screen.getByRole("button", { name: new RegExp(`^${name}`) }),
   };
 }
+
+// fireEvent instead of userEvent: these tests run on fake timers, and clicks need no pointer simulation.
+const press = (name: string) =>
+  act(() => fireEvent.click(screen.getByRole("button", { name })));
+
+// A whole run re-renders the Explorer once per frame, which exceeds the default 5s under parallel load.
+describe("PipelineExplorer playback", { timeout: 15_000 }, () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it("plays the scenario level by level, following the running jobs", () => {
+    const { tab } = setup();
+    screen.getByRole("button", { name: "Run" }).focus();
+
+    press("Run");
+    expect(status()).toHaveTextContent("Run started. Every job is pending.");
+    expect(tab("Production deploy")).toHaveTextContent("Pending");
+
+    tick();
+    expect(status()).toHaveTextContent("Running: Quality, E2E tests, Image.");
+    expect(tab("Quality")).toHaveTextContent("Running");
+    expect(tab("Quality")).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("button", { name: "Pause" })).toHaveFocus();
+
+    tick(5);
+    expect(status()).toHaveTextContent("Run finished: 5 passed, 1 skipped.");
+    expect(tab("Production deploy")).toHaveTextContent("Passed");
+    expect(screen.getByRole("button", { name: "Run" })).toBeInTheDocument();
+  });
+
+  it("holds the run while paused and continues on resume", () => {
+    const { tab } = setup();
+    press("Run");
+    tick();
+
+    press("Pause");
+    tick(3);
+    expect(status()).toHaveTextContent("Paused.");
+    expect(tab("Quality")).toHaveTextContent("Running");
+
+    press("Resume");
+    tick();
+    expect(tab("Quality")).toHaveTextContent("Passed");
+  });
+
+  it("pauses when a job is selected by hand", () => {
+    const { tab } = setup();
+    press("Run");
+    tick();
+
+    act(() => fireEvent.click(tab("Publish")));
+    tick(3);
+
+    expect(status()).toHaveTextContent("Paused.");
+    expect(tab("Publish")).toHaveAttribute("aria-selected", "true");
+    expect(tab("Publish")).toHaveTextContent("Pending");
+  });
+
+  it("resets to the final outcomes", () => {
+    const { tab } = setup();
+    press("Run");
+    tick();
+
+    press("Reset");
+
+    expect(tab("Production deploy")).toHaveTextContent("Passed");
+    expect(screen.getByRole("button", { name: "Run" })).toBeInTheDocument();
+  });
+
+  it("shows the final outcome at once when reduced motion is requested", () => {
+    setup({ reducedMotion: true });
+
+    press("Run");
+
+    expect(status()).toHaveTextContent("Run finished: 5 passed, 1 skipped.");
+  });
+
+  it("on narrow screens, opens the running job's details", () => {
+    const { header } = setup({ wide: false });
+    press("Run");
+
+    tick();
+
+    expect(header("Quality")).toHaveAttribute("aria-expanded", "true");
+  });
+});
 
 describe("PipelineExplorer on narrow screens", () => {
   it("is an accordion: no tabs, the trigger starts expanded", () => {

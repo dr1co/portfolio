@@ -6,26 +6,33 @@ import {
   workflowPath,
   type CiJob,
   type PipelineTrigger,
+  type RunState,
   type Scenario,
 } from "@/content/lab-pipeline";
 import { isHttpsUrl } from "@/lib/links";
 import type { JobOutcome } from "@/lib/pipeline-run";
 import { RunStateBadge } from "./run-state-badge";
 
-/** Details of one job in the current scenario: outcome and reason, dependencies, steps and the real YAML. */
+/**
+ * Details of one job in the current scenario: outcome and reason, dependencies, steps and the real YAML.
+ * `state` is the job's state at the current point of a run; the outcome stays hidden until it's final.
+ */
 export function JobPanel({
   job,
   outcome,
+  state = outcome.state,
   workflowUrl,
 }: {
   job: CiJob;
   outcome: JobOutcome;
+  state?: RunState;
   workflowUrl: string;
 }) {
+  const finished = state === outcome.state;
   return (
     <PanelLayout
       title={job.label}
-      badge={<RunStateBadge state={outcome.state} />}
+      badge={<RunStateBadge state={state} />}
       purpose={job.purpose}
       explanation={job.explanation}
       excerpt={job.excerpt}
@@ -34,7 +41,7 @@ export function JobPanel({
         <>
           <p className="mt-4">
             <span className="font-medium">Simulated outcome:</span>{" "}
-            {outcome.reason}
+            {finished ? outcome.reason : "not decided yet."}
           </p>
           <dl className="mt-4 flex flex-col gap-1 font-mono text-sm">
             <div>
@@ -66,7 +73,7 @@ export function JobPanel({
                 {step.name}
               </span>
               <RunStateBadge
-                state={outcome.steps[index]}
+                state={finished ? outcome.steps[index] : "pending"}
                 className="shrink-0"
               />
             </li>

@@ -1,5 +1,13 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { ciJobs, pipelineScenarios } from "@/content/lab-pipeline";
+import {
+  describeFrame,
+  resolveRun,
+  runFrames,
+  summarizeRun,
+} from "@/lib/pipeline-run";
+import { TICK_MS } from "@/lib/use-pipeline-playback";
 
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
@@ -70,6 +78,8 @@ test.describe("pipeline explorer page", () => {
       page.getByRole("radio", { name: "Failure on main" }),
     ).toBeChecked();
 
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Run" })).toBeFocused();
     await page.keyboard.press("Tab");
     await expect(page.getByRole("tab", { name: /Trigger/ })).toBeFocused();
     await page.keyboard.press("ArrowRight");
@@ -162,6 +172,56 @@ test.describe("pipeline explorer page", () => {
       () => document.documentElement.scrollWidth - window.innerWidth,
     );
     expect(overflow).toBeLessThanOrEqual(0);
+  });
+});
+
+test.describe("pipeline explorer playback", () => {
+  const path = "/lab/pipeline";
+  const outcome = resolveRun(ciJobs, pipelineScenarios[0]);
+  const frames = runFrames(ciJobs, outcome);
+
+  test("Run plays the scenario frame by frame and announces each one", async ({
+    page,
+  }) => {
+    await page.clock.install();
+    await page.goto(path);
+    const status = page.getByRole("status");
+
+    await page.getByRole("button", { name: "Run" }).click();
+    await expect(status).toHaveText(describeFrame(ciJobs, frames, 0));
+
+    for (let frame = 1; frame < frames.length - 1; frame++) {
+      await page.clock.runFor(TICK_MS);
+      await expect(status).toHaveText(describeFrame(ciJobs, frames, frame));
+    }
+    await page.clock.runFor(TICK_MS);
+    await expect(status).toHaveText(summarizeRun(outcome));
+    await expect(page.getByRole("button", { name: "Run" })).toBeVisible();
+  });
+
+  test("with reduced motion, Run shows the outcome at once", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(path);
+
+    await page.getByRole("button", { name: "Run" }).click();
+
+    await expect(page.getByRole("status")).toHaveText(summarizeRun(outcome));
+  });
+
+  test("stepping to another job pauses the run", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile-chromium", "Next is desktop");
+    await page.clock.install();
+    await page.goto(path);
+    await page.getByRole("button", { name: "Run" }).click();
+    await page.clock.runFor(TICK_MS);
+
+    await page.getByRole("button", { name: "Next job" }).click();
+    await page.clock.runFor(TICK_MS * 3);
+
+    await expect(page.getByRole("status")).toHaveText("Paused.");
+    await expect(page.getByRole("button", { name: "Resume" })).toBeVisible();
   });
 });
 

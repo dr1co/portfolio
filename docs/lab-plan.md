@@ -274,6 +274,17 @@ Suggested commit: `[feat.] Pipeline Explorer with scenarios`
 
 Suggested commit: `[feat.] simulated run playback for the Pipeline Explorer`
 
+**Done.** Notes from implementing:
+
+- `usePipelinePlayback(frames, { reducedMotion, onFrame })` wraps a pure `playbackReducer` (idle → running ⇄ paused → done). It schedules one `setTimeout` per frame and reports each frame to `onFrame` from the timer callback (`useEffectEvent`), so the Explorer moves the selection to the first running job without setting state in an effect. Focus never moves.
+- **Manual interaction pauses instead of stopping**: a tab, Prev/Next or accordion header pauses the run at its current frame, so it can be resumed. Reset and a scenario change return to the final outcomes (idle).
+- Reduced motion uses our own `useMediaQuery("(prefers-reduced-motion: reduce)")`, not Motion's `useReducedMotion`, which caches the preference at module level and can't be stubbed per test.
+- The live region (`role="status"`) text comes from `describeFrame` and `summarizeRun` in `pipeline-run.ts` (e.g. "Running: Quality, E2E tests, Image.", "Run finished: 5 passed, 1 skipped."). The e2e test checks the same strings frame by frame.
+- `JobPanel` takes the live `state`: until the run reaches a job, its outcome and reason stay hidden ("not decided yet") and every step shows Pending.
+- Hidden route: a `useLayoutEffect` cleanup pauses the run, tested with `<Activity mode="hidden">`.
+- The spinner from Step 1 is verified in Chromium: `animation-name: spin`, and `none` under reduced motion.
+- The keyboard order is now picker → Run → tabs. Reset is disabled, and so not focusable, until a run starts.
+
 ### Step 7 — Home integration
 
 1. **E2E first** (`home.spec.ts`, `mobile.spec.ts`): the pipeline section has a link to `/lab/pipeline`; the mobile menu lists Lab.

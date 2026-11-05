@@ -7,8 +7,10 @@ import {
 } from "@/content/lab-pipeline";
 import {
   dependencyLevels,
+  describeFrame,
   resolveRun,
   runFrames,
+  summarizeRun,
   topologicalOrder,
 } from "./pipeline-run";
 
@@ -96,6 +98,46 @@ describe("runFrames", () => {
       }
     },
   );
+});
+
+describe("describeFrame", () => {
+  const all = (id: Scenario["id"]) =>
+    runFrames(ciJobs, resolveRun(ciJobs, scenario(id)));
+
+  it("announces the start of a run", () => {
+    expect(describeFrame(ciJobs, all("push-main"), 0)).toBe(
+      "Run started. Every job is pending.",
+    );
+  });
+
+  it("names the jobs that start running, by label", () => {
+    expect(describeFrame(ciJobs, all("push-main"), 1)).toBe(
+      "Running: Quality, E2E tests, Image.",
+    );
+  });
+
+  it("names the jobs that finish, with their outcome", () => {
+    expect(describeFrame(ciJobs, all("failure-main"), 2)).toBe(
+      "Quality passed. E2E tests failed. Image passed.",
+    );
+  });
+
+  it("combines jobs that start and jobs that are skipped in the same frame", () => {
+    expect(describeFrame(ciJobs, all("push-main"), 3)).toBe(
+      "Running: Publish. Preview deploy skipped.",
+    );
+  });
+});
+
+describe("summarizeRun", () => {
+  it("counts the final outcomes, leaving out the ones that didn't happen", () => {
+    expect(summarizeRun(resolveRun(ciJobs, scenario("push-main")))).toBe(
+      "Run finished: 5 passed, 1 skipped.",
+    );
+    expect(summarizeRun(resolveRun(ciJobs, scenario("failure-main")))).toBe(
+      "Run finished: 2 passed, 1 failed, 3 skipped.",
+    );
+  });
 });
 
 function steps(id: Scenario["id"], job: CiJobId) {

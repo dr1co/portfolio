@@ -101,6 +101,42 @@ function resolveJob(
     : { state: "passed", reason: "Every step passed.", steps };
 }
 
+/** What changed in frame `index` of a run, as a sentence for the live region. */
+export function describeFrame(
+  jobs: readonly CiJob[],
+  frames: readonly RunFrame[],
+  index: number,
+): string {
+  if (index === 0) return "Run started. Every job is pending.";
+  const changed = topologicalOrder(jobs)
+    .filter((id) => frames[index][id] !== frames[index - 1][id])
+    .map((id) => ({
+      label: jobs.find((job) => job.id === id)!.label,
+      state: frames[index][id],
+    }));
+  const running = changed.filter(({ state }) => state === "running");
+  const finished = changed.filter(({ state }) => state !== "running");
+  return [
+    running.length > 0 &&
+      `Running: ${running.map(({ label }) => label).join(", ")}.`,
+    ...finished.map(({ label, state }) => `${label} ${state}.`),
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+/** The final tally of a run, e.g. "Run finished: 5 passed, 1 skipped." */
+export function summarizeRun(outcome: RunOutcome): string {
+  const counts = (["passed", "failed", "skipped"] as const)
+    .map((state): [FinalState, number] => [
+      state,
+      Object.values(outcome).filter((job) => job.state === state).length,
+    ])
+    .filter(([, count]) => count > 0)
+    .map(([state, count]) => `${count} ${state}`);
+  return `Run finished: ${counts.join(", ")}.`;
+}
+
 /** Jobs grouped by how many dependency hops precede them; each group can run in parallel. */
 export function dependencyLevels(jobs: readonly CiJob[]): CiJobId[][] {
   const level = new Map<CiJobId, number>();

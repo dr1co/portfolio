@@ -69,6 +69,31 @@ describe("JobPanel", () => {
     ).toHaveAttribute("href", workflowUrl);
   });
 
+  it("keeps the outcome hidden until the run reaches the job", () => {
+    const scenario = pipelineScenarios.find((s) => s.id === "failure-main")!;
+    const job = ciJobs.find((candidate) => candidate.id === "e2e")!;
+    render(
+      <JobPanel
+        job={job}
+        outcome={resolveRun(ciJobs, scenario).e2e}
+        state="running"
+        workflowUrl={workflowUrl}
+      />,
+    );
+
+    const heading = screen.getByRole("heading", {
+      level: 3,
+      name: "E2E tests",
+    });
+    expect(heading.parentElement).toHaveTextContent("Running");
+    expect(document.body).not.toHaveTextContent("Failed");
+    expect(document.body).not.toHaveTextContent("An end-to-end test fails.");
+    const steps = within(screen.getByRole("list", { name: "Steps" }));
+    for (const item of steps.getAllByRole("listitem")) {
+      expect(item).toHaveTextContent("Pending");
+    }
+  });
+
   it("never claims a real deployment happened", () => {
     renderPanel("push-main", "deploy-production");
 
