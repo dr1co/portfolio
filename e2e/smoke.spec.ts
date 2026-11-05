@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { labDemos } from "@/content/lab";
 import { getCaseStudySlugs } from "@/content/projects";
 
 // Runs against any deployment: the local build, the container, Vercel previews and production.
@@ -24,6 +25,18 @@ test.describe("smoke", { tag: "@smoke" }, () => {
     expect((await request.get(`/projects/${slug}`)).status()).toBe(200);
   });
 
+  test("the Lab and its demos are served and labelled as simulated", async ({
+    page,
+  }) => {
+    for (const path of ["/lab", ...labDemos.map((demo) => demo.href)]) {
+      const response = await page.goto(path);
+
+      expect(response?.status(), path).toBe(200);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+      await expect(page.getByText("Simulated").first()).toBeVisible();
+    }
+  });
+
   test("unknown case-study slugs answer 404", async ({ request }) => {
     expect((await request.get("/projects/does-not-exist")).status()).toBe(404);
   });
@@ -42,7 +55,13 @@ test.describe("smoke", { tag: "@smoke" }, () => {
   }) => {
     const [slug] = getCaseStudySlugs();
 
-    for (const path of ["/", "/projects", `/projects/${slug}`]) {
+    for (const path of [
+      "/",
+      "/projects",
+      `/projects/${slug}`,
+      "/lab",
+      ...labDemos.map((demo) => demo.href),
+    ]) {
       await page.goto(path);
       const canonical = page.locator('link[rel="canonical"]');
       if ((await canonical.count()) === 0) continue;

@@ -77,6 +77,19 @@ test("links from featured projects to the full directory", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("links from the pipeline preview to the Lab's Pipeline Explorer", async ({
+  page,
+}) => {
+  await page
+    .getByRole("link", { name: "Explore the real pipeline in the Lab" })
+    .click();
+
+  await expect(page).toHaveURL(/\/lab\/pipeline$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Pipeline Explorer" }),
+  ).toBeVisible();
+});
+
 test("opens a featured project's case study from its card title", async ({
   page,
 }) => {

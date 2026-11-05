@@ -293,6 +293,12 @@ Suggested commit: `[feat.] simulated run playback for the Pipeline Explorer`
 
 Suggested commit: `[feat.] link the home pipeline to the Lab`
 
+**Done.** Notes from implementing:
+
+- The link renders only while `/lab` is enabled (`isRouteEnabled`), the same pattern as "View all projects".
+- "The mobile menu lists Lab" was already covered by `lab.spec.ts` ("is reachable from the navigation", which runs on the mobile project too), so `mobile.spec.ts` is unchanged.
+- `@smoke` gets a Lab test (200, one h1, Simulated label for `/lab` and every `labDemos` href), and the canonical smoke test now covers the Lab pages too. Both read their paths from `src/content/lab.ts`, so they stay deployment-agnostic. All smoke tests pass against a build with `NEXT_PUBLIC_SITE_URL=https://example.test`.
+
 ### Step 8 — Docs and QA
 
 1. README: status table, a "Lab" section (how the Explorer models `ci.yml`, the drift test and what to do when it fails, how to add a demo), test table rows.
