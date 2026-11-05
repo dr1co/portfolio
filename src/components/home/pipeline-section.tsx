@@ -1,10 +1,13 @@
-import { FlaskConical } from "lucide-react";
+import { ArrowRight, FlaskConical } from "lucide-react";
 import { PipelinePreview } from "@/components/pipeline/pipeline-preview";
+import { AppLink } from "@/components/ui/app-link";
 import { Badge } from "@/components/ui/badge";
 import { Section } from "@/components/ui/section";
 import { pipelineStages } from "@/content/pipeline";
+import { isRouteEnabled } from "@/lib/links";
+import { siteConfig } from "@/lib/site-config";
 
-/** Simulated delivery pipeline walkthrough, with a static list for visitors without JavaScript. */
+/** Simulated delivery pipeline walkthrough, with a static list for visitors without JavaScript and a link to the Lab. */
 export function PipelineSection() {
   return (
     <Section
@@ -22,6 +25,15 @@ export function PipelineSection() {
       }
     >
       <PipelinePreview stages={pipelineStages} />
+      {isRouteEnabled(siteConfig.routes, "/lab") && (
+        <AppLink
+          href="/lab/pipeline"
+          className="mt-8 inline-flex items-center gap-2 font-medium text-accent hover:underline"
+        >
+          Explore the real pipeline in the Lab
+          <ArrowRight aria-hidden className="size-4" />
+        </AppLink>
+      )}
       <noscript>
         <ol className="flex flex-col gap-4">
           {pipelineStages.map((stage) => (

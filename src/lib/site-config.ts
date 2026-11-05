@@ -37,7 +37,7 @@ export const siteConfig: SiteConfig = {
   routes: [
     { href: "/", label: "Home", enabled: true },
     { href: "/projects", label: "Projects", enabled: true },
-    { href: "/lab", label: "Lab", enabled: false },
+    { href: "/lab", label: "Lab", enabled: true },
     { href: "/about", label: "About", enabled: false },
   ],
   links: {

@@ -10,6 +10,7 @@ Everything the home page needs from the owner before it goes public. Each item p
 - [ ] **Projects** — two projects are in [src/content/projects.ts](../src/content/projects.ts) (Django template, thesis). Review each `summary`, `description`, `status` and `technologies` before launch.
 - [x] **Django template description** — reworded to make clear it is a generic template derived from client work. Confirm the wording.
 - [ ] **Pipeline copy** — review the stage text in [src/content/pipeline.ts](../src/content/pipeline.ts) for accuracy.
+- [ ] **Lab pipeline copy**: review each job's `purpose` and `explanation`, the trigger text and the four scenario summaries in [src/content/lab-pipeline.ts](../src/content/lab-pipeline.ts). Jobs, steps, conditions and excerpts are checked against `ci.yml` by a test, so only the prose needs review. Also review `pipelineIntro` and `pipelineScope` there, and the Lab intro and demo card in [src/content/lab.ts](../src/content/lab.ts).
 - [ ] **Projects page intro** — review `directoryIntro` in [src/content/projects.ts](../src/content/projects.ts).
 - [ ] **Thesis technologies** — confirmed: the repo's `requirements.txt` has no PyTorch (stack is TensorFlow/Keras, Keras Tuner, pandas, scikit-learn). Remove `pytorch` from the thesis entry in `projects.ts`, and consider adding `scikit-learn`/`pandas` to `technologies.ts`.
 - [ ] **Thesis description** — drafted from the repo README (including its negative result). Confirm the wording.
@@ -38,4 +39,9 @@ Steps and context are in [operations.md](operations.md#secrets-and-configuration
 - [ ] JavaScript disabled: every section is readable, and the pipeline falls back to a static list.
 - [ ] Lighthouse (mobile): Performance ≥ 90, Accessibility 100, Best Practices ≥ 95. SEO flags `noindex` until indexing is enabled, which is expected.
 - [ ] Screen reader spot check: h1 → h2 per section → h3 per card or stage; the pipeline announces "tab, 1 of 5, selected".
+- [ ] **Lab, keyboard only (desktop):** scenario radios (arrows) → Run → job tabs (arrows, Home/End) → Previous/Next → panel → workflow excerpt. Pressing a job or Previous/Next during a run pauses it.
+- [ ] **Lab, touch (phone):** tapping a job opens its details right below it, and tapping again closes them; Run opens each running job in turn.
+- [ ] **Lab, reduced motion:** Run shows the final outcome at once; no spinning icon.
+- [ ] **Lab, screen reader:** the Explorer reads as tabs on desktop and as expandable buttons on a phone; the status line announces each step of a run ("Running: Quality, E2E tests, Image.") and the final tally.
+- [ ] **Lab, JavaScript disabled:** `/lab/pipeline` shows the outcome table for every scenario.
 - [ ] `npm run check`, `npm run build` and `npm run test:e2e` pass.

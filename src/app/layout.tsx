@@ -28,7 +28,6 @@ export const metadata: Metadata = {
   title: { default: defaultTitle, template: `%s · ${siteConfig.name}` },
   description: siteConfig.tagline,
   robots: { index: allowIndexing, follow: allowIndexing },
-  alternates: siteUrl ? { canonical: "/" } : undefined,
   openGraph: {
     type: "website",
     locale: "en_US",

@@ -16,4 +16,14 @@ describe("PipelineSection", () => {
       screen.getByText(/does not run or trigger a real pipeline/),
     ).toBeInTheDocument();
   });
+
+  it("links to the Lab's Pipeline Explorer while the Lab is enabled", () => {
+    render(<PipelineSection />);
+
+    expect(
+      screen.getByRole("link", {
+        name: "Explore the real pipeline in the Lab",
+      }),
+    ).toHaveAttribute("href", "/lab/pipeline");
+  });
 });

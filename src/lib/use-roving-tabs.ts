@@ -3,9 +3,15 @@ import { useRef, useState, type KeyboardEvent } from "react";
 /**
  * WAI-ARIA tabs with automatic activation: one tab in the Tab order, arrows move and select
  * (both axes, wrapping), Home/End jump. Spread `tabProps(i)` on each tab button.
+ * Pass `control` to own the selection (e.g. when other controls also change it).
  */
-export function useRovingTabs(count: number, initial = 0) {
-  const [selected, setSelected] = useState(initial);
+export function useRovingTabs(
+  count: number,
+  control?: { selected: number; onSelect: (index: number) => void },
+) {
+  const [ownSelected, setOwnSelected] = useState(0);
+  const selected = control ? control.selected : ownSelected;
+  const setSelected = control ? control.onSelect : setOwnSelected;
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
 
   function select(index: number) {
