@@ -6,7 +6,7 @@ Everything the home page needs from the owner before it goes public. Each item p
 
 - [x] **Links** — GitHub, LinkedIn and email are set in [src/lib/site-config.ts](../src/lib/site-config.ts). The header GitHub icon, "Contact" nav item, Contact section, footer icons and the hero's "Get in touch" button are live.
 - [ ] **Intro and hero tags** — review `intro` and `heroTags` in `site-config.ts`.
-- [ ] **Skills** — review [src/content/skills.ts](../src/content/skills.ts). Only list technologies you can discuss, and check the `learning` flags.
+- [ ] **Skills** — review [src/content/skills.ts](../src/content/skills.ts). Only list technologies you can discuss, check that the learning group is current, and that each `since` year is right (it drives the "N+ years" tooltips).
 - [ ] **Projects** — two projects are in [src/content/projects.ts](../src/content/projects.ts) (Django template, thesis). Review each `summary`, `description`, `status` and `technologies` before launch.
 - [x] **Django template description** — reworded to make clear it is a generic template derived from client work. Confirm the wording.
 - [x] **Pipeline copy** — review the stage text in [src/content/pipeline.ts](../src/content/pipeline.ts) for accuracy.

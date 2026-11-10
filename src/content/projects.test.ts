@@ -4,6 +4,7 @@ import {
   getFeaturedProjects,
   getProject,
   getProjectDirectory,
+  getProjectsUsing,
   type Project,
 } from "./projects";
 
@@ -112,6 +113,27 @@ describe("getProjectDirectory", () => {
 
     expect(result.repositoryUrl).toBeUndefined();
     expect(result.demoUrl).toBe("https://demo.example.com");
+  });
+});
+
+describe("getProjectsUsing", () => {
+  it("lists published projects that use a technology, by title", () => {
+    const list = [
+      project({ slug: "b", title: "Bravo", technologies: ["docker"] }),
+      project({
+        slug: "a",
+        title: "Alpha",
+        technologies: ["python", "docker"],
+      }),
+      project({ slug: "c", title: "Charlie", technologies: ["python"] }),
+      project({ slug: "d", status: "planned", technologies: ["docker"] }),
+    ];
+
+    expect(getProjectsUsing("docker", list).map((p) => p.slug)).toEqual([
+      "a",
+      "b",
+    ]);
+    expect(getProjectsUsing("redis", list)).toEqual([]);
   });
 });
 

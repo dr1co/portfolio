@@ -22,4 +22,14 @@ describe("skills content", () => {
 
     expect(new Set(names).size).toBe(names.length);
   });
+
+  it("dates every skill except the ones still being learned", () => {
+    for (const group of skillGroups) {
+      for (const skill of group.skills) {
+        expect(skill.since === undefined, `${skill.tech} in ${group.id}`).toBe(
+          Boolean(group.learning),
+        );
+      }
+    }
+  });
 });

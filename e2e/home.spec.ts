@@ -32,6 +32,48 @@ test("shows the pipeline and skills sections", async ({ page }) => {
   ).toBeAttached();
 });
 
+test.describe("skill tiles", () => {
+  async function skillTile(page: Page, name: string) {
+    const skills = page.locator("#skills");
+    await skills.locator("[data-reveal]").scrollIntoViewIfNeeded();
+    const tile = skills.getByRole("img", { name });
+    const tooltipId = await tile.getAttribute("aria-describedby");
+    return { tile, tooltip: page.locator(`[id="${tooltipId}"]`) };
+  }
+
+  test("show their details on focus and hide them on Escape", async ({
+    page,
+  }) => {
+    const { tile, tooltip } = await skillTile(page, "Docker");
+    await expect(tooltip).toBeHidden();
+
+    await tile.focus();
+    await expect(tooltip).toBeVisible();
+    await expect(tooltip).toContainText(/\d\+ years?/);
+    await expect(tooltip).toContainText("Including Docker Compose");
+
+    await page.keyboard.press("Escape");
+    await expect(tooltip).toBeHidden();
+  });
+
+  test("show their details on hover", async ({ page }, testInfo) => {
+    test.skip(!!testInfo.project.use.hasTouch, "No hover on touch screens");
+    const { tile, tooltip } = await skillTile(page, "Python");
+
+    await tile.hover();
+    await expect(tooltip).toBeVisible();
+    await expect(tooltip).toContainText("Used in:");
+  });
+
+  test("show their details on tap", async ({ page }, testInfo) => {
+    test.skip(!testInfo.project.use.hasTouch, "Touch only");
+    const { tile, tooltip } = await skillTile(page, "Python");
+
+    await tile.tap();
+    await expect(tooltip).toBeVisible();
+  });
+});
+
 test("primary action leads to the featured projects", async ({ page }) => {
   await page.getByRole("link", { name: "Explore Projects" }).click();
 

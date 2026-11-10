@@ -1,8 +1,6 @@
-import { cacheLife } from "next/cache";
+import { currentYear } from "@/lib/current-year";
 
-/** Current year, cached so prerendering stays deterministic under Cache Components. */
+/** Current year for the footer. */
 export async function CopyrightYear() {
-  "use cache";
-  cacheLife("days");
-  return <>{new Date().getFullYear()}</>;
+  return <>{await currentYear()}</>;
 }
