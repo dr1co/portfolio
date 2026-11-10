@@ -24,7 +24,7 @@ test("shows the pipeline and skills sections", async ({ page }) => {
   await expect(
     page.getByRole("heading", {
       level: 2,
-      name: "How code reaches production",
+      name: "How my code reaches production",
     }),
   ).toBeAttached();
   await expect(

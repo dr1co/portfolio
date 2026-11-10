@@ -19,7 +19,8 @@ export function PipelineSection() {
           <Badge icon={FlaskConical}>Simulated</Badge>
           <span>
             Select a stage to see what it does. This is an illustrative
-            walkthrough, so feel free since you won&apos;t trigger a real pipeline.
+            walkthrough, so feel free since you won&apos;t trigger a real
+            pipeline.
           </span>
         </p>
       }

@@ -60,7 +60,7 @@ test.describe("pipeline explorer page", () => {
 
     await expect(page.getByText("Simulated").first()).toBeVisible();
     await expect(
-      page.getByText("Nothing here triggers GitHub Actions"),
+      page.getByText("nothing here triggers anything"),
     ).toBeVisible();
   });
 

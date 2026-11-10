@@ -13,7 +13,7 @@ describe("PipelineSection", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/does not run or trigger a real pipeline/),
+      screen.getByText(/won't trigger a real pipeline/),
     ).toBeInTheDocument();
   });
 

@@ -19,7 +19,7 @@ export const pipelineStages: readonly PipelineStage[] = [
     purpose: "A commit to main, or a pull request, triggers the workflow.",
     explanation:
       "Every change enters the pipeline the same way. The trigger is declared in the workflow file, so nothing depends on someone remembering to run a script.",
-    command: ["$ git push -u origin main"],
+    command: ["$ git push origin main"],
     workflowFile: ".github/workflows/ci.yml",
     workflow: ["on:", "  push:", "    branches: [main]", "  pull_request:"],
   },
