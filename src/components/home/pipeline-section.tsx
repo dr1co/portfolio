@@ -13,13 +13,13 @@ export function PipelineSection() {
     <Section
       id="pipeline"
       eyebrow="// pipeline"
-      title="How code reaches production"
+      title="How my code reaches production"
       description={
         <p className="flex flex-wrap items-center gap-2">
           <Badge icon={FlaskConical}>Simulated</Badge>
           <span>
             Select a stage to see what it does. This is an illustrative
-            walkthrough; it does not run or trigger a real pipeline.
+            walkthrough, so feel free since you won&apos;t trigger a real pipeline.
           </span>
         </p>
       }

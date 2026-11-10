@@ -11,7 +11,6 @@ export type PipelineStage = {
   workflow: readonly string[];
 };
 
-// TODO(content): review stage wording. All commands and workflow excerpts are illustrative.
 export const pipelineStages: readonly PipelineStage[] = [
   {
     id: "push",
@@ -20,7 +19,7 @@ export const pipelineStages: readonly PipelineStage[] = [
     purpose: "A commit to main, or a pull request, triggers the workflow.",
     explanation:
       "Every change enters the pipeline the same way. The trigger is declared in the workflow file, so nothing depends on someone remembering to run a script.",
-    command: ["$ git push origin main"],
+    command: ["$ git push -u origin main"],
     workflowFile: ".github/workflows/ci.yml",
     workflow: ["on:", "  push:", "    branches: [main]", "  pull_request:"],
   },
@@ -31,7 +30,7 @@ export const pipelineStages: readonly PipelineStage[] = [
     purpose:
       "Build a reproducible image from a pinned base with a multi-stage Dockerfile.",
     explanation:
-      "The image is the unit that moves through the rest of the pipeline. Pinned base images and a lockfile keep two builds of the same commit equivalent.",
+      "The image is the unit that moves through the rest of the pipeline. Pinned base images and a lockfile will always keep two builds of the same commit equivalent.",
     command: ["$ docker build -t app:$GIT_SHA ."],
     workflowFile: ".github/workflows/ci.yml",
     workflow: [
@@ -77,7 +76,7 @@ export const pipelineStages: readonly PipelineStage[] = [
     purpose:
       "Pull the exact tagged image on the target and restart, keeping the previous tag for rollback.",
     explanation:
-      "Deploying a known tag rather than latest means a rollback is just redeploying the previous SHA. A health check should confirm the result; this demo does not run one.",
+      "Deploying a known tag rather than latest means a rollback is just redeploying the previous SHA. A health check should confirm the result.",
     command: ["$ docker compose pull", "$ docker compose up -d"],
     workflowFile: ".github/workflows/release.yml",
     workflow: [

@@ -13,9 +13,8 @@ export type LabDemo = {
   sourceUrl?: string;
 };
 
-// TODO(content): review the Lab intro and demo copy.
 export const labIntro =
-  "Interactive demos of how software gets delivered. Each one says whether it runs on scripted data or a real service.";
+  "Interactive demos of how my software gets delivered. Each one says whether it runs on scripted data or a real service.";
 
 export const labDemos: readonly LabDemo[] = [
   {

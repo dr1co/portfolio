@@ -9,7 +9,7 @@ describe("PipelineSection", () => {
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: "How code reaches production",
+        name: "How my code reaches production",
       }),
     ).toBeInTheDocument();
     expect(
