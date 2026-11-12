@@ -2,8 +2,6 @@ import { localize, type Localized, type Resolved } from "@/i18n/localize";
 import type { Locale } from "@/i18n/locales";
 import type { TechnologyId } from "./technologies";
 
-// TODO(content): review the "pt-br" translations (drafted, not yet reviewed by the owner).
-
 /** `since` is the year you started using it, shown as experience. Leave it out only in the learning group. */
 type SkillEntry = { tech: TechnologyId; since?: number; note?: Localized };
 
@@ -20,7 +18,7 @@ export type SkillGroup = Resolved<SkillGroupEntry>;
 export const skillGroups: readonly SkillGroupEntry[] = [
   {
     id: "delivery",
-    title: { en: "Containers & Delivery", "pt-br": "Containers & Entrega" },
+    title: { en: "Containers and Delivery", "pt-br": "Containers e Entrega" },
     skills: [
       {
         tech: "docker",
@@ -35,7 +33,7 @@ export const skillGroups: readonly SkillGroupEntry[] = [
   },
   {
     id: "backend",
-    title: { en: "Backend & Automation", "pt-br": "Backend & Automação" },
+    title: { en: "Backend and Automation", "pt-br": "Backend e Automação" },
     skills: [
       { tech: "python", since: 2023 },
       { tech: "django", since: 2025 },
@@ -69,8 +67,8 @@ export const skillGroups: readonly SkillGroupEntry[] = [
   {
     id: "collaboration",
     title: {
-      en: "Development & Collaboration",
-      "pt-br": "Desenvolvimento & Colaboração",
+      en: "Development and Collaboration",
+      "pt-br": "Desenvolvimento e Colaboração",
     },
     skills: [
       { tech: "git", since: 2022 },

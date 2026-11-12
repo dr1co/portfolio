@@ -6,7 +6,7 @@ import { SkillGrid } from "./skills-section";
 const groups: SkillGroup[] = [
   {
     id: "delivery",
-    title: "Containers & Delivery",
+    title: "Containers and Delivery",
     skills: [
       { tech: "docker", since: 2022, note: "Including Docker Compose" },
       { tech: "redis", since: 2026 },
@@ -26,7 +26,7 @@ describe("SkillGrid", () => {
 
     expect(
       screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent),
-    ).toEqual(["Containers & Delivery", "Learning Next"]);
+    ).toEqual(["Containers and Delivery", "Learning Next"]);
   });
 
   it("names each technology's icon and describes it with experience and notes only", () => {

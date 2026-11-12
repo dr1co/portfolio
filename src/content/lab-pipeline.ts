@@ -2,8 +2,6 @@ import { localize, type Localized, type Resolved } from "@/i18n/localize";
 import type { Locale } from "@/i18n/locales";
 import { siteConfig } from "@/lib/site-config";
 
-// TODO(content): review the "pt-br" translations (drafted, not yet reviewed by the owner).
-
 export type RunState = "pending" | "running" | "passed" | "failed" | "skipped";
 
 /** The workflow events the Lab models. Pull requests are same-repository ones; forks aren't modeled. */
@@ -78,9 +76,9 @@ export const pipelineIntro: Localized = {
 };
 
 export const pipelineScope: Localized = {
-  en: "A simplified model: runs that get cancelled, pull requests from forks and real durations aren't shown.",
+  en: "A simplified model: runs that get cancelled, pull requests from forks and real durations aren't shown here.",
   "pt-br":
-    "Um modelo simplificado: execuções canceladas, pull requests de forks e durações reais não aparecem.",
+    "Um modelo simplificado: execuções canceladas, pull requests de forks e durações reais não aparecem aqui.",
 };
 
 export const pipelineTrigger: PipelineTriggerEntry = {
@@ -113,7 +111,7 @@ export const ciJobs: readonly CiJobEntry[] = [
     explanation: {
       en: "The fastest feedback runs first and in parallel with the slower jobs. The CI configuration itself is linted, so a broken workflow fails here instead of at deploy time.",
       "pt-br":
-        "O feedback mais rápido vem primeiro, em paralelo com os jobs mais lentos. A própria configuração do CI passa por lint, então um workflow quebrado falha aqui, e não na hora do deploy.",
+        "O feedback mais rápido vem primeiro, em paralelo com os jobs mais lentos. A própria configuração do CI passa por lint, então um workflow quebrado falha aqui ao invés de falhar na hora do deploy.",
     },
     steps: [
       { name: "actions/checkout" },
@@ -373,7 +371,7 @@ export const pipelineScenarios: readonly ScenarioEntry[] = [
       reason: {
         en: "Trivy finds a fixable CRITICAL vulnerability.",
         "pt-br":
-          "O Trivy encontra uma vulnerabilidade CRITICAL com correção disponível.",
+          "O Trivy encontra uma vulnerabilidade nível CRITICAL com correção disponível.",
       },
     },
   },

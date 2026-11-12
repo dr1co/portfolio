@@ -11,8 +11,8 @@ test.describe("projects directory", () => {
       page.getByRole("heading", { level: 1, name: "Projects" }),
     ).toBeVisible();
     await expect(page.getByRole("heading", { level: 2 })).toHaveText([
-      "DevOps & Delivery",
-      "Machine Learning",
+      "DevOps and Delivery",
+      "Machine Learning and AI",
     ]);
     await expect(
       page.getByRole("heading", { level: 3, name: /Django Project Template/ }),
@@ -78,7 +78,9 @@ test.describe("case study", () => {
         name: /Financial market analysis/,
       }),
     ).toBeVisible();
-    await expect(page.getByText("Machine Learning").first()).toBeVisible();
+    await expect(
+      page.getByText("Machine Learning and AI").first(),
+    ).toBeVisible();
   });
 
   test("table of contents jumps to its sections", async ({

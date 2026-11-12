@@ -28,7 +28,7 @@ describe("CaseStudyHeader", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText("A longer lead paragraph.")).toBeInTheDocument();
-    expect(screen.getByText("DevOps & Delivery")).toBeInTheDocument();
+    expect(screen.getByText("DevOps and Delivery")).toBeInTheDocument();
     expect(screen.getByText("Available")).toBeInTheDocument();
     expect(screen.getByText("Django")).toBeInTheDocument();
     expect(screen.getByText("Docker")).toBeInTheDocument();

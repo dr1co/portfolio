@@ -6,12 +6,12 @@ describe("siteMetadata", () => {
     expect(siteMetadata("en").openGraph).toMatchObject({
       locale: "en_US",
       alternateLocale: ["pt_BR"],
-      title: "Adriano Matoba Lipski — DevOps & Automation",
+      title: "Adriano Matoba Lipski — DevOps and Automation",
     });
     expect(siteMetadata("pt-br").openGraph).toMatchObject({
       locale: "pt_BR",
       alternateLocale: ["en_US"],
-      title: "Adriano Matoba Lipski — DevOps & Automação",
+      title: "Adriano Matoba Lipski — DevOps e Automação",
     });
   });
 });

@@ -63,6 +63,21 @@ test("switches language without JavaScript", async ({ browser }) => {
   await context.close();
 });
 
+test("case studies are written in the page's language", async ({ page }) => {
+  await page.goto("/pt-br/projects/tcc-engsoftware");
+
+  const heading = page.getByRole("heading", { level: 2, name: "Visão geral" });
+  await expect(heading).toBeVisible();
+  await expect(heading).toHaveAttribute("id", "visão-geral");
+  await expect(page.locator('a[href="#visão-geral"]').first()).toBeAttached();
+
+  await page.getByRole("link", { name: "EN — View in English" }).click();
+  await expect(page).toHaveURL(/\/projects\/tcc-engsoftware$/);
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Overview" }),
+  ).toBeVisible();
+});
+
 const [slug] = getCaseStudySlugs();
 const portuguesePaths = [
   "/pt-br",

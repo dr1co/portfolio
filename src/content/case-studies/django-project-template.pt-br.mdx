@@ -1,0 +1,180 @@
+## Visão geral
+
+Este é o template que uso para começar todo projeto Django. Ele é um **gerador** distribuído como imagem Docker no GitHub Packages (GHCR), e não uma pasta de arquivos para copiar. Um único `docker run` cria um projeto completo no diretório atual: um projeto e um app Django já conectados, Tailwind CSS com um design system pronto, SQLite, uma secret key gerada, uma estrutura de testes, um setup de deploy com Gunicorn + Nginx e um repositório Git inicializado.
+
+Esse projeto vem de um template que construí na Princesa dos Campos para padronizar os projetos web full-stack da empresa. Esta versão mantém as mesmas convenções e a mesma infraestrutura, mas não contém nenhum código, marca ou dado específico da empresa.
+
+## Problema e objetivos
+
+Antes do template, cada desenvolvedor começava um projeto novo do seu jeito. A estrutura de pastas, as configurações, a forma de servir arquivos estáticos e o setup de deploy mudavam de projeto para projeto, então trocar de projeto ou revisar o código de outra pessoa significava aprender uma estrutura nova primeiro. Configurar tudo isso à mão (Django, Tailwind, Docker, Nginx, variáveis de ambiente) também levava **vários dias** antes de começar qualquer funcionalidade.
+
+Os objetivos eram:
+
+- chegar a um projeto rodando e pronto para deploy em **minutos**, com um único comando;
+- fazer todos os projetos compartilharem a mesma estrutura, convenções e deploy, para que qualquer desenvolvedor do time possa trabalhar em qualquer um deles;
+- não exigir nada na máquina do desenvolvedor além do Docker;
+- manter as convenções escritas **dentro** de cada projeto gerado, para que sobrevivam depois da geração.
+
+O template foi usado por um time pequeno de três desenvolvedores para começar vários projetos internos, e o setup passou de vários dias para poucos minutos.
+
+## Arquitetura
+
+O repositório tem duas partes: o **gerador** (uma imagem Docker com um script shell que monta o projeto) e os **arquivos do template**, copiados para cada projeto gerado.
+
+<Diagram
+  title="Geração do projeto"
+  width={720}
+  height={230}
+  nodes={[
+    { id: "image", label: "Imagem no GHCR", x: 90, y: 50 },
+    { id: "mount", label: "Checa o mount", x: 270, y: 50 },
+    { id: "start", label: "startproject + app", x: 450, y: 50 },
+    { id: "copy", label: "Copia o template", x: 630, y: 50 },
+    { id: "env", label: "Secret + migrate", x: 630, y: 180 },
+    { id: "tailwind", label: "Tailwind init", x: 450, y: 180 },
+    { id: "design", label: "Design system", x: 270, y: 180 },
+    { id: "repo", label: "freeze + git init", x: 90, y: 180 },
+  ]}
+  edges={[
+    { from: "image", to: "mount", label: "docker run" },
+    { from: "mount", to: "start" },
+    { from: "start", to: "copy", label: "core + app" },
+    { from: "copy", to: "env" },
+    { from: "env", to: "tailwind" },
+    { from: "tailwind", to: "design", label: "styles.css" },
+    { from: "design", to: "repo", label: "build" },
+  ]}
+/>
+
+O projeto gerado roda em dois containers. O Nginx serve os arquivos estáticos e encaminha todo o resto para o Gunicorn:
+
+<Diagram
+  title="Projeto gerado em execução"
+  width={720}
+  height={210}
+  nodes={[
+    { id: "browser", label: "Navegador", x: 90, y: 50 },
+    { id: "nginx", label: "Nginx", x: 270, y: 50 },
+    { id: "django", label: "Gunicorn + Django", x: 450, y: 50 },
+    { id: "sqlite", label: "SQLite", x: 630, y: 50 },
+    { id: "static", label: "Volume de estáticos", x: 270, y: 160 },
+    { id: "external", label: "Bancos externos", x: 450, y: 160 },
+  ]}
+  edges={[
+    { from: "browser", to: "nginx", label: ":8080" },
+    { from: "nginx", to: "django", label: ":8000" },
+    { from: "django", to: "sqlite", label: "sessões" },
+    { from: "nginx", to: "static", label: "/static/" },
+    { from: "django", to: "external", label: "SQLAlchemy" },
+  ]}
+/>
+
+| Parte         | Local                                                        | Responsabilidade                                                                                            |
+| ------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Gerador       | `Dockerfile`, `entrypoint.sh`                                | Imagem com Django, django-tailwind e SQLAlchemy; o script que monta um projeto novo                         |
+| Design system | `tailwind/styles.css`, `docs/visual-identity.md`             | Design tokens, temas claro e escuro e componentes, copiados por cima da folha de estilos padrão do Tailwind |
+| Base do app   | `django-template/app/`                                       | Layout base, decorator de sessão, context processor, conector para bancos externos, pacotes de teste        |
+| Configurações | `django-template/core/`                                      | Configurações lidas do `.env`, banco SQLite, cache em banco de dados, arquivos estáticos com nomes com hash |
+| Deploy        | `django-template/Dockerfile`, `docker-compose.yml`, `nginx/` | Container web com Gunicorn, proxy reverso Nginx, volumes para SQLite e estáticos, health check              |
+| Convenções    | `django-template/AGENTS.md`                                  | Regras escritas para o projeto gerado: estrutura, nomes, testes, design system, checklist de produção       |
+| Publicação    | `.github/workflows/docker-publish.yml`                       | Gera a imagem do gerador e a envia ao GHCR a cada push na `main`                                            |
+
+## Implementação
+
+Gerar um projeto é um único comando. O diretório atual é montado no container, então os arquivos vão parar no host:
+
+```bash
+docker run --rm -it \
+  -v "$PWD:/workspace" \
+  ghcr.io/dr1co/django-project-template:latest my_project
+```
+
+O script roda com `set -e`, então uma etapa que falha interrompe a geração em vez de anunciar como criado um projeto quebrado. Ele também confere se um diretório do host está de fato montado. Sem isso, o projeto seria criado dentro do container e perdido quando ele terminasse:
+
+```sh
+if ! grep -qs " $(pwd) " /proc/mounts; then
+  echo "Error: no host directory is mounted at $(pwd)." >&2
+  exit 1
+fi
+```
+
+O container roda como root, então tudo o que ele cria pertenceria ao root no host. Ao sair, com a geração bem-sucedida ou não, o script passa o projeto para o dono do diretório montado, que é o usuário que executou o `docker run`:
+
+```sh
+fix_ownership() {
+  if [ -d "$PROJECT_DIR" ]; then
+    chown -R "$(stat -c '%u:%g' "$WORKSPACE")" "$PROJECT_DIR"
+  fi
+}
+trap fix_ownership EXIT
+```
+
+A maior parte dos dados reais dos nossos projetos vivia em sistemas já existentes da empresa, e não no banco do próprio app. O `BaseDBConnector` é a forma padronizada de consultá-los: uma subclasse monta a string de conexão do seu banco, e a classe base cuida de uma engine SQLAlchemy com pool e transforma as linhas em dicionários, prontos para uso. As consultas sempre recebem parâmetros vinculados (bind parameters), que são a proteção do template contra SQL injection:
+
+```python
+class ErpConnector(BaseDBConnector):
+    def __init__(self, host, port, user, passwd, db):
+        super().__init__(host, port, user, passwd, db)
+        self.conn_string = (
+            f"postgresql+psycopg://{self._username}:{self._password}"
+            f"@{self._host}:{self._port}/{self._database}"
+        )
+
+employee = ErpConnector(**credentials).fetchone_read_query(
+    "SELECT name, email FROM employees WHERE reg = :reg",
+    {"reg": user_reg},
+)
+```
+
+## Decisões técnicas
+
+**Uma imagem Docker em vez de cookiecutter ou `startproject --template`**: um template estático só copia arquivos. Gerar um projeto aqui também significa executar etapas reais de setup: criar a secret key, aplicar as migrations, rodar o `tailwind init`, baixar o binário do Tailwind e gerar o CSS. Empacotar o gerador como imagem executa essas etapas com o mesmo ferramental em qualquer máquina, e os desenvolvedores só precisam do Docker. Publicar no GHCR pelo CI garante que o `docker pull` sempre traga as convenções mais recentes.
+
+**Tailwind sem Node.js**: o django-tailwind usa o binário standalone do Tailwind v4, então nem o gerador nem o projeto gerado precisam de Node.js ou npm. O design system é um único arquivo CSS. Ele define tokens para os dois temas, expõe esses tokens como utilitários do Tailwind (`bg-surface`, `text-fg`, `border-line`) e adiciona componentes como `.btn`, `.card`, `.alert` e `.table`. Para mudar a identidade visual de um projeto, basta trocar os tokens nesse arquivo, em vez de editar cada template. Escrevi a identidade visual e verifiquei cada par de texto e fundo segundo o WCAG AA. Duas cores ficaram um pouco mais escuras que no documento de identidade para passar.
+
+**Sessões em vez de `django.contrib.auth`**: os usuários dos nossos projetos já estavam cadastrados em um sistema externo da empresa, então uma tabela `User` do Django só os duplicaria. O login grava um dicionário `user_data` na sessão, o decorator `@auth_required` protege as views e um context processor expõe o usuário a todo template como `current_user`. O nome não é `user` para não colidir com a variável do próprio Django.
+
+**SQLite e cache em banco de dados**: os projetos eram ferramentas internas com poucos usuários simultâneos, e os dados de negócio ficavam em bancos externos. O banco local só guarda sessões, o cache e algumas tabelas do app. SQLite com o `DatabaseCache` do Django significa nenhum container de Postgres ou Redis para rodar e manter: um deploy é só `web` e `nginx`.
+
+**Convenções escritas em cada projeto**: cada projeto gerado traz um `AGENTS.md` e abre cada arquivo estrutural com uma docstring longa que diz o que o arquivo faz, por que ele existe e dá exemplos numerados. O `AGENTS.md` lista os marcadores de "ainda é template" a remover, as regras de nomes para views e rotas, o fluxo de testes e um checklist antes da produção. Ele atende a três leitores: agentes de IA para código, que seguem as regras da casa em vez de improvisar; desenvolvedores mais novos, que aprendem onde cada código fica; e o time, porque os projetos se distanciam depois da geração se as convenções não estiverem escritas junto do código.
+
+## Testes e validação
+
+O template prepara os testes dos projetos que gera, mas o próprio gerador é verificado à mão.
+
+Todo projeto gerado começa com uma estrutura de testes e regras no `AGENTS.md`: TDD por padrão, apenas o test runner do Django e o `unittest.mock`, testes unitários em `app/tests/unit/` (models e conectores, sempre com os bancos externos mockados) e testes de views em `app/tests/e2e/`. Um `SessionTestCase` compartilhado faz login com um usuário falso, o que facilita testar views protegidas:
+
+```python
+class SessionTestCase(TestCase):
+    def login_as_user(self, **data):
+        session = self.client.session
+        session["user_data"] = {
+            "user_reg": "0001",
+            "name": "Test User",
+            "email": "test@example.com",
+            **data,
+        }
+        session.save()
+```
+
+Outras verificações embutidas no template:
+
+- todo o Python passa no `flake8` com as regras padrão (PEP 8, linhas de 79 caracteres);
+- o container `web` tem um health check (`manage.py check`), e o Nginx só sobe depois que ele passa;
+- o entrypoint do container roda `migrate`, `createcachetable`, `tailwind build` e `collectstatic` antes do Gunicorn, então um deploy novo nunca serve tabelas ausentes ou CSS não gerado;
+- as cores do design system foram verificadas quanto ao contraste WCAG AA nos dois temas.
+
+## Limitações e trabalhos futuros
+
+- O CI gera e publica a imagem, mas nunca a executa, então hoje nada verifica automaticamente se um projeto gerado sobe, passa no `manage.py check` e roda seus testes.
+- As versões não são fixadas. O gerador instala as versões mais recentes de Django, django-tailwind e SQLAlchemy, a imagem só recebe a tag `:latest` e as imagens base mudam com o tempo (`python:3-slim`). Duas execuções com um mês de diferença podem gerar projetos diferentes. O `pip freeze` só fixa as versões depois da geração.
+- Os containers rodam como root, e a posse dos arquivos é corrigida depois com `chown`. O SQLite também limita a concorrência de escrita, então um projeto com muitas escritas deve migrar para outro banco.
+
+Os próximos passos naturais são um job de CI que gere um projeto e rode suas verificações, tags de versão para a imagem com dependências fixadas e um usuário não root nas duas imagens.
+
+## Evidências e links
+
+- [Repositório do código-fonte](https://github.com/dr1co/django-project-template): gerador, arquivos do template, design system e workflow de CI.
+- O `django-template/AGENTS.md` no repositório traz as convenções completas com que todo projeto gerado começa.
+- O `django-template/docs/visual-identity.md` é a especificação do design system.
+- Gere um projeto com o comando `docker run` acima, depois suba-o com `docker compose up --build` e abra `http://localhost:8080`.

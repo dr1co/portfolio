@@ -68,8 +68,8 @@ describe("getProjectDirectory", () => {
         project({ slug: "template", group: "devops" }),
       ]),
     ).toEqual([
-      ["DevOps & Delivery", ["template"]],
-      ["Machine Learning", ["thesis"]],
+      ["DevOps and Delivery", ["template"]],
+      ["Machine Learning and AI", ["thesis"]],
     ]);
   });
 
@@ -79,7 +79,7 @@ describe("getProjectDirectory", () => {
         project({ slug: "live" }),
         project({ slug: "idea", status: "planned", group: "ml" }),
       ]),
-    ).toEqual([["DevOps & Delivery", ["live"]]]);
+    ).toEqual([["DevOps and Delivery", ["live"]]]);
   });
 
   it("sorts each group by featured, then status, then title", () => {
@@ -95,7 +95,7 @@ describe("getProjectDirectory", () => {
           featured: false,
         }),
       ]),
-    ).toEqual([["DevOps & Delivery", ["c", "a", "b", "d"]]]);
+    ).toEqual([["DevOps and Delivery", ["c", "a", "b", "d"]]]);
   });
 
   it("drops links that are not publishable https URLs", () => {

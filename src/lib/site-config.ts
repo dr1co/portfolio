@@ -1,8 +1,6 @@
 import { localize, type Localized, type Resolved } from "@/i18n/localize";
 import type { Locale } from "@/i18n/locales";
 
-// TODO(content): review the "pt-br" translations (drafted, not yet reviewed by the owner).
-
 export type ProfileLinks = {
   github: string;
   linkedin: string;
@@ -33,7 +31,7 @@ export type NavRoute = SiteConfig["routes"][number];
 export const siteConfig: SiteConfigEntry = {
   name: "Adriano Matoba Lipski",
   wordmark: "adriano.dev",
-  descriptor: { en: "DevOps & Automation", "pt-br": "DevOps & Automação" },
+  descriptor: { en: "DevOps and Automation", "pt-br": "DevOps e Automação" },
   headline: {
     en: "From code to production.",
     "pt-br": "Do código à produção.",
@@ -41,7 +39,7 @@ export const siteConfig: SiteConfigEntry = {
   tagline: {
     en: "Building reproducible environments, automated workflows, and reliable software delivery.",
     "pt-br":
-      "Construindo ambientes reproduzíveis, fluxos automatizados e entrega de software confiável.",
+      "Construindo ambientes replicáveis, fluxos automatizados e entrega de software confiável.",
   },
   intro: {
     en: "Software Engineer working on backend services, containerized development environments and CI/CD automation. Currently deepening the work toward DevOps & DevSecOps.",

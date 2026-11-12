@@ -37,7 +37,9 @@ test("pages are not indexable unless indexing is explicitly allowed", async ({
 test("pages share a title and Open Graph preview", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page).toHaveTitle("Adriano Matoba Lipski — DevOps & Automation");
+  await expect(page).toHaveTitle(
+    "Adriano Matoba Lipski — DevOps and Automation",
+  );
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
     "content",
     /opengraph-image/,
@@ -47,14 +49,14 @@ test("pages share a title and Open Graph preview", async ({ page }) => {
 test("Open Graph tags are in the page's language", async ({ page }) => {
   await page.goto("/pt-br");
 
-  await expect(page).toHaveTitle("Adriano Matoba Lipski — DevOps & Automação");
+  await expect(page).toHaveTitle("Adriano Matoba Lipski — DevOps e Automação");
   await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
     "content",
     "pt_BR",
   );
   await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute(
     "content",
-    "Adriano Matoba Lipski — DevOps & Automação",
+    "Adriano Matoba Lipski — DevOps e Automação",
   );
 });
 

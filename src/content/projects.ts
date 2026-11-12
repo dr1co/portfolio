@@ -1,14 +1,11 @@
 import { localize, type Localized, type Resolved } from "@/i18n/localize";
-import type { Locale } from "@/i18n/locales";
+import { defaultLocale, type Locale } from "@/i18n/locales";
 import { isHttpsUrl } from "@/lib/links";
 import type { TechnologyId } from "./technologies";
-
-// TODO(content): review the "pt-br" translations (drafted, not yet reviewed by the owner).
 
 export type ProjectStatus = "available" | "in-progress" | "planned";
 
 /** Intro shown on the /projects directory page and used as its meta description. */
-// TODO(content): review directory intro wording.
 export const directoryIntro: Localized = {
   en: "Things I have built, grouped by area. Each card says what exists today and links to the source. Projects with a case study shows a deep dive into the decisions behind them.",
   "pt-br":
@@ -19,13 +16,19 @@ export const directoryIntro: Localized = {
 export const projectGroups = [
   {
     id: "devops",
-    title: { en: "DevOps & Delivery", "pt-br": "DevOps & Entrega" },
+    title: { en: "DevOps and Delivery", "pt-br": "DevOps e Entrega" },
   },
   {
     id: "backend",
-    title: { en: "Backend & Automation", "pt-br": "Backend & Automação" },
+    title: { en: "Backend and Automation", "pt-br": "Backend e Automação" },
   },
-  { id: "ml", title: { en: "Machine Learning", "pt-br": "Machine Learning" } },
+  {
+    id: "ml",
+    title: {
+      en: "Machine Learning and AI",
+      "pt-br": "Aprendizado de Máquina e IA",
+    },
+  },
 ] as const satisfies readonly { id: string; title: Localized }[];
 
 export type ProjectGroup = Resolved<(typeof projectGroups)[number]>;
@@ -53,7 +56,7 @@ export const projects: readonly ProjectEntry[] = [
     slug: "tcc-engsoftware",
     title: {
       en: "Financial market analysis with Deep Learning Techniques",
-      "pt-br": "Análise do mercado financeiro com técnicas de Deep Learning",
+      "pt-br": "Análise de mercado financeiro com técnicas de Deep Learning",
     },
     summary: {
       en: "The project presented in my undergraduate thesis, covering stock market analysis using LSTM and CNN models, as well as a hybrid between these.",
@@ -180,6 +183,11 @@ export function getCaseStudySlugs(
   list: readonly (Publishable & { slug: string })[] = projects,
 ): string[] {
   return list.filter(hasCaseStudy).map((project) => project.slug);
+}
+
+/** The MDX file (without `.mdx`) holding case study `name` in `locale`, e.g. `thesis.pt-br`. */
+export function caseStudyFile(name: string, locale: Locale): string {
+  return locale === defaultLocale ? name : `${name}.${locale}`;
 }
 
 /** The published project with a case study for `slug`, links validated; `undefined` otherwise. */

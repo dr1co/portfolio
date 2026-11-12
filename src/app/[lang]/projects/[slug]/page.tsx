@@ -8,7 +8,11 @@ import { CaseStudyHeader } from "@/components/projects/case-study-header";
 import { TableOfContents } from "@/components/projects/table-of-contents";
 import { AppLink } from "@/components/ui/app-link";
 import { Container } from "@/components/ui/container";
-import { getCaseStudySlugs, getProject } from "@/content/projects";
+import {
+  caseStudyFile,
+  getCaseStudySlugs,
+  getProject,
+} from "@/content/projects";
 import type { Locale } from "@/i18n/locales";
 import { getMessages } from "@/i18n/messages";
 import { getLocale } from "@/i18n/server";
@@ -63,12 +67,11 @@ async function CaseStudy({
 }: Pick<PageProps<"/[lang]/projects/[slug]">, "params"> & { locale: Locale }) {
   const project = getProject((await params).slug, locale);
   if (!project?.caseStudy) notFound();
+  const file = caseStudyFile(project.caseStudy, locale);
 
-  const { default: Body } = await import(
-    `@/content/case-studies/${project.caseStudy}.mdx`
-  );
+  const { default: Body } = await import(`@/content/case-studies/${file}.mdx`);
   const headings = getHeadings(
-    readFileSync(join(caseStudyDir, `${project.caseStudy}.mdx`), "utf8"),
+    readFileSync(join(caseStudyDir, `${file}.mdx`), "utf8"),
   );
 
   return (

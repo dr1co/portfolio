@@ -1,0 +1,129 @@
+## Visão geral
+
+Este é o meu Trabalho de Conclusão de Curso em Engenharia de Software na UEPG. Ele constrói e avalia três arquiteturas de deep learning: uma CNN 1D, uma LSTM empilhada e um híbrido CNN+LSTM. Os modelos foram usados para prever o próximo preço de fechamento de dois minicontratos futuros brasileiros, o minidólar (WDO) e o miniíndice (WIN), a partir de candles de uma hora (H1).
+
+Além dos modelos em si, o trabalho é organizado como um experimento reproduzível: cada cenário testado tem seu próprio script, cada geração de modelos é salva lado a lado, e cada resultado é avaliado tanto por métricas de erro quanto por um backtest de trading que inclui custos de transação e testes de significância.
+
+## Problema e objetivos
+
+Trabalhos sobre previsão de preços costumam tratar de horizontes longos, nos quais mostram resultados promissores. No entanto, com a bolsa cada vez mais acessível ao investidor comum, especialmente o mercado de derivativos, é cada vez mais comum que investidores se exponham a operações arriscadas e voláteis com pouco ou nenhum preparo. Este estudo trata da aplicação de Deep Learning como ferramenta de análise para operações intradiárias em séries temporais brasileiras. Os objetivos do estudo são:
+
+- comparar arquiteturas CNN, LSTM e híbridas com os mesmos dados e o mesmo pré-processamento;
+- avaliá-las pela **direção**, e não apenas pelo erro de preço;
+- testar se alguma combinação produz uma vantagem de trading que resista aos custos de transação **e** a um teste de significância estatística;
+- manter todo experimento reproduzível a partir de um único comando.
+
+## Arquitetura
+
+<Diagram
+  title="Pipeline do experimento"
+  width={720}
+  height={230}
+  nodes={[
+    { id: "extract", label: "MetaTrader 5", x: 90, y: 50 },
+    { id: "clean", label: "Limpeza", x: 270, y: 50 },
+    { id: "returns", label: "Retornos log", x: 450, y: 50 },
+    { id: "split", label: "Divisão + escala", x: 630, y: 50 },
+    { id: "windows", label: "Janelas de 60 barras", x: 630, y: 180 },
+    { id: "models", label: "CNN | LSTM | Híbrido", x: 450, y: 180 },
+    { id: "evaluate", label: "Métricas de erro", x: 270, y: 180 },
+    { id: "backtest", label: "Backtest", x: 90, y: 180 },
+  ]}
+  edges={[
+    { from: "extract", to: "clean", label: "OHLCV H1" },
+    { from: "clean", to: "returns" },
+    { from: "returns", to: "split", label: "70/15/15" },
+    { from: "split", to: "windows" },
+    { from: "windows", to: "models" },
+    { from: "models", to: "evaluate" },
+    { from: "evaluate", to: "backtest" },
+  ]}
+/>
+
+Cada etapa é um módulo separado, então pode ser executada de novo ou substituída de forma independente:
+
+| Etapa       | Módulo                            | Responsabilidade                                                                         |
+| ----------- | --------------------------------- | ---------------------------------------------------------------------------------------- |
+| Extração    | `src/extract_data.py`             | Obter candles OHLCV de um terminal MetaTrader 5 (opcional; os CSVs estão no repositório) |
+| Limpeza     | `src/data_formatting.py`          | Ordenar, remover candles duplicados e inconsistentes, tratar valores ausentes            |
+| Features    | `src/train.py`, `src/features.py` | Retornos logarítmicos; indicadores RSI, SMA e MACD opcionais                             |
+| Janelamento | `src/utils.py`                    | Janelas deslizantes de 60 candles × N features                                           |
+| Modelos     | `src/models.py`                   | Arquiteturas CNN, LSTM e híbrida em Keras                                                |
+| Treinamento | `src/train.py`                    | Divisão cronológica, escala, early stopping, salvamento de modelos e scalers             |
+| Avaliação   | `src/evaluate.py`                 | RMSE, MAE e acurácia direcional em unidades reais de preço                               |
+| Backtest    | `src/backtest.py`                 | Índice de Sharpe, drawdown máximo, VaR e um teste t por estratégia                       |
+| Cenários    | `src/pipelines/`                  | Um script replicável por cenário experimental                                            |
+
+## Implementação
+
+Os modelos preveem o **retorno logarítmico** do próximo candle; o preço é reconstruído depois a partir do último fechamento conhecido. Os preços são convertidos em retornos logarítmicos antes da escala:
+
+```python
+def prepare_features(df):
+    df = df.copy()
+    for col in PRICE_COLS:
+        df[col] = np.log(df[col] / df[col].shift(1))
+    df = df.iloc[1:].reset_index(drop=True)
+    return df
+```
+
+Os dados são divididos cronologicamente em 70% para treino, 15% para validação e 15% para teste, e o scaler é ajustado **apenas na fatia de treino**, para que nada do futuro vaze para o treinamento:
+
+```python
+df_train, df_val, df_test = split_chronological(df)
+
+scaler = MinMaxScaler(feature_range=(0, 1))
+train_scaled = scaler.fit_transform(df_train.values)
+val_scaled = scaler.transform(df_val.values)
+test_scaled = scaler.transform(df_test.values)
+```
+
+Cada uma das seis combinações (2 mercados × 3 arquiteturas) treina por até 200 épocas com early stopping (paciência 12). Modelos treinados, scalers e métricas são salvos por **geração**, resultando nas gerações `_log`, `_tuned` e `_features`. Assim, experimentos posteriores nunca sobrescrevem os anteriores e toda comparação continua reproduzível.
+
+## Decisões técnicas
+
+**Retornos logarítmicos em vez de preços absolutos.** A primeira versão escalava os preços brutos. Em uma série com tendência forte, como o WIN nos últimos 5 anos, os preços do período de teste podem ficar muito acima de qualquer valor visto no treino, e um scaler Min-Max ajustado nos dados de treino força o modelo a extrapolar fora do seu domínio. Retornos logarítmicos são estacionários, então sua distribuição não muda com o nível de preço, o que elimina o problema não importa o quanto o preço se mova. Essa foi uma descoberta importante, já que muitos estudos aplicam a escala sobre preços brutos, o que pode levar a um treinamento menos consistente.
+
+**Avaliar direção e dinheiro, não só erro.** O RMSE de preço é reportado, mas as métricas decisivas são a acurácia direcional e um backtest: duas estratégias (manter a posição por uma barra ou por várias) com um custo fixo de ida e volta por mercado, índice de Sharpe anualizado, drawdown máximo, VaR histórico a 95% e um teste t de uma amostra sobre os retornos por operação.
+
+**Um script por cenário.** Cada experimento em `src/pipelines/` documenta em sua docstring a motivação, o fluxo, os artefatos produzidos e o resultado de referência, e pode ser executado de novo com `python -m src.pipelines.<nome>`.
+
+**Correção para comparações múltiplas.** O cenário final executou 216 testes de hipótese. Com p < 0,05, cerca de 10,8 falsos positivos são esperados só pelo acaso, então os resultados também foram verificados contra um limiar corrigido por Bonferroni (0,05 / 216 ≈ 0,000231) para garantir a validade das conclusões.
+
+## Testes e validação
+
+Seis cenários foram executados em sequência, cada um partindo do que o anterior mostrou:
+
+| #   | Cenário                                                    | Resultado reportado                                                                                                                                                          |
+| --- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Linha de base (`_log`, 5 features de retorno logarítmico)  | Acurácia direcional de ~0,49–0,50 para os seis modelos; Sharpe negativo nas 12 combinações, 10 de 12 estatisticamente significativas — perdas consistentes, não uma vantagem |
+| 2   | Filtro de confiança pela magnitude do retorno previsto     | 7 de 72 combinações com Sharpe positivo, todas com p > 0,4; as 41 combinações significativas tinham Sharpe negativo                                                          |
+| 3   | Concordância do ensemble (as três arquiteturas concordam)  | As 4 combinações negativas, 3 de 4 significativas (p < 0,001); taxa de concordância de 60–82% das janelas                                                                    |
+| 4   | Busca de hiperparâmetros (Keras Tuner, `_tuned`)           | Acurácia direcional de ~0,49–0,50; Sharpe negativo em 12 de 12, 11 significativas                                                                                            |
+| 5   | Indicadores técnicos (RSI, SMA, MACD, `_features`)         | Acurácia direcional de ~0,49–0,50; Sharpe negativo em 12 de 12, 11 significativas                                                                                            |
+| 6   | Filtro de confiança em `_tuned` e `_features` + Bonferroni | 3 combinações com Sharpe positivo (+10,5 a +12,3) e p entre 0,017 e 0,041, todas no filtro mais extremo (88 operações); nenhuma passa no limiar corrigido                    |
+
+<Callout kind="note">
+  A conclusão honesta é negativa: nenhuma combinação de arquitetura,
+  hiperparâmetros, conjunto de features ou regra de seleção de operações
+  produziu uma vantagem direcional estatisticamente defensável para WIN ou WDO
+  no horizonte de uma hora. O valor do projeto está no método que torna essa
+  conclusão confiável.
+
+Isso não significa, porém, que os modelos sejam ineficientes. Eles mostraram ótimos resultados na literatura para horizontes mais longos, e os resultados podem variar de mercado para mercado, o que significa que a mesma abordagem pode ser aplicada a outros derivativos. Fica como caminho aberto para estudos futuros.
+
+</Callout>
+
+## Limitações e trabalhos futuros
+
+- O repositório não tem suíte de testes automatizados, linter nem formatador; a validação acontece pelos scripts de cenário e pelas métricas que eles reportam.
+- Apenas o horizonte de uma hora e dois contratos foram testados, e os custos de transação são aproximados por um valor fixo de ida e volta por mercado.
+- Extrair os dados de novo exige um terminal MetaTrader 5 acessível por uma ponte local; os CSVs no repositório são necessários para reproduzir os resultados sem ele.
+
+Os próximos passos naturais seriam adicionar testes às funções de preparação de dados e de backtest, e avaliar outros horizontes com as mesmas salvaguardas estatísticas.
+
+## Evidências e links
+
+- [Repositório do código-fonte](https://github.com/dr1co/tcc-engsoftware) — código, scripts de cenário, modelos salvos e tabelas de resultados.
+- O documento do TCC, `TCC_Adriano_2026.pdf`, está na raiz do repositório.
+- Reproduza a linha de base com `python -m src.pipelines.01_baseline_log` depois de instalar o `requirements.txt`.

@@ -2,8 +2,6 @@ import { localize, type Localized, type Resolved } from "@/i18n/localize";
 import type { Locale } from "@/i18n/locales";
 import { workflowUrl } from "./lab-pipeline";
 
-// TODO(content): review the "pt-br" translations (drafted, not yet reviewed by the owner).
-
 type LabDemoEntry = {
   slug: string;
   title: Localized;
@@ -22,7 +20,7 @@ export type LabDemo = Resolved<LabDemoEntry>;
 export const labIntro: Localized = {
   en: "Interactive demos of how my software gets delivered. Each one says whether it runs on scripted data or a real service.",
   "pt-br":
-    "Demonstrações interativas de como meu software é entregue. Cada uma informa se roda com dados roteirizados ou com um serviço real.",
+    "Demonstrações interativas de como meu software é entregue. Cada uma informa se roda com dados roteirizados ou um serviço real.",
 };
 
 export const labDemos: readonly LabDemoEntry[] = [
@@ -42,7 +40,7 @@ export const labDemos: readonly LabDemoEntry[] = [
     concepts: [
       { en: "Job dependencies", "pt-br": "Dependências entre jobs" },
       { en: "Event conditions", "pt-br": "Condições por evento" },
-      { en: "Quality gates", "pt-br": "Quality gates" },
+      { en: "Quality gates", "pt-br": "Gates de qualidade" },
       { en: "Immutable images", "pt-br": "Imagens imutáveis" },
       { en: "Preview vs. production", "pt-br": "Preview vs. produção" },
     ],

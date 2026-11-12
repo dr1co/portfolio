@@ -7,7 +7,6 @@ const finished: Record<FinalState, (count: number) => string> = {
   skipped: (count) => (count === 1 ? "ignorado" : "ignorados"),
 };
 
-// TODO(content): review the Brazilian Portuguese interface text.
 /** UI strings in Brazilian Portuguese. */
 export const ptBr: Messages = {
   layout: {

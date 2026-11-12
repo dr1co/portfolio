@@ -1,8 +1,6 @@
 import { localize, type Localized, type Resolved } from "@/i18n/localize";
 import type { Locale } from "@/i18n/locales";
 
-// TODO(content): review the "pt-br" translations (drafted, not yet reviewed by the owner).
-
 export type StageIcon = "commit" | "build" | "test" | "package" | "deploy";
 
 type PipelineStageEntry = {
