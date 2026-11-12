@@ -3,7 +3,6 @@ import type { CSSProperties } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Section } from "@/components/ui/section";
 import { Tooltip } from "@/components/ui/tooltip";
-import { getProjectsUsing } from "@/content/projects";
 import { skillGroups, type Skill, type SkillGroup } from "@/content/skills";
 import { techName } from "@/content/technologies";
 import { cn } from "@/lib/cn";
@@ -74,7 +73,6 @@ function SkillTile({
 }) {
   const name = techName(skill.tech);
   const icon = techIcon(skill.tech);
-  const projects = getProjectsUsing(skill.tech);
 
   return (
     <Tooltip
@@ -94,11 +92,6 @@ function SkillTile({
               : experienceLabel(skill.since, year)}
           </span>
           {skill.note && <span className="block">{skill.note}</span>}
-          {projects.length > 0 && (
-            <span className="block text-muted">
-              Used in: {projects.map((project) => project.title).join(", ")}
-            </span>
-          )}
         </>
       }
     >

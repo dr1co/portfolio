@@ -95,18 +95,6 @@ export function getFeaturedProjects(
     .map(withPublishableLinks);
 }
 
-/** Published projects that use a technology, sorted by title. */
-export function getProjectsUsing(
-  tech: TechnologyId,
-  list: readonly Project[] = projects,
-): Project[] {
-  return list
-    .filter(
-      (project) => isPublished(project) && project.technologies.includes(tech),
-    )
-    .sort((a, b) => a.title.localeCompare(b.title));
-}
-
 const STATUS_ORDER: Record<ProjectStatus, number> = {
   available: 0,
   "in-progress": 1,

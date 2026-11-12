@@ -29,17 +29,17 @@ describe("SkillGrid", () => {
     ).toEqual(["Containers & Delivery", "Learning Next"]);
   });
 
-  it("names each technology's icon and describes it with experience, notes and projects", () => {
+  it("names each technology's icon and describes it with experience and notes only", () => {
     render(<SkillGrid groups={groups} year={2026} />);
 
     const docker = screen.getByRole("img", { name: "Docker" });
     expect(docker).toHaveAccessibleDescription(/4\+ years/);
     expect(docker).toHaveAccessibleDescription(/Including Docker Compose/);
-    expect(docker).toHaveAccessibleDescription(/Used in:/);
+    expect(docker).not.toHaveAccessibleDescription(/Used in/);
 
-    const redis = screen.getByRole("img", { name: "Redis" });
-    expect(redis).toHaveAccessibleDescription(/Less than a year/);
-    expect(redis).not.toHaveAccessibleDescription(/Used in:/);
+    expect(
+      screen.getByRole("img", { name: "Redis" }),
+    ).toHaveAccessibleDescription(/Less than a year/);
   });
 
   it("labels learning areas with visible text instead of experience", () => {

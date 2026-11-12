@@ -62,7 +62,7 @@ test.describe("skill tiles", () => {
 
     await tile.hover();
     await expect(tooltip).toBeVisible();
-    await expect(tooltip).toContainText("Used in:");
+    await expect(tooltip).toContainText(/\d\+ years?/);
   });
 
   test("show their details on tap", async ({ page }, testInfo) => {
