@@ -231,14 +231,17 @@ The Explorer models **this site's real CI workflow** ([.github/workflows/ci.yml]
 
 ## Routing and languages
 
-Every route lives under `src/app/[lang]`, and the root layout's `generateStaticParams` prerenders each locale in [src/i18n/locales.ts](src/i18n/locales.ts) (English only for now). English pages have no URL prefix, and [src/proxy.ts](src/proxy.ts) maps them to the internal route:
+Every route lives under `src/app/[lang]`, and the root layout's `generateStaticParams` prerenders each locale in [src/i18n/locales.ts](src/i18n/locales.ts): English (`en`, the default) and Brazilian Portuguese (`pt-br`). English pages have no URL prefix; Portuguese pages keep theirs and the English path segments (`/pt-br/projects`). [src/proxy.ts](src/proxy.ts) maps public URLs to the internal route:
 
-| Request                    | Proxy                                             |
-| -------------------------- | ------------------------------------------------- |
-| `/projects`                | rewrite to `/en/projects`                         |
-| `/en/projects`             | `308` to `/projects`, one public URL per page     |
-| `/en/opengraph-image-…`    | untouched: Next generates these image URLs itself |
-| `/projects/<unknown slug>` | rewrite to `UNROUTED_PATH` → 404                  |
+| Request                    | Proxy                                                  |
+| -------------------------- | ------------------------------------------------------ |
+| `/projects`                | rewrite to `/en/projects`                              |
+| `/en/projects`             | `308` to `/projects`, one public URL per page          |
+| `/en/opengraph-image-…`    | untouched: Next generates these image URLs itself      |
+| `/pt-br/projects`          | served as is                                           |
+| `/projects/<unknown slug>` | rewrite to `UNROUTED_PATH` → 404 (same under `/pt-br`) |
+
+There is no automatic language detection. The header's `LanguageSwitch` ("PT" / "EN") links to the same page in the other language; its href is rendered on the server, so it works without JavaScript. Its accessible name starts with the visible text ("PT — Ver em português", WCAG 2.5.3), and it carries `hreflang` and `lang`. `<html lang>` uses the BCP 47 tag from `languageTags` (`en`, `pt-BR`).
 
 Client code that compares paths (e.g. `NavLink`) must use `stripLocale`, because prerendered pages report their internal `/en/...` path to `usePathname`.
 
@@ -249,6 +252,8 @@ How text gets its language:
 | Interface text (labels, headings, sentences)  | [src/i18n/messages/en.ts](src/i18n/messages/en.ts); every locale has the same shape               | `getMessages(locale)`, or `useMessages()` in a client component |
 | Content (projects, skills, Lab prose, config) | `Localized` fields in `src/content/` and `site-config.ts`                                         | the file's `getX(locale)` accessor, which calls `localize`      |
 | Case-study bodies                             | `src/content/case-studies/*.mdx`; MDX components get their labels from `getMdxComponents(locale)` | the case-study page passes `components` to the MDX body         |
+
+Every `Localized` field and every message needs a Portuguese version, or typecheck fails. [src/i18n/translations.test.ts](src/i18n/translations.test.ts) also fails when a Portuguese text is identical to the English one; names and terms that are meant to stay in English go in its `SAME_IN_BOTH` allowlist.
 
 Messages with a value in them (e.g. `version: (commit) => ...`) are functions, so each language can word the sentence its own way.
 
@@ -324,6 +329,9 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
   | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                                                                                                                                          |
   | `site.spec.ts`     | 404 page, `noindex`, title and OG tags, generated images, skip link                                                                                                                                                                                                    |
   | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                                                                                       |
+  | `i18n.spec.ts`     | `<html lang>` per language, PT/EN switch round trip keeps the page, links stay in Portuguese, switch works without JavaScript, **axe** on every `/pt-br` page in both themes                                                                                           |
+
+  Tests that press keys on tabs or radios call `waitForHydration` from [e2e/hydration.ts](e2e/hydration.ts) first: keys pressed before hydration reach the server HTML and are lost.
 
   Some expectations depend on content (hero buttons exist only while projects and contact links are configured). If you remove content, update the specs with it.
 
@@ -367,6 +375,8 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 
 - On wide screens the case-study table of contents comes after the article in the Tab order (it mirrors the visual order); on smaller screens the collapsible "On this page" panel sits before the article.
 - Content (projects, skills, pipeline and Lab copy, the case studies) is not final. It's tracked with `TODO(content)` markers and [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
+- The Portuguese translations are drafts awaiting the owner's review (see the pre-publish checklist). Case-study bodies are still English on `/pt-br` pages.
+- A Portuguese URL that matches no route (e.g. `/pt-br/nope`) gets the English 404 page: unmatched URLs render `global-not-found.tsx`, which sits outside `[lang]` and can't tell the language.
 - `/about` doesn't exist yet; its nav item stays hidden until the route is enabled in `site-config.ts`.
 - The projects directory has no filters (deferred until there are ≥ 6 published projects).
 - The Pipeline Explorer is a simplified, scripted model of `ci.yml`: no fork PRs, cancelled runs, real durations or live data from GitHub Actions. Container Explorer and an observability demo are future phases.

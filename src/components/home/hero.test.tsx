@@ -64,3 +64,30 @@ describe("Hero", () => {
     );
   });
 });
+
+describe("Hero in Brazilian Portuguese", () => {
+  it("shows the Portuguese headline and actions", () => {
+    render(
+      <Hero
+        locale="pt-br"
+        config={{
+          ...getSiteConfig("pt-br"),
+          links: withLinks({ email: "me@example.com" }).links,
+        }}
+        featuredCount={2}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "Do código à produção.",
+    );
+    expect(screen.getByRole("link", { name: "Ver projetos" })).toHaveAttribute(
+      "href",
+      "#projects",
+    );
+    expect(
+      screen.getByRole("link", { name: "Entre em contato" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Exemplo")).toBeInTheDocument();
+  });
+});

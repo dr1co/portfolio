@@ -52,7 +52,17 @@ describe("proxy", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
 
-  it.each(["/projects/does-not-exist"])(
+  it.each([
+    "/pt-br",
+    "/pt-br/projects",
+    "/pt-br/projects/tcc-engsoftware",
+    "/pt-br/lab/pipeline",
+    "/pt-br/opengraph-image",
+  ])("serves the Portuguese URL %s as it is", (path) => {
+    expect(proxy(request(path)).headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it.each(["/projects/does-not-exist", "/pt-br/projects/does-not-exist"])(
     "rewrites %s (no published case study) to a path no route serves",
     (path) => {
       // Not "/404": Vercel serves that static file with a 200 when it's a rewrite target.

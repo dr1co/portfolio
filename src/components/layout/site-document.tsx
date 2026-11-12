@@ -6,7 +6,7 @@ import { SkipLink } from "@/components/layout/skip-link";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { MotionProvider } from "@/components/ui/motion-provider";
 import { LocaleProvider } from "@/i18n/locale-context";
-import type { Locale } from "@/i18n/locales";
+import { languageTags, type Locale } from "@/i18n/locales";
 import "@/app/globals.css";
 
 const geistSans = Geist({
@@ -29,7 +29,7 @@ export function SiteDocument({
 }) {
   return (
     <html
-      lang={locale}
+      lang={languageTags[locale]}
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >

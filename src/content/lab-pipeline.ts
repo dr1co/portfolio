@@ -2,6 +2,8 @@ import { localize, type Localized, type Resolved } from "@/i18n/localize";
 import type { Locale } from "@/i18n/locales";
 import { siteConfig } from "@/lib/site-config";
 
+// TODO(content): review the "pt-br" translations (drafted, not yet reviewed by the owner).
+
 export type RunState = "pending" | "running" | "passed" | "failed" | "skipped";
 
 /** The workflow events the Lab models. Pull requests are same-repository ones; forks aren't modeled. */
@@ -71,18 +73,27 @@ export const workflowRunsUrl = `${siteConfig.sourceRepoUrl}/actions/workflows/ci
 
 export const pipelineIntro: Localized = {
   en: "This is the CI/CD workflow that builds, tests and deploys this site, modeled job by job. Outcomes are scripted from the real workflow. This is simulated, so nothing here triggers anything.",
+  "pt-br":
+    "Este é o workflow de CI/CD que gera, testa e publica este site, modelado job a job. Os resultados são roteirizados a partir do workflow real. É uma simulação, então nada aqui dispara coisa alguma.",
 };
 
 export const pipelineScope: Localized = {
   en: "A simplified model: runs that get cancelled, pull requests from forks and real durations aren't shown.",
+  "pt-br":
+    "Um modelo simplificado: execuções canceladas, pull requests de forks e durações reais não aparecem.",
 };
 
 export const pipelineTrigger: PipelineTriggerEntry = {
-  label: { en: "Trigger" },
+  label: { en: "Trigger", "pt-br": "Gatilho" },
   icon: "trigger",
-  purpose: { en: "A push to main or a pull request starts the workflow." },
+  purpose: {
+    en: "A push to main or a pull request starts the workflow.",
+    "pt-br": "Um push na main ou um pull request inicia o workflow.",
+  },
   explanation: {
     en: "Both events run the same file. Conditions on each job decide what happens next: pull requests get a preview, only main gets published and deployed to production.",
+    "pt-br":
+      "Os dois eventos executam o mesmo arquivo. As condições de cada job decidem o que acontece em seguida: pull requests ganham um preview, e só a main é publicada e enviada para produção.",
   },
   excerpt: ["on:", "  pull_request:", "  push:", "    branches: [main]"],
 };
@@ -90,15 +101,19 @@ export const pipelineTrigger: PipelineTriggerEntry = {
 export const ciJobs: readonly CiJobEntry[] = [
   {
     id: "quality",
-    label: { en: "Quality" },
+    label: { en: "Quality", "pt-br": "Qualidade" },
     icon: "checks",
     needs: [],
     events: ["push-main", "pull-request"],
     purpose: {
       en: "Lint, typecheck, format check and unit tests, plus linters for the workflows and the Dockerfile.",
+      "pt-br":
+        "Lint, checagem de tipos, checagem de formatação e testes unitários, além de linters para os workflows e o Dockerfile.",
     },
     explanation: {
       en: "The fastest feedback runs first and in parallel with the slower jobs. The CI configuration itself is linted, so a broken workflow fails here instead of at deploy time.",
+      "pt-br":
+        "O feedback mais rápido vem primeiro, em paralelo com os jobs mais lentos. A própria configuração do CI passa por lint, então um workflow quebrado falha aqui, e não na hora do deploy.",
     },
     steps: [
       { name: "actions/checkout" },
@@ -128,15 +143,19 @@ export const ciJobs: readonly CiJobEntry[] = [
   },
   {
     id: "e2e",
-    label: { en: "E2E tests" },
+    label: { en: "E2E tests", "pt-br": "Testes E2E" },
     icon: "browser",
     needs: [],
     events: ["push-main", "pull-request"],
     purpose: {
       en: "Build the site and run the Playwright suite in a real browser, including accessibility checks.",
+      "pt-br":
+        "Gera o site e roda a suíte do Playwright em um navegador real, incluindo verificações de acessibilidade.",
     },
     explanation: {
       en: "When a test fails, the Playwright report is uploaded as an artifact, so the failure can be inspected without rerunning it locally.",
+      "pt-br":
+        "Quando um teste falha, o relatório do Playwright é enviado como artefato, para que a falha possa ser analisada sem rodar tudo de novo localmente.",
     },
     steps: [
       { name: "actions/checkout" },
@@ -157,15 +176,19 @@ export const ciJobs: readonly CiJobEntry[] = [
   },
   {
     id: "image",
-    label: { en: "Image" },
+    label: { en: "Image", "pt-br": "Imagem" },
     icon: "container",
     needs: [],
     events: ["push-main", "pull-request"],
     purpose: {
       en: "Build the production container, smoke-test it, and scan it for vulnerabilities.",
+      "pt-br":
+        "Gera o container de produção, faz um smoke test e procura vulnerabilidades nele.",
     },
     explanation: {
       en: "The image is started and probed before anything else trusts it. Trivy fails the job on fixable critical or high vulnerabilities. On main, the exact tested image is kept as an artifact for publishing.",
+      "pt-br":
+        "A imagem é iniciada e verificada antes que qualquer outra etapa confie nela. O Trivy reprova o job se houver vulnerabilidades críticas ou altas com correção disponível. Na main, a imagem exata que foi testada é guardada como artefato para a publicação.",
     },
     steps: [
       { name: "actions/checkout" },
@@ -201,15 +224,19 @@ export const ciJobs: readonly CiJobEntry[] = [
   },
   {
     id: "publish",
-    label: { en: "Publish" },
+    label: { en: "Publish", "pt-br": "Publicação" },
     icon: "package",
     needs: ["quality", "e2e", "image"],
     events: ["push-main"],
     purpose: {
       en: "Push the tested image to GHCR, tagged with the commit SHA and main.",
+      "pt-br":
+        "Envia ao GHCR a imagem testada, com as tags do SHA do commit e main.",
     },
     explanation: {
       en: "Publishing waits for every check and pushes the same image that was tested, instead of rebuilding it. Only this job can write packages.",
+      "pt-br":
+        "A publicação espera todas as verificações e envia a mesma imagem que foi testada, em vez de gerá-la de novo. Só este job pode escrever pacotes.",
     },
     steps: [
       { name: "actions/download-artifact" },
@@ -231,13 +258,18 @@ export const ciJobs: readonly CiJobEntry[] = [
   },
   {
     id: "deploy-preview",
-    label: { en: "Preview deploy" },
+    label: { en: "Preview deploy", "pt-br": "Deploy de preview" },
     icon: "preview",
     needs: ["quality"],
     events: ["pull-request"],
-    purpose: { en: "Deploy the pull request to a Vercel preview URL." },
+    purpose: {
+      en: "Deploy the pull request to a Vercel preview URL.",
+      "pt-br": "Faz o deploy do pull request em uma URL de preview na Vercel.",
+    },
     explanation: {
       en: "Previews only wait for the quality job, so reviewers get a link early. They never touch production or the image registry.",
+      "pt-br":
+        "Os previews só esperam o job de qualidade, para que quem revisa receba um link cedo. Eles nunca tocam a produção nem o registro de imagens.",
     },
     steps: [
       { name: "actions/checkout" },
@@ -254,15 +286,19 @@ export const ciJobs: readonly CiJobEntry[] = [
   },
   {
     id: "deploy-production",
-    label: { en: "Production deploy" },
+    label: { en: "Production deploy", "pt-br": "Deploy em produção" },
     icon: "deploy",
     needs: ["publish"],
     events: ["push-main"],
     purpose: {
       en: "Deploy main to production on Vercel, after the image is published.",
+      "pt-br":
+        "Faz o deploy da main em produção na Vercel, depois que a imagem é publicada.",
     },
     explanation: {
       en: "Production deploys queue instead of cancelling each other, and the run summary records the image tag of the same commit for traceability.",
+      "pt-br":
+        "Os deploys em produção entram em fila em vez de se cancelarem, e o resumo da execução registra a tag da imagem do mesmo commit, para rastreabilidade.",
     },
     steps: [
       { name: "actions/checkout" },
@@ -286,44 +322,59 @@ export const ciJobs: readonly CiJobEntry[] = [
 export const pipelineScenarios: readonly ScenarioEntry[] = [
   {
     id: "push-main",
-    label: { en: "Push to main" },
+    label: { en: "Push to main", "pt-br": "Push na main" },
     summary: {
       en: "A commit lands on main. Every check passes, the tested image is published and production is deployed.",
+      "pt-br":
+        "Um commit chega à main. Todas as verificações passam, a imagem testada é publicada e a produção recebe o deploy.",
     },
     event: "push-main",
   },
   {
     id: "pull-request",
-    label: { en: "Pull request" },
+    label: { en: "Pull request", "pt-br": "Pull request" },
     summary: {
       en: "A pull request from the same repository. Checks run and a preview is deployed; nothing is published.",
+      "pt-br":
+        "Um pull request do próprio repositório. As verificações rodam e um preview é publicado; nada vai para o registro.",
     },
     event: "pull-request",
   },
   {
     id: "failure-main",
-    label: { en: "Failure on main" },
+    label: { en: "Failure on main", "pt-br": "Falha na main" },
     summary: {
       en: "An end-to-end test fails on main. Publishing and the production deploy never start.",
+      "pt-br":
+        "Um teste end-to-end falha na main. A publicação e o deploy em produção nem começam.",
     },
     event: "push-main",
     failure: {
       job: "e2e",
       step: "End-to-end tests",
-      reason: { en: "An end-to-end test fails." },
+      reason: {
+        en: "An end-to-end test fails.",
+        "pt-br": "Um teste end-to-end falha.",
+      },
     },
   },
   {
     id: "vulnerable-image",
-    label: { en: "Vulnerable image" },
+    label: { en: "Vulnerable image", "pt-br": "Imagem vulnerável" },
     summary: {
       en: "Trivy finds a fixable critical vulnerability in the image on main. Nothing is published.",
+      "pt-br":
+        "O Trivy encontra uma vulnerabilidade crítica com correção disponível na imagem da main. Nada é publicado.",
     },
     event: "push-main",
     failure: {
       job: "image",
       step: "Fail on fixable CRITICAL/HIGH vulnerabilities",
-      reason: { en: "Trivy finds a fixable CRITICAL vulnerability." },
+      reason: {
+        en: "Trivy finds a fixable CRITICAL vulnerability.",
+        "pt-br":
+          "O Trivy encontra uma vulnerabilidade CRITICAL com correção disponível.",
+      },
     },
   },
 ];

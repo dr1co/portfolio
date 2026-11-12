@@ -1,3 +1,4 @@
+import { LanguageSwitch } from "@/components/navigation/language-switch";
 import { MobileNav } from "@/components/navigation/mobile-nav";
 import { iconButtonClass } from "@/components/ui/icon-button";
 import { NavLink, type NavItem } from "@/components/navigation/nav-link";
@@ -11,7 +12,7 @@ import { getMessages } from "@/i18n/messages";
 import { getContactLinks, getEnabledRoutes } from "@/lib/links";
 import { getSiteConfig } from "@/lib/site-config";
 
-/** Sticky top bar: wordmark, enabled routes, contact shortcut, GitHub and theme toggle. */
+/** Sticky top bar: wordmark, enabled routes, contact shortcut, GitHub, language switch and theme toggle. */
 export function SiteHeader({ locale }: { locale: Locale }) {
   const config = getSiteConfig(locale);
   const t = getMessages(locale).layout;
@@ -51,6 +52,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
                 <GitHubIcon className="size-5" />
               </AppLink>
             )}
+            <LanguageSwitch />
             <ThemeToggle />
             {items.length > 1 && <MobileNav items={items} />}
           </div>

@@ -233,3 +233,37 @@ describe("resolveRun", () => {
     });
   });
 });
+
+describe("run sentences in Brazilian Portuguese", () => {
+  const pt = getLabPipeline("pt-br");
+  const ptScenario = (id: Scenario["id"]) =>
+    pt.scenarios.find((candidate) => candidate.id === id)!;
+
+  it("explains skipped jobs and finished frames in Portuguese", () => {
+    const outcome = resolveRun(pt.jobs, ptScenario("failure-main"), "pt-br");
+    const frames = runFrames(pt.jobs, outcome);
+
+    expect(outcome.publish.reason).toBe("Depende de e2e, que falhou.");
+    expect(outcome["deploy-preview"].reason).toBe(
+      "Executa apenas em pull requests.",
+    );
+    expect(describeFrame(pt.jobs, frames, 2, "pt-br")).toBe(
+      "Qualidade: com sucesso. Testes E2E: com falha. Imagem: com sucesso.",
+    );
+  });
+
+  it("agrees the tally with each count", () => {
+    expect(
+      summarizeRun(
+        resolveRun(pt.jobs, ptScenario("push-main"), "pt-br"),
+        "pt-br",
+      ),
+    ).toBe("Execução concluída: 5 com sucesso, 1 ignorado.");
+    expect(
+      summarizeRun(
+        resolveRun(pt.jobs, ptScenario("failure-main"), "pt-br"),
+        "pt-br",
+      ),
+    ).toBe("Execução concluída: 2 com sucesso, 1 com falha, 3 ignorados.");
+  });
+});

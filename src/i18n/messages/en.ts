@@ -28,6 +28,8 @@ export const en = {
     source: "Source",
     version: (commit: string) => `Version ${commit}`,
   },
+  /** The link to this page in the other language, written in that language. */
+  languageSwitch: { label: "Ver em português", short: "PT" },
   contactLabels: { github: "GitHub", linkedin: "LinkedIn", email: "Email" },
   copy: {
     command: "Copy command",

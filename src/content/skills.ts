@@ -2,6 +2,8 @@ import { localize, type Localized, type Resolved } from "@/i18n/localize";
 import type { Locale } from "@/i18n/locales";
 import type { TechnologyId } from "./technologies";
 
+// TODO(content): review the "pt-br" translations (drafted, not yet reviewed by the owner).
+
 /** `since` is the year you started using it, shown as experience. Leave it out only in the learning group. */
 type SkillEntry = { tech: TechnologyId; since?: number; note?: Localized };
 
@@ -18,15 +20,22 @@ export type SkillGroup = Resolved<SkillGroupEntry>;
 export const skillGroups: readonly SkillGroupEntry[] = [
   {
     id: "delivery",
-    title: { en: "Containers & Delivery" },
+    title: { en: "Containers & Delivery", "pt-br": "Containers & Entrega" },
     skills: [
-      { tech: "docker", since: 2022, note: { en: "Including Docker Compose" } },
+      {
+        tech: "docker",
+        since: 2022,
+        note: {
+          en: "Including Docker Compose",
+          "pt-br": "Incluindo Docker Compose",
+        },
+      },
       { tech: "github-actions", since: 2025 },
     ],
   },
   {
     id: "backend",
-    title: { en: "Backend & Automation" },
+    title: { en: "Backend & Automation", "pt-br": "Backend & Automação" },
     skills: [
       { tech: "python", since: 2023 },
       { tech: "django", since: 2025 },
@@ -38,7 +47,7 @@ export const skillGroups: readonly SkillGroupEntry[] = [
   },
   {
     id: "frontend",
-    title: { en: "Frontend" },
+    title: { en: "Frontend", "pt-br": "Frontend" },
     skills: [
       { tech: "react", since: 2022 },
       { tech: "nextjs", since: 2025 },
@@ -50,7 +59,7 @@ export const skillGroups: readonly SkillGroupEntry[] = [
   },
   {
     id: "databases",
-    title: { en: "Databases" },
+    title: { en: "Databases", "pt-br": "Bancos de dados" },
     skills: [
       { tech: "postgresql", since: 2022 },
       { tech: "mongodb", since: 2022 },
@@ -59,7 +68,10 @@ export const skillGroups: readonly SkillGroupEntry[] = [
   },
   {
     id: "collaboration",
-    title: { en: "Development & Collaboration" },
+    title: {
+      en: "Development & Collaboration",
+      "pt-br": "Desenvolvimento & Colaboração",
+    },
     skills: [
       { tech: "git", since: 2022 },
       { tech: "linux", since: 2022 },
@@ -68,7 +80,7 @@ export const skillGroups: readonly SkillGroupEntry[] = [
   },
   {
     id: "learning",
-    title: { en: "Learning Next" },
+    title: { en: "Learning Next", "pt-br": "Próximos estudos" },
     learning: true,
     skills: [{ tech: "kubernetes" }, { tech: "terraform" }, { tech: "aws" }],
   },

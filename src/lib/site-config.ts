@@ -1,6 +1,8 @@
 import { localize, type Localized, type Resolved } from "@/i18n/localize";
 import type { Locale } from "@/i18n/locales";
 
+// TODO(content): review the "pt-br" translations (drafted, not yet reviewed by the owner).
+
 export type ProfileLinks = {
   github: string;
   linkedin: string;
@@ -31,20 +33,35 @@ export type NavRoute = SiteConfig["routes"][number];
 export const siteConfig: SiteConfigEntry = {
   name: "Adriano Matoba Lipski",
   wordmark: "adriano.dev",
-  descriptor: { en: "DevOps & Automation" },
-  headline: { en: "From code to production." },
+  descriptor: { en: "DevOps & Automation", "pt-br": "DevOps & Automação" },
+  headline: {
+    en: "From code to production.",
+    "pt-br": "Do código à produção.",
+  },
   tagline: {
     en: "Building reproducible environments, automated workflows, and reliable software delivery.",
+    "pt-br":
+      "Construindo ambientes reproduzíveis, fluxos automatizados e entrega de software confiável.",
   },
   intro: {
     en: "Software Engineer working on backend services, containerized development environments and CI/CD automation. Currently deepening the work toward DevOps & DevSecOps.",
+    "pt-br":
+      "Engenheiro de Software atuando com serviços de backend, ambientes de desenvolvimento em containers e automação de CI/CD. Atualmente aprofundando o trabalho em DevOps e DevSecOps.",
   },
   heroTags: ["Docker", "CI/CD", "Python", "Linux", "Bash"],
   routes: [
-    { href: "/", label: { en: "Home" }, enabled: true },
-    { href: "/projects", label: { en: "Projects" }, enabled: true },
-    { href: "/lab", label: { en: "Lab" }, enabled: true },
-    { href: "/about", label: { en: "About" }, enabled: false },
+    { href: "/", label: { en: "Home", "pt-br": "Início" }, enabled: true },
+    {
+      href: "/projects",
+      label: { en: "Projects", "pt-br": "Projetos" },
+      enabled: true,
+    },
+    { href: "/lab", label: { en: "Lab", "pt-br": "Lab" }, enabled: true },
+    {
+      href: "/about",
+      label: { en: "About", "pt-br": "Sobre" },
+      enabled: false,
+    },
   ],
   links: {
     github: "https://github.com/dr1co",

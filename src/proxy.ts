@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getCaseStudySlugs } from "@/content/projects";
-import { defaultLocale } from "@/i18n/locales";
+import { defaultLocale, isLocale, stripLocale } from "@/i18n/locales";
 
 const caseStudySlugs = new Set(getCaseStudySlugs());
 
@@ -23,7 +23,7 @@ function unknownCaseStudy(path: string): boolean {
 
 /**
  * Maps public URLs to the `app/[lang]` routes. English pages have no prefix, so `/projects` is served
- * by `/en/projects` and a typed `/en/...` redirects to the unprefixed URL. Unknown case-study slugs go
+ * by `/en/projects` and a typed `/en/...` redirects to the unprefixed URL. Other locales keep their prefix (`/pt-br/projects`). Unknown case-study slugs go
  * to the not-found page before rendering starts; otherwise the streamed shell would commit a 200.
  */
 export function proxy(request: NextRequest) {
@@ -34,6 +34,13 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = pathname.slice(defaultPrefix.length) || "/";
     return NextResponse.redirect(url, 308);
+  }
+
+  const [, first] = pathname.split("/");
+  if (isLocale(first)) {
+    return unknownCaseStudy(stripLocale(pathname))
+      ? NextResponse.rewrite(new URL(UNROUTED_PATH, request.url))
+      : NextResponse.next();
   }
 
   const target = unknownCaseStudy(pathname)

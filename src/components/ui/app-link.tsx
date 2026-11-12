@@ -4,7 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { useLocale, useMessages } from "@/i18n/locale-context";
-import { localizePath } from "@/i18n/locales";
+import { localizePath, type Locale } from "@/i18n/locales";
 
 export type AppLinkProps = {
   href: string;
@@ -12,9 +12,11 @@ export type AppLinkProps = {
   externalIcon?: boolean;
   className?: string;
   children: ReactNode;
+  /** Language of an internal target; the current page's by default. */
+  locale?: Locale;
 } & Pick<
   ComponentProps<typeof Link>,
-  "onNavigate" | "aria-label" | "aria-current"
+  "onNavigate" | "aria-label" | "aria-current" | "hrefLang" | "lang"
 >;
 
 /**
@@ -27,15 +29,16 @@ export function AppLink({
   externalIcon = true,
   onNavigate,
   children,
+  locale: targetLocale,
   ...props
 }: AppLinkProps) {
-  const locale = useLocale();
+  const currentLocale = useLocale();
   const t = useMessages().layout;
 
   if (!external) {
     return (
       <Link
-        href={localizePath(href, locale)}
+        href={localizePath(href, targetLocale ?? currentLocale)}
         onNavigate={onNavigate}
         {...props}
       >

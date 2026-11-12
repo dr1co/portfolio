@@ -33,6 +33,7 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
   - Pages and layouts call `getLocale()`.
   - Server components, and components without a directive, take a `locale` prop.
   - Client components use `useLocale()` / `useMessages()`.
+  - A link to another language passes `locale` to `AppLink` (see `LanguageSwitch`).
   - Don't call `getLocale()` in a component that `global-not-found.tsx` renders: that page is outside `[lang]`, so it has no root params.
 - **Never render empty or placeholder links.** Validate through `src/lib/links.ts` helpers.
 - **Accessibility is a requirement:** semantic HTML, one `h1` per page, visible focus, keyboard support, state never shown by color alone, and `prefers-reduced-motion` respected.
@@ -93,3 +94,7 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - `localize` treats any object whose keys are exactly the locales as a `Localized` text. Don't give content data an object shaped like `{ en: ... }` for any other purpose.
 - Messages may be functions (for interpolation), so a server component must never pass a `Messages` object, or part of one, as a prop to a client component: functions aren't serializable. Client components read `useMessages()` themselves.
 - MDX case-study components that need text (`Callout`, `Diagram`, the table wrapper) get the locale through `getMdxComponents(locale)`, which the case-study page passes as `<Body components={...} />`. `useMDXComponents()` only serves the default locale for `@next/mdx`.
+- Locales are `en` (unprefixed) and `pt-br` (prefixed, English path segments: `/pt-br/projects`). Adding a `Localized` field or a message without a `"pt-br"` value fails typecheck; leaving it identical to English fails `translations.test.ts` unless the text is in its `SAME_IN_BOTH` allowlist. Mark drafted translations `TODO(content)`.
+- An icon-like link whose visible text differs from its `aria-label` fails axe `label-content-name-mismatch` (WCAG 2.5.3). Start the label with the visible text, as `LanguageSwitch` does ("PT — Ver em português").
+- E2E tests that press keys on tabs or radios must `await waitForHydration(page)` (`e2e/hydration.ts`) after `goto`; under parallel load, keys pressed before hydration are lost and the test flakes. The helper matches the theme toggle's mounted label in both languages.
+- Unmatched URLs render `global-not-found.tsx`, which is outside `[lang]`, so a Portuguese 404 (`/pt-br/nope`, unknown `/pt-br/projects/<slug>`) shows the English page. Known limitation; don't "fix" it with a catch-all route (see the `UNROUTED_PATH` gotcha).

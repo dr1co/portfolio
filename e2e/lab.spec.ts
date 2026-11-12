@@ -8,6 +8,7 @@ import {
   summarizeRun,
 } from "@/lib/pipeline-run";
 import { TICK_MS } from "@/lib/use-pipeline-playback";
+import { waitForHydration } from "./hydration";
 
 const { jobs: ciJobs, scenarios: pipelineScenarios } = getLabPipeline("en");
 
@@ -71,6 +72,7 @@ test.describe("pipeline explorer page", () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === "mobile-chromium", "tabs are desktop");
     await page.goto(path);
+    await waitForHydration(page);
     const panel = page.getByRole("tabpanel");
 
     await page.getByRole("radio", { name: "Push to main" }).focus();

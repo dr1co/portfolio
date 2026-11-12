@@ -3,19 +3,29 @@ import type { Locale } from "@/i18n/locales";
 import { isHttpsUrl } from "@/lib/links";
 import type { TechnologyId } from "./technologies";
 
+// TODO(content): review the "pt-br" translations (drafted, not yet reviewed by the owner).
+
 export type ProjectStatus = "available" | "in-progress" | "planned";
 
 /** Intro shown on the /projects directory page and used as its meta description. */
 // TODO(content): review directory intro wording.
 export const directoryIntro: Localized = {
   en: "Things I have built, grouped by area. Each card says what exists today and links to the source. Projects with a case study shows a deep dive into the decisions behind them.",
+  "pt-br":
+    "Coisas que construí, agrupadas por área. Cada card diz o que já existe hoje e leva ao código-fonte. Projetos com estudo de caso trazem um mergulho nas decisões por trás deles.",
 };
 
 /** Directory groups, in display order. */
 export const projectGroups = [
-  { id: "devops", title: { en: "DevOps & Delivery" } },
-  { id: "backend", title: { en: "Backend & Automation" } },
-  { id: "ml", title: { en: "Machine Learning" } },
+  {
+    id: "devops",
+    title: { en: "DevOps & Delivery", "pt-br": "DevOps & Entrega" },
+  },
+  {
+    id: "backend",
+    title: { en: "Backend & Automation", "pt-br": "Backend & Automação" },
+  },
+  { id: "ml", title: { en: "Machine Learning", "pt-br": "Machine Learning" } },
 ] as const satisfies readonly { id: string; title: Localized }[];
 
 export type ProjectGroup = Resolved<(typeof projectGroups)[number]>;
@@ -41,12 +51,19 @@ export type Project = Resolved<ProjectEntry>;
 export const projects: readonly ProjectEntry[] = [
   {
     slug: "tcc-engsoftware",
-    title: { en: "Financial market analysis with Deep Learning Techniques" },
+    title: {
+      en: "Financial market analysis with Deep Learning Techniques",
+      "pt-br": "Análise do mercado financeiro com técnicas de Deep Learning",
+    },
     summary: {
       en: "The project presented in my undergraduate thesis, covering stock market analysis using LSTM and CNN models, as well as a hybrid between these.",
+      "pt-br":
+        "O projeto apresentado no meu TCC, que analisa o mercado de ações com modelos LSTM e CNN, além de um híbrido entre os dois.",
     },
     description: {
       en: "Undergraduate thesis (Software Engineering, UEPG) that builds and evaluates CNN, LSTM and hybrid CNN+LSTM models to predict the next hourly closing price of Brazilian mini futures (WDO and WIN) from MetaTrader 5 data. It is organized as a reproducible pipeline, contemplating extraction, cleaning, windowing, training, evaluation and backtesting, with one script per experimental scenario. The thesis conclude that none of the five approaches tested produced a statistically reliable directional edge at the one-hour horizon.",
+      "pt-br":
+        "Trabalho de conclusão de curso (Engenharia de Software, UEPG) que constrói e avalia modelos CNN, LSTM e híbridos CNN+LSTM para prever o próximo preço de fechamento horário dos minicontratos futuros brasileiros (WDO e WIN) a partir de dados do MetaTrader 5. Ele é organizado como um pipeline reproduzível, contemplando extração, limpeza, janelamento, treinamento, avaliação e backtesting, com um script por cenário experimental. O trabalho conclui que nenhuma das cinco abordagens testadas produziu uma vantagem direcional estatisticamente confiável no horizonte de uma hora.",
     },
     status: "available",
     technologies: ["python", "tensorflow", "keras", "metatrader5"],
@@ -63,12 +80,20 @@ export const projects: readonly ProjectEntry[] = [
   },
   {
     slug: "django-project-template",
-    title: { en: "Django Project Template for automated project building" },
+    title: {
+      en: "Django Project Template for automated project building",
+      "pt-br":
+        "Template de projeto Django para criação automatizada de projetos",
+    },
     summary: {
       en: "My go-to template for Django projects, featuring integration with tailwind, structured tests, and more!",
+      "pt-br":
+        "Meu template padrão para projetos Django, com integração ao Tailwind, testes estruturados e mais!",
     },
     description: {
       en: "A generic Django starter derived from a template I originally built for Princesa dos Campos to standardize their full-stack web projects. It packages the same conventions (Tailwind integration, structured tests, containerized setup) without any company-specific code.",
+      "pt-br":
+        "Um ponto de partida genérico para Django, derivado de um template que criei originalmente para a Princesa dos Campos para padronizar seus projetos web full-stack. Ele reúne as mesmas convenções (integração com Tailwind, testes estruturados, setup em containers) sem nenhum código específico da empresa.",
     },
     status: "available",
     technologies: ["python", "django", "tailwind", "docker", "github-packages"],
