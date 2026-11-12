@@ -13,8 +13,8 @@ const defaultPrefix = `/${defaultLocale}`;
  */
 export const UNROUTED_PATH = `${defaultPrefix}/__unrouted`;
 
-/** Image routes Next generates links to with the internal locale prefix (e.g. `/en/opengraph-image-1a2b`). */
-const METADATA_IMAGE = /\/(opengraph-image|icon)[^/]*$/;
+/** Image routes Next generates links to with the internal locale prefix (e.g. `/en/opengraph-image/default`). */
+const METADATA_IMAGE = /\/(opengraph-image|icon)[^/]*(\/[^/]+)?$/;
 
 function unknownCaseStudy(path: string): boolean {
   const [, section, slug, rest] = path.split("/");

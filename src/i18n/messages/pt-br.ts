@@ -165,8 +165,5 @@ export const ptBr: Messages = {
     summary: (counts) =>
       `Execução concluída: ${counts.map(([state, count]) => `${count} ${finished[state](count)}`).join(", ")}.`,
   },
-  og: {
-    caseStudy: "Estudo de caso",
-    caseStudyAlt: "Estudo de caso de projeto",
-  },
+  og: { caseStudy: "Estudo de caso" },
 };

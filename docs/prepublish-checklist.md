@@ -26,6 +26,7 @@ Everything the home page needs from the owner before it goes public. Each item p
 Steps and context are in [operations.md](operations.md#secrets-and-configuration).
 
 - [ ] Set `NEXT_PUBLIC_SITE_URL` to the production origin in Vercel (Production), and the GitHub `SITE_URL` variable to the same value (used by the Docker image).
+- [ ] After the domain is set, open `/sitemap.xml` on production and check that every URL uses the production origin. Submit it in Google Search Console once indexing is on.
 - [ ] The production smoke test passes on the final commit, and the footer shows that commit.
 - [ ] **Last:** set `NEXT_PUBLIC_ALLOW_INDEXING=true` in Vercel for **Production only**, then redeploy. The production smoke test then expects `index`.
 

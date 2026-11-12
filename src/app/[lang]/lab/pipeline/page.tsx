@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: demoTitle(locale),
     description: getLabPipeline(locale).intro,
-    alternates: canonicalFor("/lab/pipeline"),
+    alternates: canonicalFor("/lab/pipeline", locale),
   };
 }
 

@@ -1,15 +1,26 @@
-import { defaultLocale, locales, toLocale } from "@/i18n/locales";
+import { locales, toLocale } from "@/i18n/locales";
 import { ogSize, renderOgImage } from "@/lib/og-image";
 import { getSiteConfig } from "@/lib/site-config";
 
-const config = getSiteConfig(defaultLocale);
-
-export const alt = `${config.name} — ${config.descriptor}`;
-export const size = ogSize;
-export const contentType = "image/png";
-
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
+}
+
+/** One image per locale, so its `alt` text is in the page's language. */
+export function generateImageMetadata({
+  params,
+}: {
+  params: { lang: string };
+}) {
+  const { name, descriptor } = getSiteConfig(toLocale(params.lang));
+  return [
+    {
+      id: "default",
+      alt: `${name} — ${descriptor}`,
+      size: ogSize,
+      contentType: "image/png",
+    },
+  ];
 }
 
 export default async function OpenGraphImage({

@@ -28,6 +28,12 @@ export const intlLocales: Record<Locale, string> = {
   "pt-br": "pt-BR",
 };
 
+/** Open Graph locale (`og:locale`) for each locale. */
+export const ogLocales: Record<Locale, string> = {
+  en: "en_US",
+  "pt-br": "pt_BR",
+};
+
 /** BCP 47 tag for `<html lang>` and `hreflang` in each locale. */
 export const languageTags: Record<Locale, string> = {
   en: "en",

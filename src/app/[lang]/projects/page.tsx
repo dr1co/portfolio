@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: getMessages(locale).projects.title,
     description: localize(directoryIntro, locale),
-    alternates: canonicalFor("/projects"),
+    alternates: canonicalFor("/projects", locale),
   };
 }
 

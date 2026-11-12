@@ -76,7 +76,7 @@ npx playwright install chromium
 
 ```text
 src/
-  app/                global styles and tokens, the global 404
+  app/                global styles and tokens, the global 404, sitemap.xml
     [lang]/           root layout and every route (/, /projects, /projects/[slug], /lab, /lab/pipeline), OG images, favicon
   i18n/               locales, path helpers, `localize`, UI messages, the client locale context
   components/         UI grouped by domain: layout, navigation, theme, home, projects, pipeline, lab, terminal, mdx, ui
@@ -225,21 +225,23 @@ The Explorer models **this site's real CI workflow** ([.github/workflows/ci.yml]
 
 - Title template `%s · Adriano Matoba Lipski`; the description is the tagline.
 - `robots` is `noindex, nofollow` unless `NEXT_PUBLIC_ALLOW_INDEXING=true`. Set that on production only.
-- `metadataBase` and the canonical URL come from `NEXT_PUBLIC_SITE_URL`. See [.env.example](.env.example). Each page sets its own canonical with `canonicalFor(path)` ([src/lib/canonical.ts](src/lib/canonical.ts)). The root layout sets none, because Next merges metadata shallowly and a layout canonical would leak into every page that doesn't override it. The `@smoke` suite checks that each canonical points at its own page.
-- The Open Graph image ([src/app/[lang]/opengraph-image.tsx](src/app/[lang]/opengraph-image.tsx)) and favicon ([src/app/[lang]/icon.tsx](src/app/[lang]/icon.tsx)) are generated with `ImageResponse` at build time. Their hex values mirror the dark tokens, because CSS variables aren't available there.
+- `metadataBase`, the canonical URL and the `hreflang` alternates come from `NEXT_PUBLIC_SITE_URL`. See [.env.example](.env.example). Each page sets its own with `canonicalFor(path, locale)` ([src/lib/canonical.ts](src/lib/canonical.ts)): the canonical is the page in its own language (`/pt-br/lab` on the Portuguese page), and `languages` lists `en`, `pt-BR` and `x-default` (English). The root layout sets none, because Next merges metadata shallowly and layout alternates would leak into every page that doesn't override them. Without a site URL, neither is emitted. The `@smoke` suite checks that each canonical points at its own page and each `hreflang` at the right translation.
+- Open Graph: `og:locale` is `en_US` or `pt_BR`, with the other language as `og:locale:alternate`. Titles and descriptions follow the page's language.
+- [src/app/sitemap.ts](src/app/sitemap.ts) serves `/sitemap.xml`: every published page (enabled routes, case studies, Lab demos) in both languages, each with its `hreflang` alternates. The entries come from `sitemapEntries` in [src/lib/sitemap.ts](src/lib/sitemap.ts). URLs use `NEXT_PUBLIC_SITE_URL`, or `http://localhost:3000` until it's set.
+- The Open Graph images ([src/app/[lang]/opengraph-image.tsx](src/app/[lang]/opengraph-image.tsx), and one per case study) and the favicon ([src/app/[lang]/icon.tsx](src/app/[lang]/icon.tsx)) are generated with `ImageResponse` at build time, once per language. The OG images use `generateImageMetadata` so their `alt` text is translated too; that puts an id segment in their URL (`/pt-br/opengraph-image/default`). Their hex values mirror the dark tokens, because CSS variables aren't available there.
 - The 404 page body is `NotFoundView` ([src/components/layout/not-found-view.tsx](src/components/layout/not-found-view.tsx)). [src/app/global-not-found.tsx](src/app/global-not-found.tsx) shows it for URLs no route matches (Next's experimental `globalNotFound`, needed because the root layout sits under `[lang]`), and [src/app/[lang]/not-found.tsx](src/app/[lang]/not-found.tsx) for `notFound()` inside a route.
 
 ## Routing and languages
 
 Every route lives under `src/app/[lang]`, and the root layout's `generateStaticParams` prerenders each locale in [src/i18n/locales.ts](src/i18n/locales.ts): English (`en`, the default) and Brazilian Portuguese (`pt-br`). English pages have no URL prefix; Portuguese pages keep theirs and the English path segments (`/pt-br/projects`). [src/proxy.ts](src/proxy.ts) maps public URLs to the internal route:
 
-| Request                    | Proxy                                                  |
-| -------------------------- | ------------------------------------------------------ |
-| `/projects`                | rewrite to `/en/projects`                              |
-| `/en/projects`             | `308` to `/projects`, one public URL per page          |
-| `/en/opengraph-image-…`    | untouched: Next generates these image URLs itself      |
-| `/pt-br/projects`          | served as is                                           |
-| `/projects/<unknown slug>` | rewrite to `UNROUTED_PATH` → 404 (same under `/pt-br`) |
+| Request                       | Proxy                                                  |
+| ----------------------------- | ------------------------------------------------------ |
+| `/projects`                   | rewrite to `/en/projects`                              |
+| `/en/projects`                | `308` to `/projects`, one public URL per page          |
+| `/en/opengraph-image/default` | untouched: Next generates these image URLs itself      |
+| `/pt-br/projects`             | served as is                                           |
+| `/projects/<unknown slug>`    | rewrite to `UNROUTED_PATH` → 404 (same under `/pt-br`) |
 
 There is no automatic language detection. The header's `LanguageSwitch` ("PT" / "EN") links to the same page in the other language; its href is rendered on the server, so it works without JavaScript. Its accessible name starts with the visible text ("PT — Ver em português", WCAG 2.5.3), and it carries `hreflang` and `lang`. `<html lang>` uses the BCP 47 tag from `languageTags` (`en`, `pt-BR`).
 
@@ -319,17 +321,17 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 - **Unit and component tests** sit next to the code they cover (`foo.ts` → `foo.test.ts`) and test behavior through the public interface.
 - **End-to-end tests** live in `e2e/`. Playwright runs `npm run build && npm start -p 3100`, with two projects: `desktop-chromium` and `mobile-chromium` (Pixel 7). Make sure nothing else is listening on port 3100, otherwise Playwright reuses that server.
 
-  | Spec               | Covers                                                                                                                                                                                                                                                                 |
-  | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `smoke.spec.ts`    | `@smoke`: `/` is English HTML with one `h1`, `/projects` and a case study answer 200, `/lab` and each demo answer 200 labelled Simulated, unknown slugs 404, canonicals point at their own page, robots matches the deployment, footer shows the expected commit       |
-  | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, pipeline → Lab link, **axe** in both themes                                                                                                    |
-  | `lab.spec.ts`      | Lab card and nav state, Explorer keyboard path (desktop tabs), scenario switch, mobile accordion position, Run playback frame by frame (`page.clock`), reduced motion, Next pauses, no-JS outcome table, back link, titles, no mobile overflow, **axe** in both themes |
-  | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown slugs, no mobile overflow and **axe** in both themes for every case study                                                        |
-  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                                                                                  |
-  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                                                                                                                                          |
-  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags, generated images, skip link                                                                                                                                                                                                    |
-  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                                                                                       |
-  | `i18n.spec.ts`     | `<html lang>` per language, PT/EN switch round trip keeps the page, links stay in Portuguese, switch works without JavaScript, **axe** on every `/pt-br` page in both themes                                                                                           |
+  | Spec               | Covers                                                                                                                                                                                                                                                                                                                                                                                                   |
+  | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `smoke.spec.ts`    | `@smoke`: `/` is English and `/pt-br` is `pt-BR` HTML with one `h1`, `/projects` and a case study answer 200, `/lab` and each demo answer 200 labelled Simulated, unknown slugs 404 in both languages, canonicals point at their own page, `hreflang` points at the right translation, `sitemap.xml` lists every page in both languages, robots matches the deployment, footer shows the expected commit |
+  | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, pipeline → Lab link, **axe** in both themes                                                                                                                                                                                                                                      |
+  | `lab.spec.ts`      | Lab card and nav state, Explorer keyboard path (desktop tabs), scenario switch, mobile accordion position, Run playback frame by frame (`page.clock`), reduced motion, Next pauses, no-JS outcome table, back link, titles, no mobile overflow, **axe** in both themes                                                                                                                                   |
+  | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown slugs, no mobile overflow and **axe** in both themes for every case study                                                                                                                                                                                          |
+  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                                                                                                                                                                                                                    |
+  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                                                                                                                                                                                                                                                                            |
+  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags (incl. `og:locale` and translated `alt` on `/pt-br`), generated images, skip link                                                                                                                                                                                                                                                                                 |
+  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                                                                                                                                                                                                                         |
+  | `i18n.spec.ts`     | `<html lang>` per language, PT/EN switch round trip keeps the page, links stay in Portuguese, switch works without JavaScript, **axe** on every `/pt-br` page in both themes                                                                                                                                                                                                                             |
 
   Tests that press keys on tabs or radios call `waitForHydration` from [e2e/hydration.ts](e2e/hydration.ts) first: keys pressed before hydration reach the server HTML and are lost.
 
@@ -383,4 +385,4 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 - The scenario and selection in the Explorer aren't in the URL, so a particular view can't be linked to.
 - The Docker image is a verified, published artifact, but Vercel serves the site. The image is about 300 MB: deleting npm in the runtime stage hides it from scans but doesn't shrink the base layer.
 - No SBOM, provenance attestation or image signing yet. The linter, Trivy and Vercel CLI pins aren't covered by Dependabot (see [docs/operations.md](docs/operations.md)).
-- The production domain isn't chosen yet, so canonical URLs fall back until `NEXT_PUBLIC_SITE_URL` is set, and indexing stays off until launch.
+- The production domain isn't chosen yet, so canonical and `hreflang` links are omitted, and `sitemap.xml` uses `http://localhost:3000`, until `NEXT_PUBLIC_SITE_URL` is set. Indexing stays off until launch. There is no `robots.txt` yet, so search engines find the sitemap only if it's submitted (e.g. in Search Console).

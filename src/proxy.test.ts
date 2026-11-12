@@ -46,6 +46,8 @@ describe("proxy", () => {
     "/en/opengraph-image",
     "/en/icon",
     "/en/projects/x/opengraph-image",
+    "/en/opengraph-image/default",
+    "/en/projects/x/opengraph-image/default",
   ])("leaves the generated metadata image URL %s alone", (path) => {
     const response = proxy(request(path));
 

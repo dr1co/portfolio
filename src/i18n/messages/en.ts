@@ -168,7 +168,7 @@ export const en = {
     summary: (counts: readonly [FinalState, number][]) =>
       `Run finished: ${counts.map(([state, count]) => `${count} ${finished[state]}`).join(", ")}.`,
   },
-  og: { caseStudy: "Case study", caseStudyAlt: "Project case study" },
+  og: { caseStudy: "Case study" },
 };
 
 export type Messages = typeof en;

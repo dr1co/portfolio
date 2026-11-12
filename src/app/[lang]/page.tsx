@@ -7,7 +7,9 @@ import { SkillsSection } from "@/components/home/skills-section";
 import { getLocale } from "@/i18n/server";
 import { canonicalFor } from "@/lib/canonical";
 
-export const metadata: Metadata = { alternates: canonicalFor("/") };
+export async function generateMetadata(): Promise<Metadata> {
+  return { alternates: canonicalFor("/", await getLocale()) };
+}
 
 export default async function Home() {
   const locale = await getLocale();

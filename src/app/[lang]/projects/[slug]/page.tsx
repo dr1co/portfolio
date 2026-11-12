@@ -25,12 +25,13 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: PageProps<"/[lang]/projects/[slug]">): Promise<Metadata> {
-  const project = getProject((await params).slug, await getLocale());
+  const locale = await getLocale();
+  const project = getProject((await params).slug, locale);
   if (!project) return {};
   return {
     title: project.title,
     description: project.description || project.summary,
-    alternates: canonicalFor(`/projects/${project.slug}`),
+    alternates: canonicalFor(`/projects/${project.slug}`, locale),
   };
 }
 

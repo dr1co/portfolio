@@ -44,10 +44,33 @@ test("pages share a title and Open Graph preview", async ({ page }) => {
   );
 });
 
-test("generated Open Graph image and icon are served as PNG", async ({
+test("Open Graph tags are in the page's language", async ({ page }) => {
+  await page.goto("/pt-br");
+
+  await expect(page).toHaveTitle("Adriano Matoba Lipski — DevOps & Automação");
+  await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
+    "content",
+    "pt_BR",
+  );
+  await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute(
+    "content",
+    "Adriano Matoba Lipski — DevOps & Automação",
+  );
+});
+
+test("generated Open Graph images and the icon are served as PNG", async ({
+  page,
   request,
 }) => {
-  for (const path of ["/opengraph-image", "/icon"]) {
+  const images: string[] = [];
+  for (const path of ["/", "/pt-br"]) {
+    await page.goto(path);
+    const og = await page
+      .locator('meta[property="og:image"]')
+      .getAttribute("content");
+    images.push(new URL(og!).pathname);
+  }
+  for (const path of [...images, "/icon"]) {
     const response = await request.get(path);
     expect(response.status(), path).toBe(200);
     expect(response.headers()["content-type"], path).toBe("image/png");
