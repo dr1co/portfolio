@@ -6,6 +6,7 @@ describe("TableOfContents", () => {
   it("links to each section in order inside an 'On this page' navigation", () => {
     render(
       <TableOfContents
+        locale="en"
         headings={[
           { id: "overview", text: "Overview" },
           { id: "results", text: "Results" },
@@ -24,7 +25,7 @@ describe("TableOfContents", () => {
   });
 
   it("renders nothing when there are no headings", () => {
-    const { container } = render(<TableOfContents headings={[]} />);
+    const { container } = render(<TableOfContents locale="en" headings={[]} />);
 
     expect(container).toBeEmptyDOMElement();
   });

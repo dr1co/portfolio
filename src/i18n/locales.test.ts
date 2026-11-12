@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isLocale, stripLocale } from "./locales";
+import { isLocale, localizePath, stripLocale } from "./locales";
 
 describe("isLocale", () => {
   it("accepts supported locales only", () => {
@@ -19,4 +19,13 @@ describe("stripLocale", () => {
   ])("turns %s into %s", (pathname, path) => {
     expect(stripLocale(pathname)).toBe(path);
   });
+});
+
+describe("localizePath", () => {
+  it.each(["/", "/projects", "/#contact", "#contact", "/lab?x=1"])(
+    "leaves %s unprefixed for the default locale",
+    (href) => {
+      expect(localizePath(href, "en")).toBe(href);
+    },
+  );
 });

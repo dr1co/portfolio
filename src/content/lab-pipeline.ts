@@ -1,3 +1,5 @@
+import { localize, type Localized, type Resolved } from "@/i18n/localize";
+import type { Locale } from "@/i18n/locales";
 import { siteConfig } from "@/lib/site-config";
 
 export type RunState = "pending" | "running" | "passed" | "failed" | "skipped";
@@ -30,77 +32,74 @@ export type CiStep = {
   events?: readonly PipelineEvent[];
 };
 
-export type CiJob = {
+type CiJobEntry = {
   id: CiJobId;
-  label: string;
+  label: Localized;
   icon: LabIcon;
   needs: readonly CiJobId[];
   events: readonly PipelineEvent[];
-  purpose: string;
-  explanation: string;
+  purpose: Localized;
+  explanation: Localized;
   steps: readonly CiStep[];
   /** Lines quoted verbatim from ci.yml; `# …` marks omitted lines. */
   excerpt: readonly string[];
 };
 
-export type PipelineTrigger = {
-  label: string;
+type PipelineTriggerEntry = {
+  label: Localized;
   icon: LabIcon;
-  purpose: string;
-  explanation: string;
+  purpose: Localized;
+  explanation: Localized;
   excerpt: readonly string[];
 };
 
-export type Scenario = {
+type ScenarioEntry = {
   id: "push-main" | "pull-request" | "failure-main" | "vulnerable-image";
-  label: string;
-  summary: string;
+  label: Localized;
+  summary: Localized;
   event: PipelineEvent;
-  failure?: { job: CiJobId; step: string; reason: string };
+  failure?: { job: CiJobId; step: string; reason: Localized };
 };
+
+export type CiJob = Resolved<CiJobEntry>;
+export type PipelineTrigger = Resolved<PipelineTriggerEntry>;
+export type Scenario = Resolved<ScenarioEntry>;
 
 export const workflowPath = ".github/workflows/ci.yml";
 export const workflowUrl = `${siteConfig.sourceRepoUrl}/blob/main/${workflowPath}`;
 export const workflowRunsUrl = `${siteConfig.sourceRepoUrl}/actions/workflows/ci.yml`;
 
-/** How each event reads in a sentence, e.g. "Runs only on pull requests." */
-export const eventLabels: Record<PipelineEvent, string> = {
-  "push-main": "pushes to main",
-  "pull-request": "pull requests",
+export const pipelineIntro: Localized = {
+  en: "This is the CI/CD workflow that builds, tests and deploys this site, modeled job by job. Outcomes are scripted from the real workflow. This is simulated, so nothing here triggers anything.",
 };
 
-/** A single occurrence of each event, e.g. "Event: push to main". */
-export const eventNames: Record<PipelineEvent, string> = {
-  "push-main": "push to main",
-  "pull-request": "pull request",
+export const pipelineScope: Localized = {
+  en: "A simplified model: runs that get cancelled, pull requests from forks and real durations aren't shown.",
 };
 
-export const pipelineIntro =
-  "This is the CI/CD workflow that builds, tests and deploys this site, modeled job by job. Outcomes are scripted from the real workflow. This is simulated, so nothing here triggers anything.";
-
-export const pipelineScope =
-  "A simplified model: runs that get cancelled, pull requests from forks and real durations aren't shown.";
-
-export const pipelineTrigger: PipelineTrigger = {
-  label: "Trigger",
+export const pipelineTrigger: PipelineTriggerEntry = {
+  label: { en: "Trigger" },
   icon: "trigger",
-  purpose: "A push to main or a pull request starts the workflow.",
-  explanation:
-    "Both events run the same file. Conditions on each job decide what happens next: pull requests get a preview, only main gets published and deployed to production.",
+  purpose: { en: "A push to main or a pull request starts the workflow." },
+  explanation: {
+    en: "Both events run the same file. Conditions on each job decide what happens next: pull requests get a preview, only main gets published and deployed to production.",
+  },
   excerpt: ["on:", "  pull_request:", "  push:", "    branches: [main]"],
 };
 
-export const ciJobs: readonly CiJob[] = [
+export const ciJobs: readonly CiJobEntry[] = [
   {
     id: "quality",
-    label: "Quality",
+    label: { en: "Quality" },
     icon: "checks",
     needs: [],
     events: ["push-main", "pull-request"],
-    purpose:
-      "Lint, typecheck, format check and unit tests, plus linters for the workflows and the Dockerfile.",
-    explanation:
-      "The fastest feedback runs first and in parallel with the slower jobs. The CI configuration itself is linted, so a broken workflow fails here instead of at deploy time.",
+    purpose: {
+      en: "Lint, typecheck, format check and unit tests, plus linters for the workflows and the Dockerfile.",
+    },
+    explanation: {
+      en: "The fastest feedback runs first and in parallel with the slower jobs. The CI configuration itself is linted, so a broken workflow fails here instead of at deploy time.",
+    },
     steps: [
       { name: "actions/checkout" },
       { name: "./.github/actions/setup" },
@@ -129,14 +128,16 @@ export const ciJobs: readonly CiJob[] = [
   },
   {
     id: "e2e",
-    label: "E2E tests",
+    label: { en: "E2E tests" },
     icon: "browser",
     needs: [],
     events: ["push-main", "pull-request"],
-    purpose:
-      "Build the site and run the Playwright suite in a real browser, including accessibility checks.",
-    explanation:
-      "When a test fails, the Playwright report is uploaded as an artifact, so the failure can be inspected without rerunning it locally.",
+    purpose: {
+      en: "Build the site and run the Playwright suite in a real browser, including accessibility checks.",
+    },
+    explanation: {
+      en: "When a test fails, the Playwright report is uploaded as an artifact, so the failure can be inspected without rerunning it locally.",
+    },
     steps: [
       { name: "actions/checkout" },
       { name: "./.github/actions/setup" },
@@ -156,14 +157,16 @@ export const ciJobs: readonly CiJob[] = [
   },
   {
     id: "image",
-    label: "Image",
+    label: { en: "Image" },
     icon: "container",
     needs: [],
     events: ["push-main", "pull-request"],
-    purpose:
-      "Build the production container, smoke-test it, and scan it for vulnerabilities.",
-    explanation:
-      "The image is started and probed before anything else trusts it. Trivy fails the job on fixable critical or high vulnerabilities. On main, the exact tested image is kept as an artifact for publishing.",
+    purpose: {
+      en: "Build the production container, smoke-test it, and scan it for vulnerabilities.",
+    },
+    explanation: {
+      en: "The image is started and probed before anything else trusts it. Trivy fails the job on fixable critical or high vulnerabilities. On main, the exact tested image is kept as an artifact for publishing.",
+    },
     steps: [
       { name: "actions/checkout" },
       { name: "./.github/actions/setup" },
@@ -198,14 +201,16 @@ export const ciJobs: readonly CiJob[] = [
   },
   {
     id: "publish",
-    label: "Publish",
+    label: { en: "Publish" },
     icon: "package",
     needs: ["quality", "e2e", "image"],
     events: ["push-main"],
-    purpose:
-      "Push the tested image to GHCR, tagged with the commit SHA and main.",
-    explanation:
-      "Publishing waits for every check and pushes the same image that was tested, instead of rebuilding it. Only this job can write packages.",
+    purpose: {
+      en: "Push the tested image to GHCR, tagged with the commit SHA and main.",
+    },
+    explanation: {
+      en: "Publishing waits for every check and pushes the same image that was tested, instead of rebuilding it. Only this job can write packages.",
+    },
     steps: [
       { name: "actions/download-artifact" },
       { name: "docker load -i image.tar" },
@@ -226,13 +231,14 @@ export const ciJobs: readonly CiJob[] = [
   },
   {
     id: "deploy-preview",
-    label: "Preview deploy",
+    label: { en: "Preview deploy" },
     icon: "preview",
     needs: ["quality"],
     events: ["pull-request"],
-    purpose: "Deploy the pull request to a Vercel preview URL.",
-    explanation:
-      "Previews only wait for the quality job, so reviewers get a link early. They never touch production or the image registry.",
+    purpose: { en: "Deploy the pull request to a Vercel preview URL." },
+    explanation: {
+      en: "Previews only wait for the quality job, so reviewers get a link early. They never touch production or the image registry.",
+    },
     steps: [
       { name: "actions/checkout" },
       { name: "./.github/actions/setup" },
@@ -248,14 +254,16 @@ export const ciJobs: readonly CiJob[] = [
   },
   {
     id: "deploy-production",
-    label: "Production deploy",
+    label: { en: "Production deploy" },
     icon: "deploy",
     needs: ["publish"],
     events: ["push-main"],
-    purpose:
-      "Deploy main to production on Vercel, after the image is published.",
-    explanation:
-      "Production deploys queue instead of cancelling each other, and the run summary records the image tag of the same commit for traceability.",
+    purpose: {
+      en: "Deploy main to production on Vercel, after the image is published.",
+    },
+    explanation: {
+      en: "Production deploys queue instead of cancelling each other, and the run summary records the image tag of the same commit for traceability.",
+    },
     steps: [
       { name: "actions/checkout" },
       { name: "./.github/actions/setup" },
@@ -275,43 +283,61 @@ export const ciJobs: readonly CiJob[] = [
   },
 ];
 
-export const pipelineScenarios: readonly Scenario[] = [
+export const pipelineScenarios: readonly ScenarioEntry[] = [
   {
     id: "push-main",
-    label: "Push to main",
-    summary:
-      "A commit lands on main. Every check passes, the tested image is published and production is deployed.",
+    label: { en: "Push to main" },
+    summary: {
+      en: "A commit lands on main. Every check passes, the tested image is published and production is deployed.",
+    },
     event: "push-main",
   },
   {
     id: "pull-request",
-    label: "Pull request",
-    summary:
-      "A pull request from the same repository. Checks run and a preview is deployed; nothing is published.",
+    label: { en: "Pull request" },
+    summary: {
+      en: "A pull request from the same repository. Checks run and a preview is deployed; nothing is published.",
+    },
     event: "pull-request",
   },
   {
     id: "failure-main",
-    label: "Failure on main",
-    summary:
-      "An end-to-end test fails on main. Publishing and the production deploy never start.",
+    label: { en: "Failure on main" },
+    summary: {
+      en: "An end-to-end test fails on main. Publishing and the production deploy never start.",
+    },
     event: "push-main",
     failure: {
       job: "e2e",
       step: "End-to-end tests",
-      reason: "An end-to-end test fails.",
+      reason: { en: "An end-to-end test fails." },
     },
   },
   {
     id: "vulnerable-image",
-    label: "Vulnerable image",
-    summary:
-      "Trivy finds a fixable critical vulnerability in the image on main. Nothing is published.",
+    label: { en: "Vulnerable image" },
+    summary: {
+      en: "Trivy finds a fixable critical vulnerability in the image on main. Nothing is published.",
+    },
     event: "push-main",
     failure: {
       job: "image",
       step: "Fail on fixable CRITICAL/HIGH vulnerabilities",
-      reason: "Trivy finds a fixable CRITICAL vulnerability.",
+      reason: { en: "Trivy finds a fixable CRITICAL vulnerability." },
     },
   },
 ];
+
+/** The modeled workflow with its texts in `locale`. */
+export function getLabPipeline(locale: Locale) {
+  return localize(
+    {
+      intro: pipelineIntro,
+      scope: pipelineScope,
+      trigger: pipelineTrigger,
+      jobs: ciJobs,
+      scenarios: pipelineScenarios,
+    },
+    locale,
+  );
+}

@@ -6,6 +6,7 @@ describe("BuildVersion", () => {
   it("links the short commit SHA to the commit when a URL is available", () => {
     render(
       <BuildVersion
+        locale="en"
         info={{
           short: "4552b64",
           url: "https://github.com/x/y/commit/4552b64",
@@ -21,7 +22,7 @@ describe("BuildVersion", () => {
   });
 
   it("shows the version as plain text without a URL", () => {
-    render(<BuildVersion info={{ short: "4552b64" }} />);
+    render(<BuildVersion info={{ short: "4552b64" }} locale="en" />);
 
     expect(screen.getByText("Version 4552b64")).toBeInTheDocument();
     expect(screen.queryByRole("link")).not.toBeInTheDocument();

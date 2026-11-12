@@ -4,19 +4,21 @@ import { Moon, Sun } from "lucide-react";
 import { iconButtonClass } from "@/components/ui/icon-button";
 import { AnimatePresence, motion } from "motion/react";
 import { useTheme } from "next-themes";
+import { useMessages } from "@/i18n/locale-context";
 import { useIsMounted } from "@/lib/use-is-mounted";
 
 /** Two-state theme switch. Icons are CSS-driven so server HTML is correct; the label settles after mount. */
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useIsMounted();
+  const t = useMessages().layout;
   const next = resolvedTheme === "dark" ? "light" : "dark";
 
   return (
     <button
       type="button"
       onClick={() => setTheme(next)}
-      aria-label={mounted ? `Switch to ${next} theme` : "Toggle theme"}
+      aria-label={mounted ? t.switchTheme[next] : t.toggleTheme}
       className={iconButtonClass}
     >
       <AnimatePresence mode="wait" initial={false}>

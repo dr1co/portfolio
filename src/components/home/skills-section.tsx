@@ -3,19 +3,22 @@ import type { CSSProperties } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Section } from "@/components/ui/section";
 import { Tooltip } from "@/components/ui/tooltip";
-import { skillGroups, type Skill, type SkillGroup } from "@/content/skills";
+import { getSkillGroups, type Skill, type SkillGroup } from "@/content/skills";
 import { techName } from "@/content/technologies";
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 import { cn } from "@/lib/cn";
 import { currentYear } from "@/lib/current-year";
 import { experienceLabel } from "@/lib/experience";
 import { techIcon } from "@/lib/tech-icons";
 
 /** Skills grouped by practical domain, as logo tiles whose details show on hover, focus or tap. */
-export async function SkillsSection() {
+export async function SkillsSection({ locale }: { locale: Locale }) {
   const year = await currentYear();
+  const t = getMessages(locale).skills;
   return (
-    <Section id="skills" eyebrow="// skills" title="Skills by domain">
-      <SkillGrid groups={skillGroups} year={year} />
+    <Section id="skills" eyebrow={t.eyebrow} title={t.title}>
+      <SkillGrid groups={getSkillGroups(locale)} year={year} locale={locale} />
     </Section>
   );
 }
@@ -24,10 +27,13 @@ export async function SkillsSection() {
 export function SkillGrid({
   groups,
   year,
+  locale,
 }: {
   groups: readonly SkillGroup[];
   year: number;
+  locale: Locale;
 }) {
+  const t = getMessages(locale).skills;
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {groups.map((group) => (
@@ -40,10 +46,10 @@ export function SkillGrid({
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-semibold">{group.title}</h3>
-            {group.learning && <Badge icon={Sprout}>Currently learning</Badge>}
+            {group.learning && <Badge icon={Sprout}>{t.learning}</Badge>}
           </div>
           {group.learning && (
-            <p className="mt-2 text-sm text-muted">Active learning areas.</p>
+            <p className="mt-2 text-sm text-muted">{t.learningNote}</p>
           )}
           <ul className="relative mt-4 flex flex-wrap gap-3">
             {group.skills.map((skill) => (
@@ -52,6 +58,7 @@ export function SkillGrid({
                   skill={skill}
                   learning={group.learning}
                   year={year}
+                  locale={locale}
                 />
               </li>
             ))}
@@ -66,10 +73,12 @@ function SkillTile({
   skill,
   learning,
   year,
+  locale,
 }: {
   skill: Skill;
   learning?: boolean;
   year: number;
+  locale: Locale;
 }) {
   const name = techName(skill.tech);
   const icon = techIcon(skill.tech);
@@ -88,8 +97,8 @@ function SkillTile({
           </span>
           <span className="block text-muted">
             {learning || skill.since === undefined
-              ? "Currently learning"
-              : experienceLabel(skill.since, year)}
+              ? getMessages(locale).skills.learning
+              : experienceLabel(skill.since, year, locale)}
           </span>
           {skill.note && <span className="block">{skill.note}</span>}
         </>

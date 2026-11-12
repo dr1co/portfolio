@@ -3,6 +3,7 @@
 import { Menu, X } from "lucide-react";
 import { iconButtonClass } from "@/components/ui/icon-button";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useMessages } from "@/i18n/locale-context";
 import { NavLink, type NavItem } from "./nav-link";
 
 /**
@@ -11,6 +12,7 @@ import { NavLink, type NavItem } from "./nav-link";
  */
 export function MobileNav({ items }: { items: readonly NavItem[] }) {
   const [open, setOpen] = useState(false);
+  const t = useMessages().layout;
   const rootRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
 
@@ -41,7 +43,7 @@ export function MobileNav({ items }: { items: readonly NavItem[] }) {
         type="button"
         aria-expanded={open}
         aria-controls="mobile-menu"
-        aria-label={open ? "Close menu" : "Open menu"}
+        aria-label={open ? t.closeMenu : t.openMenu}
         onClick={() => setOpen((value) => !value)}
         className={iconButtonClass}
       >
@@ -54,7 +56,7 @@ export function MobileNav({ items }: { items: readonly NavItem[] }) {
       {open && (
         <nav
           id="mobile-menu"
-          aria-label="Mobile"
+          aria-label={t.mobileNav}
           className="absolute inset-x-0 top-full border-b border-border bg-background"
         >
           <ul className="mx-auto flex max-w-6xl flex-col px-4 py-2 sm:px-6">

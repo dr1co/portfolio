@@ -1,16 +1,16 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { siteConfig, type SiteConfig } from "@/lib/site-config";
+import { getSiteConfig, type SiteConfig } from "@/lib/site-config";
 import { Hero } from "./hero";
 
 const withLinks = (links: Partial<SiteConfig["links"]>): SiteConfig => ({
-  ...siteConfig,
+  ...getSiteConfig("en"),
   links: { github: "", linkedin: "", email: "", ...links },
 });
 
 describe("Hero", () => {
   it("leads with the headline as the page's only h1 and lists the core technologies", () => {
-    render(<Hero config={withLinks({})} featuredCount={0} />);
+    render(<Hero locale="en" config={withLinks({})} featuredCount={0} />);
 
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
@@ -26,13 +26,13 @@ describe("Hero", () => {
   });
 
   it("labels the terminal panel as an example rather than live output", () => {
-    render(<Hero config={withLinks({})} featuredCount={0} />);
+    render(<Hero locale="en" config={withLinks({})} featuredCount={0} />);
 
     expect(screen.getByText("Example")).toBeInTheDocument();
   });
 
   it("points at the pipeline and offers no contact action when nothing else exists", () => {
-    render(<Hero config={withLinks({})} featuredCount={0} />);
+    render(<Hero locale="en" config={withLinks({})} featuredCount={0} />);
 
     expect(
       screen.getByRole("link", { name: "See the pipeline" }),
@@ -45,6 +45,7 @@ describe("Hero", () => {
   it("uses GitHub and contact actions once those links are configured", () => {
     render(
       <Hero
+        locale="en"
         config={withLinks({
           github: "https://github.com/someone",
           email: "me@example.com",

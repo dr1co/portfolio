@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  ciJobs,
-  pipelineScenarios,
+  getLabPipeline,
   type CiJobId,
   type Scenario,
 } from "@/content/lab-pipeline";
@@ -14,12 +13,14 @@ import {
   topologicalOrder,
 } from "./pipeline-run";
 
+const { jobs: ciJobs, scenarios: pipelineScenarios } = getLabPipeline("en");
+
 function scenario(id: Scenario["id"]): Scenario {
   return pipelineScenarios.find((candidate) => candidate.id === id)!;
 }
 
 function summary(id: Scenario["id"]) {
-  const outcomes = resolveRun(ciJobs, scenario(id));
+  const outcomes = resolveRun(ciJobs, scenario(id), "en");
   return Object.fromEntries(
     Object.entries(outcomes).map(([job, { state, reason }]) => [
       job,
@@ -53,8 +54,8 @@ describe("topologicalOrder", () => {
 
 /** Frames as rows of job states in topological order, for readable expectations. */
 function frames(id: Scenario["id"]) {
-  return runFrames(ciJobs, resolveRun(ciJobs, scenario(id))).map((frame) =>
-    topologicalOrder(ciJobs).map((job) => frame[job]),
+  return runFrames(ciJobs, resolveRun(ciJobs, scenario(id), "en")).map(
+    (frame) => topologicalOrder(ciJobs).map((job) => frame[job]),
   );
 }
 
@@ -82,7 +83,7 @@ describe("runFrames", () => {
   it.each(pipelineScenarios.map((s) => [s.id] as const))(
     "%s ends on the resolved outcome, and skipped jobs never run",
     (id) => {
-      const outcome = resolveRun(ciJobs, scenario(id));
+      const outcome = resolveRun(ciJobs, scenario(id), "en");
       const all = runFrames(ciJobs, outcome);
 
       expect(all.at(-1)).toEqual(
@@ -102,28 +103,28 @@ describe("runFrames", () => {
 
 describe("describeFrame", () => {
   const all = (id: Scenario["id"]) =>
-    runFrames(ciJobs, resolveRun(ciJobs, scenario(id)));
+    runFrames(ciJobs, resolveRun(ciJobs, scenario(id), "en"));
 
   it("announces the start of a run", () => {
-    expect(describeFrame(ciJobs, all("push-main"), 0)).toBe(
+    expect(describeFrame(ciJobs, all("push-main"), 0, "en")).toBe(
       "Run started. Every job is pending.",
     );
   });
 
   it("names the jobs that start running, by label", () => {
-    expect(describeFrame(ciJobs, all("push-main"), 1)).toBe(
+    expect(describeFrame(ciJobs, all("push-main"), 1, "en")).toBe(
       "Running: Quality, E2E tests, Image.",
     );
   });
 
   it("names the jobs that finish, with their outcome", () => {
-    expect(describeFrame(ciJobs, all("failure-main"), 2)).toBe(
+    expect(describeFrame(ciJobs, all("failure-main"), 2, "en")).toBe(
       "Quality passed. E2E tests failed. Image passed.",
     );
   });
 
   it("combines jobs that start and jobs that are skipped in the same frame", () => {
-    expect(describeFrame(ciJobs, all("push-main"), 3)).toBe(
+    expect(describeFrame(ciJobs, all("push-main"), 3, "en")).toBe(
       "Running: Publish. Preview deploy skipped.",
     );
   });
@@ -131,18 +132,18 @@ describe("describeFrame", () => {
 
 describe("summarizeRun", () => {
   it("counts the final outcomes, leaving out the ones that didn't happen", () => {
-    expect(summarizeRun(resolveRun(ciJobs, scenario("push-main")))).toBe(
-      "Run finished: 5 passed, 1 skipped.",
-    );
-    expect(summarizeRun(resolveRun(ciJobs, scenario("failure-main")))).toBe(
-      "Run finished: 2 passed, 1 failed, 3 skipped.",
-    );
+    expect(
+      summarizeRun(resolveRun(ciJobs, scenario("push-main"), "en"), "en"),
+    ).toBe("Run finished: 5 passed, 1 skipped.");
+    expect(
+      summarizeRun(resolveRun(ciJobs, scenario("failure-main"), "en"), "en"),
+    ).toBe("Run finished: 2 passed, 1 failed, 3 skipped.");
   });
 });
 
 function steps(id: Scenario["id"], job: CiJobId) {
   const definition = ciJobs.find((candidate) => candidate.id === job)!;
-  const { steps: states } = resolveRun(ciJobs, scenario(id))[job];
+  const { steps: states } = resolveRun(ciJobs, scenario(id), "en")[job];
   return definition.steps.map((step, index) => [step.name, states[index]]);
 }
 

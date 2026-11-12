@@ -19,7 +19,7 @@ const props = {
 
 describe("Diagram", () => {
   it("is an image named by its title", () => {
-    render(<Diagram {...props} />);
+    render(<Diagram {...props} locale="en" />);
 
     expect(
       screen.getByRole("img", { name: "Training pipeline" }),
@@ -27,7 +27,7 @@ describe("Diagram", () => {
   });
 
   it("describes every relationship in text for assistive technology", () => {
-    render(<Diagram {...props} />);
+    render(<Diagram {...props} locale="en" />);
 
     const description = screen.getByRole("list", {
       name: "Training pipeline, described",

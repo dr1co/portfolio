@@ -1,5 +1,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { CiJob, Scenario } from "@/content/lab-pipeline";
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 import { resolveRun } from "@/lib/pipeline-run";
 import { RunStateBadge } from "./run-state-badge";
 
@@ -7,25 +9,25 @@ import { RunStateBadge } from "./run-state-badge";
 export function OutcomeMatrix({
   jobs,
   scenarios,
+  locale,
 }: {
   jobs: readonly CiJob[];
   scenarios: readonly Scenario[];
+  locale: Locale;
 }) {
-  const outcomes = scenarios.map((scenario) => resolveRun(jobs, scenario));
+  const t = getMessages(locale).explorer;
+  const outcomes = scenarios.map((scenario) =>
+    resolveRun(jobs, scenario, locale),
+  );
 
   return (
-    <ScrollArea
-      label="Outcomes by scenario"
-      className="rounded-lg border border-border"
-    >
+    <ScrollArea label={t.outcomes} className="rounded-lg border border-border">
       <table className="w-full min-w-[48rem] border-collapse text-left text-sm">
-        <caption className="sr-only">
-          Simulated outcome of each job in each scenario
-        </caption>
+        <caption className="sr-only">{t.outcomesCaption}</caption>
         <thead className="bg-surface-elevated">
           <tr>
             <th scope="col" className="px-4 py-3 font-semibold">
-              Job
+              {t.job}
             </th>
             {scenarios.map((scenario) => (
               <th
@@ -46,7 +48,10 @@ export function OutcomeMatrix({
               </th>
               {outcomes.map((outcome, index) => (
                 <td key={scenarios[index].id} className="px-4 py-3">
-                  <RunStateBadge state={outcome[job.id].state} />
+                  <RunStateBadge
+                    state={outcome[job.id].state}
+                    locale={locale}
+                  />
                   <p className="mt-1 text-muted">{outcome[job.id].reason}</p>
                 </td>
               ))}

@@ -1,27 +1,32 @@
+import { localize, type Localized, type Resolved } from "@/i18n/localize";
+import type { Locale } from "@/i18n/locales";
 import type { TechnologyId } from "./technologies";
 
 /** `since` is the year you started using it, shown as experience. Leave it out only in the learning group. */
-export type Skill = { tech: TechnologyId; since?: number; note?: string };
+type SkillEntry = { tech: TechnologyId; since?: number; note?: Localized };
 
-export type SkillGroup = {
+type SkillGroupEntry = {
   id: string;
-  title: string;
+  title: Localized;
   learning?: boolean;
-  skills: readonly Skill[];
+  skills: readonly SkillEntry[];
 };
 
-export const skillGroups: readonly SkillGroup[] = [
+export type Skill = Resolved<SkillEntry>;
+export type SkillGroup = Resolved<SkillGroupEntry>;
+
+export const skillGroups: readonly SkillGroupEntry[] = [
   {
     id: "delivery",
-    title: "Containers & Delivery",
+    title: { en: "Containers & Delivery" },
     skills: [
-      { tech: "docker", since: 2022, note: "Including Docker Compose" },
+      { tech: "docker", since: 2022, note: { en: "Including Docker Compose" } },
       { tech: "github-actions", since: 2025 },
     ],
   },
   {
     id: "backend",
-    title: "Backend & Automation",
+    title: { en: "Backend & Automation" },
     skills: [
       { tech: "python", since: 2023 },
       { tech: "django", since: 2025 },
@@ -33,7 +38,7 @@ export const skillGroups: readonly SkillGroup[] = [
   },
   {
     id: "frontend",
-    title: "Frontend",
+    title: { en: "Frontend" },
     skills: [
       { tech: "react", since: 2022 },
       { tech: "nextjs", since: 2025 },
@@ -45,7 +50,7 @@ export const skillGroups: readonly SkillGroup[] = [
   },
   {
     id: "databases",
-    title: "Databases",
+    title: { en: "Databases" },
     skills: [
       { tech: "postgresql", since: 2022 },
       { tech: "mongodb", since: 2022 },
@@ -54,7 +59,7 @@ export const skillGroups: readonly SkillGroup[] = [
   },
   {
     id: "collaboration",
-    title: "Development & Collaboration",
+    title: { en: "Development & Collaboration" },
     skills: [
       { tech: "git", since: 2022 },
       { tech: "linux", since: 2022 },
@@ -63,8 +68,13 @@ export const skillGroups: readonly SkillGroup[] = [
   },
   {
     id: "learning",
-    title: "Learning Next",
+    title: { en: "Learning Next" },
     learning: true,
     skills: [{ tech: "kubernetes" }, { tech: "terraform" }, { tech: "aws" }],
   },
 ];
+
+/** Skill groups with their texts in `locale`. */
+export function getSkillGroups(locale: Locale): readonly SkillGroup[] {
+  return localize(skillGroups, locale);
+}

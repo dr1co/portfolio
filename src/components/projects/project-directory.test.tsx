@@ -1,7 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { projectGroups, type Project } from "@/content/projects";
+import { getProjectGroups, type Project } from "@/content/projects";
 import { ProjectDirectory } from "./project-directory";
+
+const projectGroups = getProjectGroups("en");
 
 const project = (slug: string, title: string): Project => ({
   slug,
@@ -18,6 +20,7 @@ describe("ProjectDirectory", () => {
   it("renders an h2 per group with that group's project cards", () => {
     render(
       <ProjectDirectory
+        locale="en"
         directory={[
           {
             group: projectGroups[0],

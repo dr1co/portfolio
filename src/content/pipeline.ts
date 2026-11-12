@@ -1,36 +1,46 @@
+import { localize, type Localized, type Resolved } from "@/i18n/localize";
+import type { Locale } from "@/i18n/locales";
+
 export type StageIcon = "commit" | "build" | "test" | "package" | "deploy";
 
-export type PipelineStage = {
+type PipelineStageEntry = {
   id: "push" | "build" | "test" | "publish" | "deploy";
-  label: string;
+  label: Localized;
   icon: StageIcon;
-  purpose: string;
-  explanation: string;
+  purpose: Localized;
+  explanation: Localized;
   command: readonly string[];
   workflowFile: string;
   workflow: readonly string[];
 };
 
-export const pipelineStages: readonly PipelineStage[] = [
+export type PipelineStage = Resolved<PipelineStageEntry>;
+
+export const pipelineStages: readonly PipelineStageEntry[] = [
   {
     id: "push",
-    label: "Git Push",
+    label: { en: "Git Push" },
     icon: "commit",
-    purpose: "A commit to main, or a pull request, triggers the workflow.",
-    explanation:
-      "Every change enters the pipeline the same way. The trigger is declared in the workflow file, so nothing depends on someone remembering to run a script.",
+    purpose: {
+      en: "A commit to main, or a pull request, triggers the workflow.",
+    },
+    explanation: {
+      en: "Every change enters the pipeline the same way. The trigger is declared in the workflow file, so nothing depends on someone remembering to run a script.",
+    },
     command: ["$ git push origin main"],
     workflowFile: ".github/workflows/ci.yml",
     workflow: ["on:", "  push:", "    branches: [main]", "  pull_request:"],
   },
   {
     id: "build",
-    label: "Build",
+    label: { en: "Build" },
     icon: "build",
-    purpose:
-      "Build a reproducible image from a pinned base with a multi-stage Dockerfile.",
-    explanation:
-      "The image is the unit that moves through the rest of the pipeline. Pinned base images and a lockfile will always keep two builds of the same commit equivalent.",
+    purpose: {
+      en: "Build a reproducible image from a pinned base with a multi-stage Dockerfile.",
+    },
+    explanation: {
+      en: "The image is the unit that moves through the rest of the pipeline. Pinned base images and a lockfile will always keep two builds of the same commit equivalent.",
+    },
     command: ["$ docker build -t app:$GIT_SHA ."],
     workflowFile: ".github/workflows/ci.yml",
     workflow: [
@@ -40,24 +50,28 @@ export const pipelineStages: readonly PipelineStage[] = [
   },
   {
     id: "test",
-    label: "Test",
+    label: { en: "Test" },
     icon: "test",
-    purpose:
-      "Run lint and tests inside the built image, so CI tests what ships.",
-    explanation:
-      "Testing the image instead of the runner's environment catches missing dependencies and configuration drift before anything is published.",
+    purpose: {
+      en: "Run lint and tests inside the built image, so CI tests what ships.",
+    },
+    explanation: {
+      en: "Testing the image instead of the runner's environment catches missing dependencies and configuration drift before anything is published.",
+    },
     command: ["$ docker run --rm app:$GIT_SHA pytest -q"],
     workflowFile: ".github/workflows/ci.yml",
     workflow: ["- run: docker run --rm app:${{ github.sha }} pytest -q"],
   },
   {
     id: "publish",
-    label: "Publish Image",
+    label: { en: "Publish Image" },
     icon: "package",
-    purpose:
-      "Push an immutable, SHA-tagged image to GHCR with least-privilege permissions.",
-    explanation:
-      "Tagging by commit SHA makes every deployment traceable to its source. The job only gets the permissions it needs to write packages.",
+    purpose: {
+      en: "Push an immutable, SHA-tagged image to GHCR with least-privilege permissions.",
+    },
+    explanation: {
+      en: "Tagging by commit SHA makes every deployment traceable to its source. The job only gets the permissions it needs to write packages.",
+    },
     command: ["$ docker push ghcr.io/<owner>/app:$GIT_SHA"],
     workflowFile: ".github/workflows/release.yml",
     workflow: [
@@ -71,12 +85,14 @@ export const pipelineStages: readonly PipelineStage[] = [
   },
   {
     id: "deploy",
-    label: "Deploy",
+    label: { en: "Deploy" },
     icon: "deploy",
-    purpose:
-      "Pull the exact tagged image on the target and restart, keeping the previous tag for rollback.",
-    explanation:
-      "Deploying a known tag rather than latest means a rollback is just redeploying the previous SHA. A health check should confirm the result.",
+    purpose: {
+      en: "Pull the exact tagged image on the target and restart, keeping the previous tag for rollback.",
+    },
+    explanation: {
+      en: "Deploying a known tag rather than latest means a rollback is just redeploying the previous SHA. A health check should confirm the result.",
+    },
     command: ["$ docker compose pull", "$ docker compose up -d"],
     workflowFile: ".github/workflows/release.yml",
     workflow: [
@@ -85,3 +101,8 @@ export const pipelineStages: readonly PipelineStage[] = [
     ],
   },
 ];
+
+/** Delivery stages with their texts in `locale`. */
+export function getPipelineStages(locale: Locale): readonly PipelineStage[] {
+  return localize(pipelineStages, locale);
+}

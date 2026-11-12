@@ -28,6 +28,12 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - **Server components by default.** Add `'use client'` only for interactivity, theme or browser APIs, and keep client islands small.
 - **Colors only via semantic tokens** (`bg-surface`, `text-muted`, `border-border`, ...) defined in `src/app/globals.css`. No raw hex in components. The only exceptions are `ImageResponse` files (`opengraph-image.tsx`, `icon.tsx`), where CSS variables don't exist, and technology logo brand colours, which come from the `simple-icons` data through `src/lib/tech-icons.ts` (never typed by hand).
 - **Content is data.** Copy, links, projects, skills and pipeline stages live in `src/content/` and `src/lib/site-config.ts`, never inline in components. Unreviewed content carries `// TODO(content):` and is listed in `docs/prepublish-checklist.md`.
+- **No hard-coded interface text.** Every visible or accessible string (labels, `aria-label`, captions, sentences) comes from `src/i18n/messages/` or from a `Localized` content field, read through the content file's `getX(locale)` accessor. Ids, URLs, commands, workflow excerpts and terminal output stay literal.
+- **How components get the locale:**
+  - Pages and layouts call `getLocale()`.
+  - Server components, and components without a directive, take a `locale` prop.
+  - Client components use `useLocale()` / `useMessages()`.
+  - Don't call `getLocale()` in a component that `global-not-found.tsx` renders: that page is outside `[lang]`, so it has no root params.
 - **Never render empty or placeholder links.** Validate through `src/lib/links.ts` helpers.
 - **Accessibility is a requirement:** semantic HTML, one `h1` per page, visible focus, keyboard support, state never shown by color alone, and `prefers-reduced-motion` respected.
 - **Imports:** use the `@/` alias (maps to `src/`).
@@ -44,7 +50,7 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - From Windows tools, `mkdir -p` on the `\wsl.localhost` UNC path fails. Create directories from inside WSL (`wsl.exe ... mkdir -p`) or let the Write tool create them.
 - jsdom's accessible-name computation drops the space before `sr-only` text (e.g. "Open GitHub(opens in a new tab)"). Browsers don't. Match such names in unit tests with a whitespace-tolerant regex.
 - `lucide-react` 1.x has no brand icons (GitHub, LinkedIn). Use `src/components/ui/contact-icons.tsx`.
-- Next's `Link` accepts `onNavigate`, but a plain `<a>` doesn't. `AppLink` routes props accordingly. Use `AppLink` for every link instead of choosing between `Link` and `<a>` yourself.
+- Next's `Link` accepts `onNavigate`, but a plain `<a>` doesn't. `AppLink` routes props accordingly. Use `AppLink` for every link instead of choosing between `Link` and `<a>` yourself. It also adds the current locale to internal paths, so always pass them unprefixed (`/projects`, never `/en/projects`).
 - `next start` runs the real server as a `next-server` child process, so `pkill -f "next start"` leaves it running. Stop servers by port: `fuser -k 3200/tcp`. Playwright reuses whatever is already listening on **3100** outside CI, so a leftover server makes e2e tests run against an old build. Free the port before trusting results. Don't kill the owner's `next dev`.
 - Props passed from server to client components must be serializable. Content that a client component renders (e.g. pipeline stages) refers to icons by string key, mapped to Lucide components on the client.
 - Content inside `Section` is wrapped in `Reveal` (Motion `whileInView`). It starts at `opacity: 0`, and the stubbed `IntersectionObserver` never fires in jsdom, so `toBeVisible()` fails in unit tests. Assert `toBeInTheDocument()` there. In Playwright, scroll sections into view before visual or axe checks (see `revealAllSections` in `e2e/home.spec.ts`).
@@ -83,3 +89,7 @@ Portfolio site for Adriano Matoba Lipski. Product spec: `docs/features-specifica
 - Routes live under `src/app/[lang]` (the root layout is there; `src/app/` only holds `globals.css`, `tokens.test.ts` and `global-not-found.tsx`). The proxy rewrites unprefixed English URLs to `/en/...` and 308s a typed `/en/...` back, except metadata image URLs (`opengraph-image`, `icon`), which Next itself links with the `/en` prefix. A new route needs no proxy change, but `PageProps`/`LayoutProps` take the internal path (`PageProps<"/[lang]/projects/[slug]">`), and a metadata image file at a level without its own dynamic segment needs `generateStaticParams` over `locales`, or it becomes dynamic.
 - `usePathname()` returns the internal `/en/...` path on prerendered pages (even after hydration) but the public path after client navigation. Compare paths with `stripLocale` from `src/i18n/locales.ts`.
 - `NavLink` sets `aria-current="page"` on exact matches and `"true"` on child pages of its section. E2E tests asserting nav state must pick the right value.
+- `next/root-params` (`getLocale()`) doesn't work in metadata image routes (`opengraph-image.tsx`, `icon.tsx`), which are route handlers. Read `(await params).lang` there and narrow it with `toLocale`. Their static `alt` export can't vary by locale.
+- `localize` treats any object whose keys are exactly the locales as a `Localized` text. Don't give content data an object shaped like `{ en: ... }` for any other purpose.
+- Messages may be functions (for interpolation), so a server component must never pass a `Messages` object, or part of one, as a prop to a client component: functions aren't serializable. Client components read `useMessages()` themselves.
+- MDX case-study components that need text (`Callout`, `Diagram`, the table wrapper) get the locale through `getMdxComponents(locale)`, which the case-study page passes as `<Body components={...} />`. `useMDXComponents()` only serves the default locale for `@next/mdx`.

@@ -1,14 +1,16 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  ciJobs,
-  pipelineScenarios,
-  pipelineTrigger,
-} from "@/content/lab-pipeline";
+import { getLabPipeline } from "@/content/lab-pipeline";
 import { TICK_MS } from "@/lib/use-pipeline-playback";
 import { stubMatchMedia } from "@/test/match-media";
 import { PipelineExplorer } from "./pipeline-explorer";
+
+const {
+  jobs: ciJobs,
+  scenarios: pipelineScenarios,
+  trigger: pipelineTrigger,
+} = getLabPipeline("en");
 
 const tick = (times = 1) => {
   for (let i = 0; i < times; i++) act(() => vi.advanceTimersByTime(TICK_MS));

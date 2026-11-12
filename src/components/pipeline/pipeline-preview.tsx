@@ -13,6 +13,7 @@ import { motion } from "motion/react";
 import { TerminalPanel } from "@/components/terminal/terminal-panel";
 import { Badge } from "@/components/ui/badge";
 import type { PipelineStage, StageIcon } from "@/content/pipeline";
+import { useMessages } from "@/i18n/locale-context";
 import { cn } from "@/lib/cn";
 import { useRovingTabs } from "@/lib/use-roving-tabs";
 
@@ -32,12 +33,13 @@ export function PipelinePreview({
 }) {
   const { selected, tabProps } = useRovingTabs(stages.length);
   const stage = stages[selected];
+  const t = useMessages();
 
   return (
     <div className="flex flex-col gap-6">
       <div
         role="tablist"
-        aria-label="Delivery pipeline stages"
+        aria-label={t.pipeline.stages}
         className="grid gap-3 md:grid-cols-5"
       >
         {stages.map((item, index) => {
@@ -105,12 +107,12 @@ export function PipelinePreview({
             <TerminalPanel
               title="pipeline-demo / main"
               lines={stage.command}
-              badge={<Badge icon={FlaskConical}>Simulated</Badge>}
+              badge={<Badge icon={FlaskConical}>{t.badges.simulated}</Badge>}
               copyable
             />
             <details className="group rounded-lg">
               <summary className="cursor-pointer font-mono text-sm text-muted hover:text-foreground">
-                Workflow excerpt
+                {t.pipeline.workflowExcerpt}
               </summary>
               <div className="mt-3">
                 <TerminalPanel

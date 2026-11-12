@@ -6,17 +6,21 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { AppLink } from "@/components/ui/app-link";
 import { contactIcons } from "@/components/ui/contact-icons";
 import { Container } from "@/components/ui/container";
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 import { getContactLinks, getEnabledRoutes } from "@/lib/links";
-import { siteConfig } from "@/lib/site-config";
+import { getSiteConfig } from "@/lib/site-config";
 
 /** Sticky top bar: wordmark, enabled routes, contact shortcut, GitHub and theme toggle. */
-export function SiteHeader() {
-  const contactLinks = getContactLinks(siteConfig.links);
+export function SiteHeader({ locale }: { locale: Locale }) {
+  const config = getSiteConfig(locale);
+  const t = getMessages(locale).layout;
+  const contactLinks = getContactLinks(config.links, locale);
   const github = contactLinks.find((link) => link.kind === "github");
   const items: NavItem[] = [
-    ...getEnabledRoutes(siteConfig.routes),
+    ...getEnabledRoutes(config.routes),
     ...(contactLinks.length > 0
-      ? [{ href: "/#contact", label: "Contact" }]
+      ? [{ href: "/#contact", label: t.contact }]
       : []),
   ];
   const GitHubIcon = contactIcons.github;
@@ -24,9 +28,9 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
       <Container className="relative flex h-16 items-center justify-between gap-4">
-        <Wordmark />
+        <Wordmark locale={locale} />
         <div className="flex items-center gap-2 md:gap-6">
-          <nav aria-label="Main" className="hidden md:block">
+          <nav aria-label={t.mainNav} className="hidden md:block">
             <ul className="flex items-center gap-6">
               {items.map((item) => (
                 <li key={item.href}>
@@ -41,7 +45,7 @@ export function SiteHeader() {
                 href={github.href}
                 external
                 externalIcon={false}
-                aria-label="GitHub profile (opens in a new tab)"
+                aria-label={t.githubProfile}
                 className={iconButtonClass}
               >
                 <GitHubIcon className="size-5" />

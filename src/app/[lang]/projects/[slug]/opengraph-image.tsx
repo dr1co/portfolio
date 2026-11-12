@@ -1,12 +1,14 @@
 import {
   getCaseStudySlugs,
   getProject,
-  projectGroups,
+  getProjectGroups,
 } from "@/content/projects";
+import { defaultLocale, toLocale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 import { ogSize, renderOgImage } from "@/lib/og-image";
-import { siteConfig } from "@/lib/site-config";
+import { getSiteConfig } from "@/lib/site-config";
 
-export const alt = "Project case study";
+export const alt = getMessages(defaultLocale).og.caseStudyAlt;
 export const size = ogSize;
 export const contentType = "image/png";
 
@@ -17,14 +19,22 @@ export function generateStaticParams() {
 export default async function CaseStudyImage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ lang: string; slug: string }>;
 }) {
-  const project = getProject((await params).slug);
-  const group = projectGroups.find((item) => item.id === project?.group);
+  const { lang, slug } = await params;
+  const locale = toLocale(lang);
+  const project = getProject(slug, locale);
+  const group = getProjectGroups(locale).find(
+    (item) => item.id === project?.group,
+  );
+  const config = getSiteConfig(locale);
 
   return renderOgImage({
-    title: project?.title ?? siteConfig.headline,
-    subtitle: [group?.title ?? "Case study", siteConfig.name].join(" · "),
+    title: project?.title ?? config.headline,
+    subtitle: [
+      group?.title ?? getMessages(locale).og.caseStudy,
+      config.name,
+    ].join(" · "),
     titleSize: 64,
   });
 }

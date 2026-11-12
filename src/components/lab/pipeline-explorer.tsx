@@ -23,13 +23,14 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import {
-  eventNames,
-  type CiJob,
-  type LabIcon,
-  type PipelineTrigger,
-  type Scenario,
+import type {
+  CiJob,
+  LabIcon,
+  PipelineTrigger,
+  Scenario,
 } from "@/content/lab-pipeline";
+import { useLocale } from "@/i18n/locale-context";
+import { getMessages } from "@/i18n/messages";
 import { cn } from "@/lib/cn";
 import {
   dependencyLevels,
@@ -83,9 +84,14 @@ export function PipelineExplorer({
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(true);
   const mounted = useIsMounted();
+  const locale = useLocale();
+  const { explorer: t, run: runText } = getMessages(locale);
   const wide = useMediaQuery(WIDE_QUERY);
   const scenario = scenarios.find((s) => s.id === scenarioId)!;
-  const outcome = useMemo(() => resolveRun(jobs, scenario), [jobs, scenario]);
+  const outcome = useMemo(
+    () => resolveRun(jobs, scenario, locale),
+    [jobs, scenario, locale],
+  );
   const frames = useMemo(() => runFrames(jobs, outcome), [jobs, outcome]);
   const playback = usePipelinePlayback(frames, {
     reducedMotion: useMediaQuery(REDUCED_MOTION_QUERY),
@@ -139,18 +145,18 @@ export function PipelineExplorer({
 
   const control =
     playback.status === "running"
-      ? { label: "Pause", icon: Pause, action: playback.pause }
+      ? { label: t.pause, icon: Pause, action: playback.pause }
       : playback.status === "paused"
-        ? { label: "Resume", icon: Play, action: playback.resume }
-        : { label: "Run", icon: Play, action: run };
+        ? { label: t.resume, icon: Play, action: playback.resume }
+        : { label: t.run, icon: Play, action: run };
   const message =
     playback.status === "idle"
-      ? "Press Run to replay this scenario step by step."
+      ? t.idle
       : playback.status === "paused"
-        ? "Paused."
+        ? t.paused
         : playback.status === "done"
-          ? summarizeRun(outcome)
-          : describeFrame(jobs, frames, playback.frame);
+          ? summarizeRun(outcome, locale)
+          : describeFrame(jobs, frames, playback.frame, locale);
 
   const panel = (
     <motion.div
@@ -165,12 +171,14 @@ export function PipelineExplorer({
           outcome={outcome[job.id]}
           state={playback.states[job.id]}
           workflowUrl={workflowUrl}
+          locale={locale}
         />
       ) : (
         <TriggerPanel
           trigger={trigger}
           scenario={scenario}
           workflowUrl={workflowUrl}
+          locale={locale}
         />
       )}
     </motion.div>
@@ -243,6 +251,7 @@ export function PipelineExplorer({
           scenarios={scenarios}
           selected={scenarioId}
           onSelect={chooseScenario}
+          locale={locale}
         />
         <p className="mt-3 max-w-prose text-muted">{scenario.summary}</p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -261,7 +270,7 @@ export function PipelineExplorer({
             className={navButtonClass}
           >
             <RotateCcw aria-hidden className="size-4" />
-            Reset
+            {t.reset}
           </button>
           <p role="status" className="font-mono text-sm text-muted">
             {message}
@@ -271,7 +280,7 @@ export function PipelineExplorer({
 
       <div
         role={wide ? "tablist" : undefined}
-        aria-label={wide ? "Workflow jobs" : undefined}
+        aria-label={wide ? t.jobs : undefined}
         className="grid gap-3 lg:grid-cols-[repeat(var(--columns),minmax(0,1fr))] lg:gap-8"
         style={{ "--columns": levels.length + 1 } as CSSProperties}
       >
@@ -281,7 +290,7 @@ export function PipelineExplorer({
             trigger.label,
             trigger.icon,
             null,
-            `event: ${eventNames[scenario.event]}`,
+            t.event(runText.eventNames[scenario.event]),
           )}
         </Column>
         {levels.map((level, levelIndex) => (
@@ -291,10 +300,11 @@ export function PipelineExplorer({
                 ordered.indexOf(item) + 1,
                 item.label,
                 item.icon,
-                <RunStateBadge state={playback.states[item.id]} />,
-                item.needs.length > 0
-                  ? `needs: ${item.needs.join(", ")}`
-                  : "needs: nothing",
+                <RunStateBadge
+                  state={playback.states[item.id]}
+                  locale={locale}
+                />,
+                t.needs(item.needs),
               ),
             )}
           </Column>
@@ -306,25 +316,25 @@ export function PipelineExplorer({
           <div className="flex items-center justify-between gap-4">
             <button
               type="button"
-              aria-label="Previous job"
+              aria-label={t.previousJob}
               disabled={selected === 0}
               onClick={() => choose(selected - 1)}
               className={navButtonClass}
             >
               <ChevronLeft aria-hidden className="size-4" />
-              Previous
+              {t.previous}
             </button>
             <span className="font-mono text-sm text-muted">
               {selected + 1} / {count}
             </span>
             <button
               type="button"
-              aria-label="Next job"
+              aria-label={t.nextJob}
               disabled={selected === count - 1}
               onClick={() => choose(selected + 1)}
               className={navButtonClass}
             >
-              Next
+              {t.next}
               <ChevronRight aria-hidden className="size-4" />
             </button>
           </div>

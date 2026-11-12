@@ -4,9 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Container } from "@/components/ui/container";
 import { getFeaturedProjects } from "@/content/projects";
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 import { resolveHeroCtas } from "@/lib/hero-ctas";
 import { getContactLinks } from "@/lib/links";
-import { siteConfig, type SiteConfig } from "@/lib/site-config";
+import { getSiteConfig, type SiteConfig } from "@/lib/site-config";
 
 const EXAMPLE_SESSION = [
   "$ docker compose up -d",
@@ -19,17 +21,21 @@ const EXAMPLE_SESSION = [
 
 /** Above-the-fold introduction: headline, intro, core tags, adaptive actions and an example terminal. */
 export function Hero({
-  config = siteConfig,
-  featuredCount = getFeaturedProjects().length,
+  locale,
+  config = getSiteConfig(locale),
+  featuredCount = getFeaturedProjects(locale).length,
 }: {
+  locale: Locale;
   config?: SiteConfig;
   featuredCount?: number;
 }) {
   const { primary, secondary } = resolveHeroCtas({
     featuredCount,
     githubUrl: config.links.github,
-    hasContact: getContactLinks(config.links).length > 0,
+    hasContact: getContactLinks(config.links, locale).length > 0,
+    locale,
   });
+  const t = getMessages(locale);
 
   return (
     <section
@@ -56,7 +62,7 @@ export function Hero({
           </p>
           <p className="mt-4 max-w-prose">{config.intro}</p>
           <ul
-            aria-label="Core technologies"
+            aria-label={t.hero.technologies}
             className="mt-6 flex flex-wrap gap-2"
           >
             {config.heroTags.map((tag) => (
@@ -83,8 +89,8 @@ export function Hero({
         <TerminalPanel
           title="~/portfolio"
           lines={EXAMPLE_SESSION}
-          badge={<Badge icon={FlaskConical}>Example</Badge>}
-          caption="Example terminal output, not a live system."
+          badge={<Badge icon={FlaskConical}>{t.badges.example}</Badge>}
+          caption={t.hero.caption}
         />
       </Container>
     </section>

@@ -1,9 +1,10 @@
-import {
-  eventLabels,
-  type CiJob,
-  type CiJobId,
-  type RunState,
-  type Scenario,
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
+import type {
+  CiJob,
+  CiJobId,
+  RunState,
+  Scenario,
 } from "@/content/lab-pipeline";
 
 export type RunFrame = Record<CiJobId, RunState>;
@@ -51,11 +52,12 @@ export type RunOutcome = Record<CiJobId, JobOutcome>;
 export function resolveRun(
   jobs: readonly CiJob[],
   scenario: Scenario,
+  locale: Locale,
 ): RunOutcome {
   const outcomes = {} as RunOutcome;
   for (const id of topologicalOrder(jobs)) {
     const job = jobs.find((candidate) => candidate.id === id)!;
-    outcomes[id] = resolveJob(job, scenario, outcomes);
+    outcomes[id] = resolveJob(job, scenario, outcomes, locale);
   }
   return outcomes;
 }
@@ -64,7 +66,9 @@ function resolveJob(
   job: CiJob,
   scenario: Scenario,
   resolved: RunOutcome,
+  locale: Locale,
 ): JobOutcome {
+  const t = getMessages(locale).run;
   const skipped = (reason: string): JobOutcome => ({
     state: "skipped",
     reason,
@@ -72,15 +76,14 @@ function resolveJob(
   });
 
   if (!job.events.includes(scenario.event)) {
-    const only = job.events.map((event) => eventLabels[event]).join(" and ");
-    return skipped(`Runs only on ${only}.`);
+    const only = job.events.map((event) => t.eventLabels[event]).join(t.and);
+    return skipped(t.runsOnlyOn(only));
   }
   const blocker =
     job.needs.find((need) => resolved[need].state === "failed") ??
     job.needs.find((need) => resolved[need].state === "skipped");
   if (blocker) {
-    const why = resolved[blocker].state === "failed" ? "failed" : "was skipped";
-    return skipped(`Needs ${blocker}, which ${why}.`);
+    return skipped(t.blocked(blocker, resolved[blocker].state === "failed"));
   }
 
   const failure = scenario.failure?.job === job.id ? scenario.failure : null;
@@ -98,7 +101,7 @@ function resolveJob(
 
   return failure
     ? { state: "failed", reason: failure.reason, steps }
-    : { state: "passed", reason: "Every step passed.", steps };
+    : { state: "passed", reason: t.passed, steps };
 }
 
 /** What changed in frame `index` of a run, as a sentence for the live region. */
@@ -106,8 +109,10 @@ export function describeFrame(
   jobs: readonly CiJob[],
   frames: readonly RunFrame[],
   index: number,
+  locale: Locale,
 ): string {
-  if (index === 0) return "Run started. Every job is pending.";
+  const t = getMessages(locale).run;
+  if (index === 0) return t.started;
   const changed = topologicalOrder(jobs)
     .filter((id) => frames[index][id] !== frames[index - 1][id])
     .map((id) => ({
@@ -117,24 +122,24 @@ export function describeFrame(
   const running = changed.filter(({ state }) => state === "running");
   const finished = changed.filter(({ state }) => state !== "running");
   return [
-    running.length > 0 &&
-      `Running: ${running.map(({ label }) => label).join(", ")}.`,
-    ...finished.map(({ label, state }) => `${label} ${state}.`),
+    running.length > 0 && t.running(running.map(({ label }) => label)),
+    ...finished.map(({ label, state }) =>
+      t.finishedJob(label, state as FinalState),
+    ),
   ]
     .filter(Boolean)
     .join(" ");
 }
 
 /** The final tally of a run, e.g. "Run finished: 5 passed, 1 skipped." */
-export function summarizeRun(outcome: RunOutcome): string {
+export function summarizeRun(outcome: RunOutcome, locale: Locale): string {
   const counts = (["passed", "failed", "skipped"] as const)
     .map((state): [FinalState, number] => [
       state,
       Object.values(outcome).filter((job) => job.state === state).length,
     ])
-    .filter(([, count]) => count > 0)
-    .map(([state, count]) => `${count} ${state}`);
-  return `Run finished: ${counts.join(", ")}.`;
+    .filter(([, count]) => count > 0);
+  return getMessages(locale).run.summary(counts);
 }
 
 /** Jobs grouped by how many dependency hops precede them; each group can run in parallel. */

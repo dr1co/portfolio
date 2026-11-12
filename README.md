@@ -78,7 +78,7 @@ npx playwright install chromium
 src/
   app/                global styles and tokens, the global 404
     [lang]/           root layout and every route (/, /projects, /projects/[slug], /lab, /lab/pipeline), OG images, favicon
-  i18n/               supported locales and locale-path helpers
+  i18n/               locales, path helpers, `localize`, UI messages, the client locale context
   components/         UI grouped by domain: layout, navigation, theme, home, projects, pipeline, lab, terminal, mdx, ui
   content/            typed content: projects, technologies, skills, pipeline stages, Lab demos, the model of ci.yml
     case-studies/     one MDX file per case study
@@ -90,7 +90,7 @@ e2e/                  Playwright specs
 docs/                 specs, feature plans and the pre-publish checklist
 ```
 
-Content (text, links, projects, case studies) is kept separate from components, so updating the site usually means editing `src/content/` or `src/lib/site-config.ts` only.
+Content (text, links, projects, case studies) is kept separate from components, so updating the site usually means editing `src/content/` or `src/lib/site-config.ts` only. Interface text (buttons, labels, headings) lives in `src/i18n/messages/`. See [Routing and languages](#routing-and-languages).
 
 ## Design system
 
@@ -110,14 +110,16 @@ Content (text, links, projects, case studies) is kept separate from components, 
 
 Typed content lives in `src/content/`:
 
-| File                                           | Holds                                                                                                         | Notes                                                                                                                                                                                                                                                                                                                                                            |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [projects.ts](src/content/projects.ts)         | `projects` list and the ordered `projectGroups` (DevOps & Delivery → Backend & Automation → Machine Learning) | Every project has one `group`; `categories` are tags. Planned projects are never published, and non-`https` links are stripped. Helpers: `getFeaturedProjects()` (home, max 4), `getProjectDirectory()` (groups in order, empty ones dropped, sorted featured → status → title), `getCaseStudySlugs()` and `getProject(slug)` (only projects with a case study). |
-| [skills.ts](src/content/skills.ts)             | Skill groups                                                                                                  | Each skill has a `since` year (shown as experience) and an optional `note`. Technologies not yet used in a substantive project go in the `learning: true` group, without `since`; a test enforces both rules.                                                                                                                                                    |
-| [technologies.ts](src/content/technologies.ts) | Canonical technology id → display name map                                                                    | Projects (`technologies`) and skills (`tech`) reference ids, so names are spelled the same everywhere. A typo fails `typecheck`. Add new technologies here first, then map the logo in [src/lib/tech-icons.ts](src/lib/tech-icons.ts) if Simple Icons has one.                                                                                                   |
-| [pipeline.ts](src/content/pipeline.ts)         | The five illustrative pipeline stages (command + workflow excerpt)                                            | Icons are string keys, because the data is passed to a client component.                                                                                                                                                                                                                                                                                         |
-| [lab.ts](src/content/lab.ts)                   | Lab intro and demo cards                                                                                      | Each demo has an objective, concepts, a `mode` (`simulated` / `live`), optional prerequisites and source link, and its own `/lab/<slug>` route.                                                                                                                                                                                                                  |
-| [lab-pipeline.ts](src/content/lab-pipeline.ts) | The Pipeline Explorer's model of `.github/workflows/ci.yml`: trigger, jobs, steps, excerpts, scenarios        | Kept in sync with `ci.yml` by a drift test (see [Lab](#lab)). Only the prose (`purpose`, `explanation`, scenario summaries, page intro) is free to edit.                                                                                                                                                                                                         |
+| File                                           | Holds                                                                                                         | Notes                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [projects.ts](src/content/projects.ts)         | `projects` list and the ordered `projectGroups` (DevOps & Delivery → Backend & Automation → Machine Learning) | Every project has one `group`; `categories` are tags. Planned projects are never published, and non-`https` links are stripped. Helpers take a locale: `getFeaturedProjects(locale)` (home, max 4), `getProjectDirectory(locale)` (groups in order, empty ones dropped, sorted featured → status → title), `getProject(slug, locale)` (only projects with a case study). `getCaseStudySlugs()` is the same in every language. |
+| [skills.ts](src/content/skills.ts)             | Skill groups                                                                                                  | Each skill has a `since` year (shown as experience) and an optional `note`. Technologies not yet used in a substantive project go in the `learning: true` group, without `since`; a test enforces both rules.                                                                                                                                                                                                                 |
+| [technologies.ts](src/content/technologies.ts) | Canonical technology id → display name map                                                                    | Projects (`technologies`) and skills (`tech`) reference ids, so names are spelled the same everywhere. A typo fails `typecheck`. Add new technologies here first, then map the logo in [src/lib/tech-icons.ts](src/lib/tech-icons.ts) if Simple Icons has one.                                                                                                                                                                |
+| [pipeline.ts](src/content/pipeline.ts)         | The five illustrative pipeline stages (command + workflow excerpt)                                            | Icons are string keys, because the data is passed to a client component.                                                                                                                                                                                                                                                                                                                                                      |
+| [lab.ts](src/content/lab.ts)                   | Lab intro and demo cards                                                                                      | Each demo has an objective, concepts, a `mode` (`simulated` / `live`), optional prerequisites and source link, and its own `/lab/<slug>` route.                                                                                                                                                                                                                                                                               |
+| [lab-pipeline.ts](src/content/lab-pipeline.ts) | The Pipeline Explorer's model of `.github/workflows/ci.yml`: trigger, jobs, steps, excerpts, scenarios        | Kept in sync with `ci.yml` by a drift test (see [Lab](#lab)). Only the prose (`purpose`, `explanation`, scenario summaries, page intro) is free to edit.                                                                                                                                                                                                                                                                      |
+
+Texts that change with the language are `Localized` (`{ en: "…" }`). Each file exports a `getX(locale)` accessor (`getSiteConfig`, `getProjects`, `getSkillGroups`, `getPipelineStages`, `getLabDemos`, `getLabPipeline`) that returns the data with plain strings, so components never see `Localized` values. Ids, URLs, commands, workflow excerpts and step names are not translated.
 
 Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(content)" src`.
 
@@ -238,7 +240,27 @@ Every route lives under `src/app/[lang]`, and the root layout's `generateStaticP
 | `/en/opengraph-image-…`    | untouched: Next generates these image URLs itself |
 | `/projects/<unknown slug>` | rewrite to `UNROUTED_PATH` → 404                  |
 
-Server code reads the locale with `lang()` from `next/root-params`. Client code that compares paths (e.g. `NavLink`) must use `stripLocale`, because prerendered pages report their internal `/en/...` path to `usePathname`.
+Client code that compares paths (e.g. `NavLink`) must use `stripLocale`, because prerendered pages report their internal `/en/...` path to `usePathname`.
+
+How text gets its language:
+
+| Kind of text                                  | Where it lives                                                                                    | How a component gets it                                         |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Interface text (labels, headings, sentences)  | [src/i18n/messages/en.ts](src/i18n/messages/en.ts); every locale has the same shape               | `getMessages(locale)`, or `useMessages()` in a client component |
+| Content (projects, skills, Lab prose, config) | `Localized` fields in `src/content/` and `site-config.ts`                                         | the file's `getX(locale)` accessor, which calls `localize`      |
+| Case-study bodies                             | `src/content/case-studies/*.mdx`; MDX components get their labels from `getMdxComponents(locale)` | the case-study page passes `components` to the MDX body         |
+
+Messages with a value in them (e.g. `version: (commit) => ...`) are functions, so each language can word the sentence its own way.
+
+The locale reaches components in one of three ways:
+
+- **Pages and layouts** call `getLocale()` from [src/i18n/server.ts](src/i18n/server.ts), which reads `lang()` from `next/root-params`.
+- **Server components, and components without a directive,** take a `locale` prop. Metadata image routes (`opengraph-image.tsx`) read `params.lang` instead, because root params aren't available there.
+- **Client components** call `useLocale()` or `useMessages()`. `SiteDocument` provides the locale through `LocaleProvider`.
+
+Unit tests render without a provider, which means English.
+
+`AppLink` keeps visitors in their language: pass internal paths without a locale (`/projects`), and it prefixes them with `localizePath`. The default locale stays unprefixed.
 
 ## Continuous integration
 

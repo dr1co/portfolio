@@ -8,7 +8,11 @@ describe("Callout", () => {
     ["warning", "Warning"],
     ["simulated", "Simulated"],
   ] as const)("states its %s kind in text, not only color", (kind, label) => {
-    render(<Callout kind={kind}>Body text.</Callout>);
+    render(
+      <Callout kind={kind} locale="en">
+        Body text.
+      </Callout>,
+    );
 
     const callout = screen.getByRole("note");
     expect(callout).toHaveTextContent(label);

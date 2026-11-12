@@ -1,6 +1,10 @@
+"use client";
+
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { useLocale, useMessages } from "@/i18n/locale-context";
+import { localizePath } from "@/i18n/locales";
 
 export type AppLinkProps = {
   href: string;
@@ -13,7 +17,10 @@ export type AppLinkProps = {
   "onNavigate" | "aria-label" | "aria-current"
 >;
 
-/** Single entry point for links: `next/link` for internal targets, a safe new-tab anchor for external ones. */
+/**
+ * Single entry point for links: `next/link` for internal targets, a safe new-tab anchor for external ones.
+ * Internal paths stay in the page's language, so pass them without a locale (`/projects`).
+ */
 export function AppLink({
   href,
   external,
@@ -22,9 +29,16 @@ export function AppLink({
   children,
   ...props
 }: AppLinkProps) {
+  const locale = useLocale();
+  const t = useMessages().layout;
+
   if (!external) {
     return (
-      <Link href={href} onNavigate={onNavigate} {...props}>
+      <Link
+        href={localizePath(href, locale)}
+        onNavigate={onNavigate}
+        {...props}
+      >
         {children}
       </Link>
     );
@@ -39,7 +53,7 @@ export function AppLink({
           className="inline size-4 shrink-0 align-text-bottom"
         />
       )}
-      <span className="sr-only"> (opens in a new tab)</span>
+      <span className="sr-only"> {t.newTab}</span>
     </a>
   );
 }

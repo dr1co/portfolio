@@ -29,10 +29,7 @@ export function CodeBlock({
     <PanelFrame
       title={languageOf(children)}
       actions={
-        <CopyButton
-          text={textOf(children).replace(/\n$/, "")}
-          label="Copy code"
-        />
+        <CopyButton text={textOf(children).replace(/\n$/, "")} kind="code" />
       }
     >
       <pre

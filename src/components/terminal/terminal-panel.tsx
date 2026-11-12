@@ -32,7 +32,7 @@ export function TerminalPanel({
         <>
           {badge}
           {copyable && commands.length > 0 && (
-            <CopyButton text={commands.join("\n")} label="Copy command" />
+            <CopyButton text={commands.join("\n")} kind="command" />
           )}
         </>
       }

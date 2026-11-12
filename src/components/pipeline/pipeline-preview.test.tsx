@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { pipelineStages } from "@/content/pipeline";
+import { getPipelineStages } from "@/content/pipeline";
 import { PipelinePreview } from "./pipeline-preview";
 
 function setup() {
   const user = userEvent.setup();
-  render(<PipelinePreview stages={pipelineStages} />);
+  render(<PipelinePreview stages={getPipelineStages("en")} />);
   return {
     user,
     tab: (name: string) => screen.getByRole("tab", { name: new RegExp(name) }),

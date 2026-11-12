@@ -4,7 +4,7 @@ import { PipelineSection } from "./pipeline-section";
 
 describe("PipelineSection", () => {
   it("states up front that the walkthrough is simulated", () => {
-    render(<PipelineSection />);
+    render(<PipelineSection locale="en" />);
 
     expect(
       screen.getByRole("heading", {
@@ -18,7 +18,7 @@ describe("PipelineSection", () => {
   });
 
   it("links to the Lab's Pipeline Explorer while the Lab is enabled", () => {
-    render(<PipelineSection />);
+    render(<PipelineSection locale="en" />);
 
     expect(
       screen.getByRole("link", {

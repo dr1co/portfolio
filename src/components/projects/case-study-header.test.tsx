@@ -19,7 +19,7 @@ const project: Project = {
 
 describe("CaseStudyHeader", () => {
   it("shows the title as h1 with the description as lead, group, status and technologies", () => {
-    render(<CaseStudyHeader project={project} />);
+    render(<CaseStudyHeader locale="en" project={project} />);
 
     expect(
       screen.getByRole("heading", {
@@ -36,14 +36,19 @@ describe("CaseStudyHeader", () => {
 
   it("falls back to the summary when there is no description", () => {
     render(
-      <CaseStudyHeader project={{ ...project, description: undefined }} />,
+      <CaseStudyHeader
+        locale="en"
+        project={{ ...project, description: undefined }}
+      />,
     );
 
     expect(screen.getByText("One-line summary.")).toBeInTheDocument();
   });
 
   it("links to the source and shows the last update only when they exist", () => {
-    const { rerender } = render(<CaseStudyHeader project={project} />);
+    const { rerender } = render(
+      <CaseStudyHeader locale="en" project={project} />,
+    );
 
     expect(screen.getByRole("link", { name: /^Source/ })).toHaveAttribute(
       "href",
@@ -57,6 +62,7 @@ describe("CaseStudyHeader", () => {
 
     rerender(
       <CaseStudyHeader
+        locale="en"
         project={{
           ...project,
           repositoryUrl: undefined,

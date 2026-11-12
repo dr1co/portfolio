@@ -6,7 +6,7 @@ import { CopyButton } from "./copy-button";
 describe("CopyButton", () => {
   it("copies its text and announces the result to screen readers", async () => {
     const user = userEvent.setup();
-    render(<CopyButton text="docker compose up -d" label="Copy command" />);
+    render(<CopyButton text="docker compose up -d" kind="command" />);
 
     expect(screen.getByRole("status")).toHaveTextContent("");
 

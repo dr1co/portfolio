@@ -1,6 +1,13 @@
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
+
 /** Human-readable experience from a start year, e.g. "4+ years". */
-export function experienceLabel(since: number, year: number): string {
+export function experienceLabel(
+  since: number,
+  year: number,
+  locale: Locale,
+): string {
+  const t = getMessages(locale).skills;
   const years = year - since;
-  if (years < 1) return "Less than a year";
-  return `${years}+ ${years === 1 ? "year" : "years"}`;
+  return years < 1 ? t.lessThanAYear : t.years(years);
 }
