@@ -6,27 +6,59 @@ import { proxy, UNROUTED_PATH } from "./proxy";
 const request = (path: string) =>
   new NextRequest(new URL(path, "http://localhost:3000"));
 
-describe("proxy", () => {
-  it.each(["/projects/tcc-engsoftware", "/projects/django-project-template"])(
-    "lets the published case study %s through",
-    (path) => {
-      const response = proxy(request(path));
+const rewriteTarget = (path: string) => {
+  const rewrite = proxy(request(path)).headers.get("x-middleware-rewrite");
+  if (!rewrite) return null;
+  const url = new URL(rewrite);
+  return url.pathname + url.search;
+};
 
-      expect(response.headers.get("x-middleware-next")).toBe("1");
-      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
-    },
-  );
+describe("proxy", () => {
+  it.each([
+    ["/", "/en"],
+    ["/projects", "/en/projects"],
+    ["/projects/tcc-engsoftware", "/en/projects/tcc-engsoftware"],
+    [
+      "/projects/django-project-template",
+      "/en/projects/django-project-template",
+    ],
+    ["/lab/pipeline", "/en/lab/pipeline"],
+    ["/opengraph-image", "/en/opengraph-image"],
+    ["/projects?group=ml", "/en/projects?group=ml"],
+  ])("serves %s from the English route %s", (path, target) => {
+    expect(rewriteTarget(path)).toBe(target);
+  });
+
+  it.each([
+    ["/en", "/"],
+    ["/en/", "/"],
+    ["/en/projects", "/projects"],
+    ["/en/lab/pipeline?x=1", "/lab/pipeline?x=1"],
+  ])("redirects %s to the unprefixed URL %s", (path, target) => {
+    const response = proxy(request(path));
+
+    expect(response.status).toBe(308);
+    const location = new URL(response.headers.get("location")!);
+    expect(location.pathname + location.search).toBe(target);
+  });
+
+  it.each([
+    "/en/opengraph-image",
+    "/en/icon",
+    "/en/projects/x/opengraph-image",
+  ])("leaves the generated metadata image URL %s alone", (path) => {
+    const response = proxy(request(path));
+
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+  });
 
   it.each(["/projects/does-not-exist"])(
     "rewrites %s (no published case study) to a path no route serves",
     (path) => {
-      const response = proxy(request(path));
-      const target = new URL(response.headers.get("x-middleware-rewrite")!)
-        .pathname;
-
       // Not "/404": Vercel serves that static file with a 200 when it's a rewrite target.
-      expect(target).not.toBe("/404");
-      expect(target).toBe(UNROUTED_PATH);
+      // Not a single segment either: that would match app/[lang] as an unknown locale.
+      expect(rewriteTarget(path)).toBe(UNROUTED_PATH);
+      expect(UNROUTED_PATH).toMatch(/^\/en\/[^/]+$/);
     },
   );
 });

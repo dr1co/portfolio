@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { AppLink } from "@/components/ui/app-link";
+import { stripLocale } from "@/i18n/locales";
 import { cn } from "@/lib/cn";
 
 export type NavItem = { href: string; label: string };
@@ -10,6 +11,7 @@ export type NavItem = { href: string; label: string };
 /**
  * Navigation link with underline + strong text when current: `aria-current="page"` on its own route,
  * `aria-current="true"` on pages inside its section (e.g. Projects on a case study).
+ * Prerendered pages report their internal `/en/...` path, so both sides are compared without the locale.
  */
 export function NavLink({
   href,
@@ -22,11 +24,12 @@ export function NavLink({
   className?: string;
   onNavigate?: () => void;
 }) {
-  const pathname = usePathname();
+  const pathname = stripLocale(usePathname());
+  const target = stripLocale(href);
   const ariaCurrent =
-    pathname === href
+    pathname === target
       ? "page"
-      : href !== "/" && pathname.startsWith(`${href}/`)
+      : target !== "/" && pathname.startsWith(`${target}/`)
         ? "true"
         : undefined;
   const current = ariaCurrent !== undefined;

@@ -2,7 +2,8 @@ import { TerminalPanel } from "@/components/terminal/terminal-panel";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Container } from "@/components/ui/container";
 
-export default function NotFound() {
+/** Body of the 404 page, shared by `notFound()` inside a route and the global page for unmatched URLs. */
+export function NotFoundView() {
   return (
     <Container className="flex max-w-2xl flex-col gap-8 py-20 md:py-28">
       <div>

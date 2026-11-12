@@ -20,7 +20,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({
   params,
-}: PageProps<"/projects/[slug]">): Promise<Metadata> {
+}: PageProps<"/[lang]/projects/[slug]">): Promise<Metadata> {
   const project = getProject((await params).slug);
   if (!project) return {};
   return {
@@ -33,7 +33,7 @@ export async function generateMetadata({
 /** Static shell (back link) renders instantly; the slug-dependent case study streams inside Suspense. */
 export default function CaseStudyPage({
   params,
-}: PageProps<"/projects/[slug]">) {
+}: PageProps<"/[lang]/projects/[slug]">) {
   return (
     <Container className="py-12 md:py-16">
       <AppLink
@@ -54,7 +54,7 @@ export default function CaseStudyPage({
 
 async function CaseStudy({
   params,
-}: Pick<PageProps<"/projects/[slug]">, "params">) {
+}: Pick<PageProps<"/[lang]/projects/[slug]">, "params">) {
   const project = getProject((await params).slug);
   if (!project?.caseStudy) notFound();
 

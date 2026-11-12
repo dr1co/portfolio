@@ -76,14 +76,16 @@ npx playwright install chromium
 
 ```text
 src/
-  app/                routes (/, /projects, /projects/[slug], /lab, /lab/pipeline), root layout, OG images, global styles and tokens
+  app/                global styles and tokens, the global 404
+    [lang]/           root layout and every route (/, /projects, /projects/[slug], /lab, /lab/pipeline), OG images, favicon
+  i18n/               supported locales and locale-path helpers
   components/         UI grouped by domain: layout, navigation, theme, home, projects, pipeline, lab, terminal, mdx, ui
   content/            typed content: projects, technologies, skills, pipeline stages, Lab demos, the model of ci.yml
     case-studies/     one MDX file per case study
   lib/                site config and small pure helpers (links, headings, OG layout, pipeline run model, hooks)
   test/               shared test helpers (e.g. stubMatchMedia)
   mdx-components.tsx  Markdown element → component mapping for case studies
-  proxy.ts            sends unknown case-study slugs to a real 404
+  proxy.ts            maps public URLs to app/[lang] routes; unknown case-study slugs get a real 404
 e2e/                  Playwright specs
 docs/                 specs, feature plans and the pre-publish checklist
 ```
@@ -121,7 +123,7 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 
 ## Layout and shared components
 
-- **Root layout** ([src/app/layout.tsx](src/app/layout.tsx)), in render order: skip link, sticky header, `<main id="main">`, footer. The theme and Motion (`reducedMotion="user"`) providers wrap everything.
+- **Root layout** ([src/app/[lang]/layout.tsx](src/app/[lang]/layout.tsx)) sets `<html lang>` from the `lang` root param and renders `SiteDocument` ([src/components/layout/site-document.tsx](src/components/layout/site-document.tsx)), in render order: skip link, sticky header, `<main id="main">`, footer. The theme and Motion (`reducedMotion="user"`) providers wrap everything. `SiteDocument` also owns the fonts and the `globals.css` import, because the global 404 page renders it too.
 - **Header:** wordmark, routes with `enabled: true`, a "Contact" shortcut (only when a contact link exists), a GitHub icon (only when configured), the theme toggle, and a mobile menu (only when there's more than one item to show). `NavLink` marks its own page with `aria-current="page"` and its section's child pages (e.g. Projects on a case study) with `aria-current="true"`, both shown by underline and strong text.
 - **Footer:** the copyright year comes from a `'use cache'` component, because Cache Components forbids reading `new Date()` while rendering. Also stack attribution, an optional source link, the build version, and contact icons. The version ("Version abc1234", linked to the commit) comes from `COMMIT_SHA`, which CI sets at build time. [`getBuildInfo`](src/lib/build-info.ts) ignores missing or non-hex values, so local builds show no version.
 - **Links:** always use `AppLink` ([src/components/ui/app-link.tsx](src/components/ui/app-link.tsx)). Internal targets go through `next/link`. External ones get `target="_blank"`, `rel="noopener noreferrer"`, an arrow icon and screen-reader text. `ButtonLink` adds the primary and secondary button styles on top.
@@ -141,12 +143,12 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
   - `PipelineSection`: "Simulated" disclaimer, the interactive `PipelinePreview`, a `<noscript>` list of all stages, and (while `/lab` is enabled) a link to the Pipeline Explorer.
   - `SkillsSection`: one card per group, each technology a logo tile from [Simple Icons](https://simpleicons.org) (via [`techIcon`](src/lib/tech-icons.ts)). Tiles take the brand colour in each theme where it reaches 3:1 on the tile, and the theme's foreground colour where it doesn't. A technology without a logo shows its name as text. Hovering, focusing or tapping a tile shows a `Tooltip` with the experience (computed from `since` and the cached [`currentYear`](src/lib/current-year.ts)) and an optional `note`. The learning group gets dashed borders and a "Currently learning" badge, and its tooltips say "Currently learning" instead of years. The section is an async server component, and the testable markup lives in `SkillGrid`, which takes `year` as a prop.
   - `ContactSection`: one large row per configured link (icon, label, readable address). Renders nothing until a link is set.
-  - Page order ([src/app/page.tsx](src/app/page.tsx)): Hero → Featured projects → Pipeline → Skills → Contact.
+  - Page order ([src/app/[lang]/page.tsx](src/app/[lang]/page.tsx)): Hero → Featured projects → Pipeline → Skills → Contact.
 - **Pipeline preview** ([src/components/pipeline/pipeline-preview.tsx](src/components/pipeline/pipeline-preview.tsx)): implements the WAI-ARIA tabs pattern through the generic [`useRovingTabs`](src/lib/use-roving-tabs.ts) hook. Arrows on both axes move and wrap; Home/End jump; only the selected tab is in the Tab order. Desktop shows five connected nodes in a row; mobile stacks them. A Motion `layoutId` slides the active indicator, and the details panel fades in. Each stage shows its purpose, an explanation, a copyable command and a collapsible workflow excerpt.
 
 ## Projects directory
 
-- **Route:** [src/app/projects/page.tsx](src/app/projects/page.tsx) renders an h1, the `directoryIntro` from `projects.ts`, and `ProjectDirectory`.
+- **Route:** [src/app/[lang]/projects/page.tsx](src/app/[lang]/projects/page.tsx) renders an h1, the `directoryIntro` from `projects.ts`, and `ProjectDirectory`.
 - **`ProjectDirectory`** ([src/components/projects/project-directory.tsx](src/components/projects/project-directory.tsx)): one labelled `<section>` per group (h2 + two-column card grid). The first group renders immediately; the rest fade in with `Reveal`.
 - **Card links:** when the `/projects` route is enabled and a project has a `caseStudy`, both the card title and a "Case study" link point to `/projects/<slug>`. Case-study pages are addressed by **slug**; `caseStudy` only names the MDX file.
 - **`isRouteEnabled(routes, href)`** in `src/lib/links.ts` is the single check for "is this page live", used by the cards and featured section.
@@ -160,11 +162,11 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 
 ## Case-study pages
 
-- **Route:** [src/app/projects/[slug]/page.tsx](src/app/projects/[slug]/page.tsx). `generateStaticParams` returns `getCaseStudySlugs()`, so every case study is prerendered at build. The page loads the MDX body with a dynamic import and reads the same file to build the table of contents (`getHeadings` in [src/lib/headings.ts](src/lib/headings.ts), which uses `github-slugger` so ids match `rehype-slug`).
+- **Route:** [src/app/[lang]/projects/[slug]/page.tsx](src/app/[lang]/projects/[slug]/page.tsx). `generateStaticParams` returns `getCaseStudySlugs()`, so every case study is prerendered at build. The page loads the MDX body with a dynamic import and reads the same file to build the table of contents (`getHeadings` in [src/lib/headings.ts](src/lib/headings.ts), which uses `github-slugger` so ids match `rehype-slug`).
 - **Instant navigation:** the page itself renders only the static shell (the back link). Everything that reads `params` lives in a `CaseStudy` component inside `<Suspense>`, as the Next 16 instant-navigation validation requires. Known slugs are still fully prerendered, so the fallback is practically never seen.
 - **Layout:** "All projects" back link → `CaseStudyHeader` (group, title, description or summary, status, technologies, Source/Live demo, "Updated" date) → article (max 70ch) with a table of contents: a sticky sidebar on `lg+`, a collapsible "On this page" panel on smaller screens.
 - **Metadata:** title, description and canonical URL per project, plus a generated OG image (`opengraph-image.tsx`) showing the project title and group. Both OG images share [src/lib/og-image.tsx](src/lib/og-image.tsx).
-- **Unknown slugs → real 404:** with Cache Components the page shell streams before `notFound()` runs, which would commit a `200`. [src/proxy.ts](src/proxy.ts) (matcher `/projects/:slug`) rewrites any slug without a published case study to a path no route serves (`UNROUTED_PATH`) before rendering. Both `next start` and Vercel answer that with the not-found page and a `404`. Don't rewrite to `/404` instead: Vercel serves that static file with a `200` when it's a rewrite target, because its `/404 → 404` status route runs before middleware. The `@smoke` check against each preview catches a regression. Projects that only have a card (no `caseStudy`) also get a 404 at their URL.
+- **Unknown slugs → real 404:** with Cache Components the page shell streams before `notFound()` runs, which would commit a `200`. [src/proxy.ts](src/proxy.ts) rewrites any slug without a published case study to a path no route serves (`UNROUTED_PATH`, `/en/__unrouted`) before rendering. Both `next start` and Vercel answer that with the not-found page and a `404`. Don't rewrite to `/404` instead: Vercel serves that static file with a `200` when it's a rewrite target, because its `/404 → 404` status route runs before middleware. The `@smoke` check against each preview catches a regression. Projects that only have a card (no `caseStudy`) also get a 404 at their URL.
 - **Adding a case study:** create `src/content/case-studies/<name>.mdx`, set `caseStudy: "<name>"` on the project, and run `npm test`. The registry test fails if a file is missing, orphaned, or if no case study exists at all (Cache Components needs at least one static param).
 
 ## Writing case studies (MDX)
@@ -185,7 +187,7 @@ Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-
 
 ## Lab
 
-`/lab` lists interactive demos as cards ([src/app/lab/page.tsx](src/app/lab/page.tsx), data in `src/content/lab.ts`). Every demo says whether it is simulated or live. The first demo is the **Pipeline Explorer** at `/lab/pipeline`.
+`/lab` lists interactive demos as cards ([src/app/[lang]/lab/page.tsx](src/app/[lang]/lab/page.tsx), data in `src/content/lab.ts`). Every demo says whether it is simulated or live. The first demo is the **Pipeline Explorer** at `/lab/pipeline`.
 
 ### Pipeline Explorer
 
@@ -215,15 +217,28 @@ The Explorer models **this site's real CI workflow** ([.github/workflows/ci.yml]
 
 **When the drift test fails** after a `ci.yml` change, update `src/content/lab-pipeline.ts` in the same change: jobs, `needs`, `events`, step names and excerpts. A new `if:` expression also needs an entry in the test's `CONDITIONS` table. If the model can't express it, simplify the job and mention it in `pipelineScope`.
 
-**Adding a demo:** add a `LabDemo` to `src/content/lab.ts` with `href: "/lab/<slug>"`, create the static route `src/app/lab/<slug>/page.tsx` with `alternates: canonicalFor("/lab/<slug>")`, and label it Simulated unless it's backed by a real service. `lab.test.ts` and the `@smoke` Lab test pick it up from `labDemos`.
+**Adding a demo:** add a `LabDemo` to `src/content/lab.ts` with `href: "/lab/<slug>"`, create the static route `src/app/[lang]/lab/<slug>/page.tsx` with `alternates: canonicalFor("/lab/<slug>")`, and label it Simulated unless it's backed by a real service. `lab.test.ts` and the `@smoke` Lab test pick it up from `labDemos`.
 
 ## SEO and metadata
 
 - Title template `%s · Adriano Matoba Lipski`; the description is the tagline.
 - `robots` is `noindex, nofollow` unless `NEXT_PUBLIC_ALLOW_INDEXING=true`. Set that on production only.
 - `metadataBase` and the canonical URL come from `NEXT_PUBLIC_SITE_URL`. See [.env.example](.env.example). Each page sets its own canonical with `canonicalFor(path)` ([src/lib/canonical.ts](src/lib/canonical.ts)). The root layout sets none, because Next merges metadata shallowly and a layout canonical would leak into every page that doesn't override it. The `@smoke` suite checks that each canonical points at its own page.
-- The Open Graph image ([src/app/opengraph-image.tsx](src/app/opengraph-image.tsx)) and favicon ([src/app/icon.tsx](src/app/icon.tsx)) are generated with `ImageResponse` at build time. Their hex values mirror the dark tokens, because CSS variables aren't available there.
-- [src/app/not-found.tsx](src/app/not-found.tsx) renders the 404 page.
+- The Open Graph image ([src/app/[lang]/opengraph-image.tsx](src/app/[lang]/opengraph-image.tsx)) and favicon ([src/app/[lang]/icon.tsx](src/app/[lang]/icon.tsx)) are generated with `ImageResponse` at build time. Their hex values mirror the dark tokens, because CSS variables aren't available there.
+- The 404 page body is `NotFoundView` ([src/components/layout/not-found-view.tsx](src/components/layout/not-found-view.tsx)). [src/app/global-not-found.tsx](src/app/global-not-found.tsx) shows it for URLs no route matches (Next's experimental `globalNotFound`, needed because the root layout sits under `[lang]`), and [src/app/[lang]/not-found.tsx](src/app/[lang]/not-found.tsx) for `notFound()` inside a route.
+
+## Routing and languages
+
+Every route lives under `src/app/[lang]`, and the root layout's `generateStaticParams` prerenders each locale in [src/i18n/locales.ts](src/i18n/locales.ts) (English only for now). English pages have no URL prefix, and [src/proxy.ts](src/proxy.ts) maps them to the internal route:
+
+| Request                    | Proxy                                             |
+| -------------------------- | ------------------------------------------------- |
+| `/projects`                | rewrite to `/en/projects`                         |
+| `/en/projects`             | `308` to `/projects`, one public URL per page     |
+| `/en/opengraph-image-…`    | untouched: Next generates these image URLs itself |
+| `/projects/<unknown slug>` | rewrite to `UNROUTED_PATH` → 404                  |
+
+Server code reads the locale with `lang()` from `next/root-params`. Client code that compares paths (e.g. `NavLink`) must use `stripLocale`, because prerendered pages report their internal `/en/...` path to `usePathname`.
 
 ## Continuous integration
 

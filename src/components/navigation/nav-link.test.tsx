@@ -52,4 +52,26 @@ describe("NavLink", () => {
       "aria-current",
     );
   });
+
+  it.each([
+    ["/en", "Home", "page"],
+    ["/en/lab", "Lab", "page"],
+    ["/en/lab/pipeline", "Lab", "true"],
+  ])(
+    "ignores the internal locale prefix of prerendered pages (%s)",
+    (pathname, name, current) => {
+      navigation.pathname = pathname;
+      render(
+        <>
+          <NavLink href="/">Home</NavLink>
+          <NavLink href="/lab">Lab</NavLink>
+        </>,
+      );
+
+      expect(screen.getByRole("link", { name })).toHaveAttribute(
+        "aria-current",
+        current,
+      );
+    },
+  );
 });

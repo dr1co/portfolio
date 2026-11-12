@@ -1,13 +1,11 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SkipLink } from "@/components/layout/skip-link";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { MotionProvider } from "@/components/ui/motion-provider";
-import { getMissingLinks } from "@/lib/links";
-import { siteConfig } from "@/lib/site-config";
-import "./globals.css";
+import "@/app/globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,38 +17,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-const allowIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === "true";
-const defaultTitle = `${siteConfig.name} — ${siteConfig.descriptor}`;
-
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl || "http://localhost:3000"),
-  title: { default: defaultTitle, template: `%s · ${siteConfig.name}` },
-  description: siteConfig.tagline,
-  robots: { index: allowIndexing, follow: allowIndexing },
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    siteName: siteConfig.wordmark,
-    title: defaultTitle,
-    description: siteConfig.tagline,
-  },
-  twitter: { card: "summary_large_image" },
-};
-
-if (process.env.NODE_ENV === "development") {
-  const missing = getMissingLinks(siteConfig.links);
-  if (missing.length > 0) {
-    console.warn(
-      `[site-config] Links not rendered (empty or invalid): ${missing.join(", ")}`,
-    );
-  }
-}
-
-export default function RootLayout({ children }: LayoutProps<"/">) {
+/** The `<html>` document every page shares: fonts, providers, header and footer. Used by the root layout and the global 404 page. */
+export function SiteDocument({
+  lang,
+  children,
+}: {
+  lang: string;
+  children: ReactNode;
+}) {
   return (
     <html
-      lang="en"
+      lang={lang}
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >

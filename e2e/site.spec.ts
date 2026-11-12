@@ -11,6 +11,18 @@ test("unknown routes answer 404 with a way back home", async ({ page }) => {
   await expect(page).toHaveURL("/");
 });
 
+test("English URLs typed with the /en prefix redirect to the unprefixed URL", async ({
+  page,
+}) => {
+  const response = await page.goto("/en/projects");
+
+  expect(response?.status()).toBe(200);
+  await expect(page).toHaveURL("/projects");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Projects" }),
+  ).toBeVisible();
+});
+
 test("pages are not indexable unless indexing is explicitly allowed", async ({
   page,
 }) => {
