@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import * as about from "@/content/about";
 import * as lab from "@/content/lab";
 import * as labPipeline from "@/content/lab-pipeline";
 import * as pipeline from "@/content/pipeline";
@@ -23,6 +24,7 @@ const SAME_IN_BOTH = new Set([
   "Pull request",
   "pull request",
   "pull requests",
+  "Driven Education",
 ]);
 
 function untranslatedMessages(a: unknown, b: unknown, path = ""): string[] {
@@ -53,7 +55,15 @@ describe("Brazilian Portuguese translations", () => {
   });
 
   it("translate every content text", () => {
-    const content = [siteConfig, lab, labPipeline, pipeline, projects, skills];
+    const content = [
+      siteConfig,
+      about,
+      lab,
+      labPipeline,
+      pipeline,
+      projects,
+      skills,
+    ];
     expect(content.flatMap(untranslatedContent)).toEqual([]);
   });
 });

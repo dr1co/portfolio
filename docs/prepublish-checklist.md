@@ -19,8 +19,10 @@ Everything the home page needs from the owner before it goes public. Each item p
 - [x] **Brazilian Portuguese interface** — I drafted [src/i18n/messages/pt-br.ts](../src/i18n/messages/pt-br.ts) (buttons, labels, Lab status sentences). Check the tone and the terms kept in English (job, pipeline, deploy, pull request).
 - [x] **Brazilian Portuguese content** — every `"pt-br"` field in `site-config.ts` and `src/content/*.ts` is a draft. Review each one next to its English text, especially project descriptions and the Lab prose. Texts left identical on purpose (e.g. "Deploy", "Pull request") are allowlisted in [src/i18n/translations.test.ts](../src/i18n/translations.test.ts).
 - [x] **Brazilian Portuguese case studies**: [tcc-engsoftware.pt-br.mdx](../src/content/case-studies/tcc-engsoftware.pt-br.mdx) and [django-project-template.pt-br.mdx](../src/content/case-studies/django-project-template.pt-br.mdx) are drafted translations of the English files. Review the wording, and check the thesis text against the original thesis terminology. Any later change to an English case study needs the same change in its `.pt-br.mdx`.
+- [ ] **About copy** — every field in [src/content/about.ts](../src/content/about.ts) was drafted from your career master document and GitHub README, in English and Portuguese. Check each claim against its source, the generic wording of the work systems (no internal product or vendor names), the "How I work" stories, and the achievements list. Then remove its `TODO(content)`.
+- [ ] **Education state, after graduation** — when the degree is awarded (expected December 2026), change the `education` job's `state` to `"passed"` and update its summary and period in [src/content/about.ts](../src/content/about.ts).
 - [x] **Source link** — `sourceRepoUrl` is set. Make sure the repository is actually public before launch, or the footer link 404s.
-- [x] `grep -rn "TODO(content)" src` returns nothing.
+- [ ] `grep -rn "TODO(content)" src` returns nothing.
 
 ## Deployment configuration
 

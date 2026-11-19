@@ -201,6 +201,13 @@ Suggested commit: `[feat.] age computed from the birth month`
 
 Suggested commit: `[feat.] about page content`
 
+**Done.** Amended while implementing:
+
+- `translations.test.ts` lists its content modules explicitly, so `about` was added there (it isn't automatic, as A15 assumed). "Driven Education" joined its `SAME_IN_BOTH` allowlist.
+- `experience` gained a `context` line (what the company is), and `institution` is `Localized` (the university's name is translated).
+- `about.test.ts` also checks that `learning` lists the same technologies, in the same order, as the skills section's learning group, so the home page and `/about` can't drift apart. Achievements must be newest first.
+- The whoami summary has no age or location: Step 4 composes that line from `siteConfig` and a message, so the number never sits inside translated content.
+
 ### Step 4 — Job strip
 
 1. **Test first** (`run-state-badge.test.tsx`): `spin={false}` renders the running icon without the spin class.
