@@ -43,12 +43,11 @@ type AboutEntry = {
 export type About = Resolved<AboutEntry>;
 export type AboutJob = About["jobs"][number];
 
-// TODO(content): drafted from the owner's career master document and GitHub README. Review every field, in both languages.
 export const about: AboutEntry = {
   lead: {
-    en: "I'm a software engineer who likes owning the whole path from code to production. Today I build internal platforms and automation at a transport company, and I'm moving deeper into DevOps.",
+    en: "I'm a software engineer who likes owning the whole path from code to production. Today I build internal platforms and automation at a parcel and passenger transport company, and I'm moving deeper into DevOps.",
     "pt-br":
-      "Sou engenheiro de software e gosto de cuidar de todo o caminho do código até a produção. Hoje construo plataformas internas e automações em uma empresa de transporte, e estou me aprofundando em DevOps.",
+      "Sou engenheiro de software e gosto de cuidar de todo o caminho do código até a produção. Hoje construo plataformas internas e automações em uma empresa de transporte de passageiros e encomendas, e estou me aprofundando em DevOps.",
   },
   jobs: [
     {
@@ -70,9 +69,9 @@ export const about: AboutEntry = {
       state: "running",
       summary: [
         {
-          en: "Systems Analyst at Princesa dos Campos since March 2025.",
+          en: "Mid-level Systems Analyst at Princesa dos Campos since March 2025.",
           "pt-br":
-            "Analista de Sistemas na Princesa dos Campos desde março de 2025.",
+            "Analista de Sistemas Pleno na Princesa dos Campos desde março de 2025.",
         },
         {
           en: "Django platform, central SSO, Airflow integrations and CI/CD.",
@@ -118,22 +117,22 @@ export const about: AboutEntry = {
         "Meu primeiro contato com programação foi com C++ em 2019, no primeiro semestre de Engenharia Química na UFPR (Universidade Federal do Paraná). Foi uma das matérias de que mais gostei naquele semestre, mas segui na Engenharia Química por mais um tempo.",
     },
     {
-      en: "In 2022 I left Chemical Engineering for software. I started with a 1,200-hour online bootcamp, learning the fundamentals with HTML, CSS and JavaScript and building my first React apps. In 2023 I started a second bachelor's degree, in Software Engineering, at UEPG (State University of Ponta Grossa).",
+      en: "In 2022 I left Chemical Engineering to pursue Software. I started with a 1,200-hour online bootcamp, learning the fundamentals with HTML, CSS and JavaScript and building my first React and Node.js apps. In 2023 I started a second bachelor's degree, in Software Engineering, at UEPG (State University of Ponta Grossa).",
       "pt-br":
-        "Em 2022 deixei a Engenharia Química para seguir em software. Comecei com um bootcamp online de 1.200 horas, aprendendo os fundamentos com HTML, CSS e JavaScript e construindo minhas primeiras aplicações em React. Em 2023 comecei um segundo bacharelado, em Engenharia de Software, na UEPG (Universidade Estadual de Ponta Grossa).",
+        "Em 2022 deixei a Engenharia Química para seguir uma carreira em Software. Comecei com um bootcamp online de 1.200 horas, aprendendo os fundamentos com HTML, CSS e JavaScript e construindo minhas primeiras aplicações em React e Node.js. Em 2023 comecei um segundo bacharelado, em Engenharia de Software, na UEPG (Universidade Estadual de Ponta Grossa).",
     },
     {
-      en: "Hackathons, projects and coding challenges pulled me toward automation and DevOps. What I enjoy most now is the whole flow of a project, from the first file edit to delivering it to the people who use it.",
+      en: "Hackathons, projects and coding challenges pulled me toward automation, DevOps and Machine Learning. What I enjoy most now is the whole flow of a project, from the first file edit to delivering it to the people who use it.",
       "pt-br":
-        "Hackathons, projetos e desafios de programação me levaram para automação e DevOps. O que mais gosto hoje é o fluxo completo de um projeto, da primeira edição de arquivo até a entrega para quem vai usar.",
+        "Hackathons, projetos e desafios de programação me levaram para automação, DevOps e Aprendizado de Máquina. O que mais gosto hoje é o fluxo completo de um projeto, da primeira edição de arquivo até a entrega para quem vai usar.",
     },
   ],
   experience: {
     company: "Princesa dos Campos",
     context: {
-      en: "A road transport company with more than 1,000 employees, serving southern and southeastern Paraná.",
+      en: "A road transport company with more than 1,000 employees, serving southern and southeastern regions in Brazil.",
       "pt-br":
-        "Empresa de transporte rodoviário com mais de 1.000 funcionários, atendendo o sul e o sudeste do Paraná.",
+        "Empresa de transporte rodoviário com mais de 1.000 funcionários, atendendo o sul e o sudeste do Brasil.",
     },
     title: {
       en: "Systems Analyst (mid-level), automation and web systems",
@@ -147,9 +146,9 @@ export const about: AboutEntry = {
           "Projetei o template padronizado de Django sobre o qual todas as aplicações internas são construídas.",
       },
       {
-        en: "Built the company's central SSO on my own. Ten applications sign in through it, with three more planned, and other teams integrate using the documentation I wrote.",
+        en: "Built the company's central SSO on my own. Several applications sign in through it, and other teams integrate using the documentation I wrote.",
         "pt-br":
-          "Construí sozinho o SSO central da empresa. Dez aplicações fazem login por ele, com mais três planejadas, e outros times se integram usando a documentação que escrevi.",
+          "Construí sozinho o SSO central da empresa. Várias aplicações fazem login por ele, e outros times se integram usando a documentação que escrevi.",
       },
       {
         en: "Built an internal audit platform used daily by a 10-person team. The department's average SLA compliance time improved by about 30%.",
@@ -386,7 +385,7 @@ export const about: AboutEntry = {
       body: {
         en: "I've studied classical piano on and off since I was 6, and today I also study music production, mostly jazz. It never made me a fast typist.",
         "pt-br":
-          "Estudo piano clássico, com pausas, desde os 6 anos, e hoje também estudo produção musical, principalmente jazz. Isso nunca me fez digitar rápido.",
+          "Estudo piano clássico regularmente desde os 6 anos, e hoje também estudo produção musical, principalmente jazz. Isso nunca me fez digitar rápido.",
       },
     },
   ],
