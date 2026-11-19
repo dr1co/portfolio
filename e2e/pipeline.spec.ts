@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { waitForHydration } from "./hydration";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/#pipeline");
+  await waitForHydration(page);
 });
 
 test("stages can be explored with the keyboard alone", async ({ page }) => {

@@ -24,11 +24,11 @@ function project(overrides: Partial<Project>): Project {
 
 describe("getFeaturedProjects", () => {
   it("returns nothing when there are no projects", () => {
-    expect(getFeaturedProjects([])).toEqual([]);
+    expect(getFeaturedProjects("en", [])).toEqual([]);
   });
 
   it("keeps featured projects that exist, skipping unfeatured and planned ones", () => {
-    const result = getFeaturedProjects([
+    const result = getFeaturedProjects("en", [
       project({ slug: "a" }),
       project({ slug: "b", featured: false }),
       project({ slug: "c", status: "planned" }),
@@ -41,11 +41,11 @@ describe("getFeaturedProjects", () => {
   it("shows at most four projects", () => {
     const many = ["a", "b", "c", "d", "e"].map((slug) => project({ slug }));
 
-    expect(getFeaturedProjects(many)).toHaveLength(4);
+    expect(getFeaturedProjects("en", many)).toHaveLength(4);
   });
 
   it("drops repository and demo links that are not publishable https URLs", () => {
-    const [result] = getFeaturedProjects([
+    const [result] = getFeaturedProjects("en", [
       project({ repositoryUrl: "TODO", demoUrl: "https://demo.example.com" }),
     ]);
 
@@ -56,7 +56,7 @@ describe("getFeaturedProjects", () => {
 
 describe("getProjectDirectory", () => {
   const slugsByGroup = (list: Project[]) =>
-    getProjectDirectory(list).map(({ group, projects }) => [
+    getProjectDirectory("en", list).map(({ group, projects }) => [
       group.title,
       projects.map((p) => p.slug),
     ]);
@@ -68,8 +68,8 @@ describe("getProjectDirectory", () => {
         project({ slug: "template", group: "devops" }),
       ]),
     ).toEqual([
-      ["DevOps & Delivery", ["template"]],
-      ["Machine Learning", ["thesis"]],
+      ["DevOps and Delivery", ["template"]],
+      ["Machine Learning and AI", ["thesis"]],
     ]);
   });
 
@@ -79,7 +79,7 @@ describe("getProjectDirectory", () => {
         project({ slug: "live" }),
         project({ slug: "idea", status: "planned", group: "ml" }),
       ]),
-    ).toEqual([["DevOps & Delivery", ["live"]]]);
+    ).toEqual([["DevOps and Delivery", ["live"]]]);
   });
 
   it("sorts each group by featured, then status, then title", () => {
@@ -95,7 +95,7 @@ describe("getProjectDirectory", () => {
           featured: false,
         }),
       ]),
-    ).toEqual([["DevOps & Delivery", ["c", "a", "b", "d"]]]);
+    ).toEqual([["DevOps and Delivery", ["c", "a", "b", "d"]]]);
   });
 
   it("drops links that are not publishable https URLs", () => {
@@ -103,7 +103,7 @@ describe("getProjectDirectory", () => {
       {
         projects: [result],
       },
-    ] = getProjectDirectory([
+    ] = getProjectDirectory("en", [
       project({
         repositoryUrl: "http://insecure.example.com",
         demoUrl: "https://demo.example.com",
@@ -127,9 +127,9 @@ describe("case-study lookup", () => {
   });
 
   it("finds a project by slug only when it has a published case study", () => {
-    expect(getProject("with-story", list)?.slug).toBe("with-story");
-    expect(getProject("card-only", list)).toBeUndefined();
-    expect(getProject("draft", list)).toBeUndefined();
-    expect(getProject("missing", list)).toBeUndefined();
+    expect(getProject("with-story", "en", list)?.slug).toBe("with-story");
+    expect(getProject("card-only", "en", list)).toBeUndefined();
+    expect(getProject("draft", "en", list)).toBeUndefined();
+    expect(getProject("missing", "en", list)).toBeUndefined();
   });
 });

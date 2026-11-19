@@ -23,6 +23,7 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 | `/projects/[slug]` case studies                     | Done; thesis and Django template case studies drafted from their repos, awaiting review          |
 | CI/CD: checks, Docker image on GHCR, Vercel deploys | Done; see [docs/operations.md](docs/operations.md)                                               |
 | `/lab` and the Pipeline Explorer                    | Done; copy drafted from `ci.yml`, awaiting review                                                |
+| Brazilian Portuguese (`/pt-br`), hreflang, sitemap  | Done; translations reviewed                                                                      |
 | `/about`                                            | Not started                                                                                      |
 
 ## Tech stack
@@ -76,19 +77,21 @@ npx playwright install chromium
 
 ```text
 src/
-  app/                routes (/, /projects, /projects/[slug], /lab, /lab/pipeline), root layout, OG images, global styles and tokens
+  app/                global styles and tokens, the global 404, sitemap.xml
+    [lang]/           root layout and every route (/, /projects, /projects/[slug], /lab, /lab/pipeline), OG images, favicon
+  i18n/               locales, path helpers, `localize`, UI messages, the client locale context
   components/         UI grouped by domain: layout, navigation, theme, home, projects, pipeline, lab, terminal, mdx, ui
   content/            typed content: projects, technologies, skills, pipeline stages, Lab demos, the model of ci.yml
     case-studies/     one MDX file per case study
   lib/                site config and small pure helpers (links, headings, OG layout, pipeline run model, hooks)
   test/               shared test helpers (e.g. stubMatchMedia)
   mdx-components.tsx  Markdown element → component mapping for case studies
-  proxy.ts            sends unknown case-study slugs to a real 404
+  proxy.ts            maps public URLs to app/[lang] routes; unknown case-study slugs get a real 404
 e2e/                  Playwright specs
 docs/                 specs, feature plans and the pre-publish checklist
 ```
 
-Content (text, links, projects, case studies) is kept separate from components, so updating the site usually means editing `src/content/` or `src/lib/site-config.ts` only.
+Content (text, links, projects, case studies) is kept separate from components, so updating the site usually means editing `src/content/` or `src/lib/site-config.ts` only. Interface text (buttons, labels, headings) lives in `src/i18n/messages/`. See [Routing and languages](#routing-and-languages).
 
 ## Design system
 
@@ -108,20 +111,22 @@ Content (text, links, projects, case studies) is kept separate from components, 
 
 Typed content lives in `src/content/`:
 
-| File                                           | Holds                                                                                                         | Notes                                                                                                                                                                                                                                                                                                                                                            |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [projects.ts](src/content/projects.ts)         | `projects` list and the ordered `projectGroups` (DevOps & Delivery → Backend & Automation → Machine Learning) | Every project has one `group`; `categories` are tags. Planned projects are never published, and non-`https` links are stripped. Helpers: `getFeaturedProjects()` (home, max 4), `getProjectDirectory()` (groups in order, empty ones dropped, sorted featured → status → title), `getCaseStudySlugs()` and `getProject(slug)` (only projects with a case study). |
-| [skills.ts](src/content/skills.ts)             | Skill groups                                                                                                  | Set `learning: true` on anything not yet used in a substantive project.                                                                                                                                                                                                                                                                                          |
-| [technologies.ts](src/content/technologies.ts) | Canonical technology id → display name map                                                                    | Projects (`technologies`) and skills (`tech`) reference ids, so names are spelled the same everywhere. A typo fails `typecheck`. Add new technologies here first.                                                                                                                                                                                                |
-| [pipeline.ts](src/content/pipeline.ts)         | The five illustrative pipeline stages (command + workflow excerpt)                                            | Icons are string keys, because the data is passed to a client component.                                                                                                                                                                                                                                                                                         |
-| [lab.ts](src/content/lab.ts)                   | Lab intro and demo cards                                                                                      | Each demo has an objective, concepts, a `mode` (`simulated` / `live`), optional prerequisites and source link, and its own `/lab/<slug>` route.                                                                                                                                                                                                                  |
-| [lab-pipeline.ts](src/content/lab-pipeline.ts) | The Pipeline Explorer's model of `.github/workflows/ci.yml`: trigger, jobs, steps, excerpts, scenarios        | Kept in sync with `ci.yml` by a drift test (see [Lab](#lab)). Only the prose (`purpose`, `explanation`, scenario summaries, page intro) is free to edit.                                                                                                                                                                                                         |
+| File                                           | Holds                                                                                                                    | Notes                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [projects.ts](src/content/projects.ts)         | `projects` list and the ordered `projectGroups` (DevOps and Delivery → Backend and Automation → Machine Learning and AI) | Every project has one `group`; `categories` are tags. Planned projects are never published, and non-`https` links are stripped. Helpers take a locale: `getFeaturedProjects(locale)` (home, max 4), `getProjectDirectory(locale)` (groups in order, empty ones dropped, sorted featured → status → title), `getProject(slug, locale)` (only projects with a case study). `getCaseStudySlugs()` is the same in every language. |
+| [skills.ts](src/content/skills.ts)             | Skill groups                                                                                                             | Each skill has a `since` year (shown as experience) and an optional `note`. Technologies not yet used in a substantive project go in the `learning: true` group, without `since`; a test enforces both rules.                                                                                                                                                                                                                 |
+| [technologies.ts](src/content/technologies.ts) | Canonical technology id → display name map                                                                               | Projects (`technologies`) and skills (`tech`) reference ids, so names are spelled the same everywhere. A typo fails `typecheck`. Add new technologies here first, then map the logo in [src/lib/tech-icons.ts](src/lib/tech-icons.ts) if Simple Icons has one.                                                                                                                                                                |
+| [pipeline.ts](src/content/pipeline.ts)         | The five illustrative pipeline stages (command + workflow excerpt)                                                       | Icons are string keys, because the data is passed to a client component.                                                                                                                                                                                                                                                                                                                                                      |
+| [lab.ts](src/content/lab.ts)                   | Lab intro and demo cards                                                                                                 | Each demo has an objective, concepts, a `mode` (`simulated` / `live`), optional prerequisites and source link, and its own `/lab/<slug>` route.                                                                                                                                                                                                                                                                               |
+| [lab-pipeline.ts](src/content/lab-pipeline.ts) | The Pipeline Explorer's model of `.github/workflows/ci.yml`: trigger, jobs, steps, excerpts, scenarios                   | Kept in sync with `ci.yml` by a drift test (see [Lab](#lab)). Only the prose (`purpose`, `explanation`, scenario summaries, page intro) is free to edit.                                                                                                                                                                                                                                                                      |
+
+Texts that change with the language are `Localized` (`{ en: "…" }`). Each file exports a `getX(locale)` accessor (`getSiteConfig`, `getProjects`, `getSkillGroups`, `getPipelineStages`, `getLabDemos`, `getLabPipeline`) that returns the data with plain strings, so components never see `Localized` values. Ids, URLs, commands, workflow excerpts and step names are not translated.
 
 Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(content)" src`.
 
 ## Layout and shared components
 
-- **Root layout** ([src/app/layout.tsx](src/app/layout.tsx)), in render order: skip link, sticky header, `<main id="main">`, footer. The theme and Motion (`reducedMotion="user"`) providers wrap everything.
+- **Root layout** ([src/app/[lang]/layout.tsx](src/app/[lang]/layout.tsx)) sets `<html lang>` from the `lang` root param and renders `SiteDocument` ([src/components/layout/site-document.tsx](src/components/layout/site-document.tsx)), in render order: skip link, sticky header, `<main id="main">`, footer. The theme and Motion (`reducedMotion="user"`) providers wrap everything. `SiteDocument` also owns the fonts and the `globals.css` import, because the global 404 page renders it too.
 - **Header:** wordmark, routes with `enabled: true`, a "Contact" shortcut (only when a contact link exists), a GitHub icon (only when configured), the theme toggle, and a mobile menu (only when there's more than one item to show). `NavLink` marks its own page with `aria-current="page"` and its section's child pages (e.g. Projects on a case study) with `aria-current="true"`, both shown by underline and strong text.
 - **Footer:** the copyright year comes from a `'use cache'` component, because Cache Components forbids reading `new Date()` while rendering. Also stack attribution, an optional source link, the build version, and contact icons. The version ("Version abc1234", linked to the commit) comes from `COMMIT_SHA`, which CI sets at build time. [`getBuildInfo`](src/lib/build-info.ts) ignores missing or non-hex values, so local builds show no version.
 - **Links:** always use `AppLink` ([src/components/ui/app-link.tsx](src/components/ui/app-link.tsx)). Internal targets go through `next/link`. External ones get `target="_blank"`, `rel="noopener noreferrer"`, an arrow icon and screen-reader text. `ButtonLink` adds the primary and secondary button styles on top.
@@ -132,20 +137,21 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
   - `Reveal`: fade-in on scroll. A `<noscript>` style keeps it visible without JavaScript.
   - `iconButtonClass`: shared style for 40×40 icon controls.
   - `contactIcons`: local GitHub, LinkedIn and Mail SVGs.
+  - `Tooltip`: a focusable graphic with a tooltip. CSS fades it in on hover, focus or tap (150 ms, instant with reduced motion), so it works without JavaScript; a small client handler lets Escape dismiss it (WCAG 1.4.13). It opens below the graphic and spans the nearest positioned ancestor, so it never overflows the viewport.
 - **Terminal panel** ([src/components/terminal/terminal-panel.tsx](src/components/terminal/terminal-panel.tsx)): presentation only. Lines starting with `$ ` render as prompts, and an optional badge labels the output as Example or Simulated. `copyable` adds a `CopyButton` that copies the commands without their `$` and announces "Copied" through a live region.
 - **Home sections** (`src/components/home/`):
   - `Hero`: the `h1` headline, intro, tags, adaptive buttons, and a terminal panel labelled Example. It takes `config` and `featuredCount` props so tests can inject them.
   - `FeaturedProjects`: renders nothing while no project qualifies. While `/projects` is enabled, it ends with a "View all projects" link and card titles open their case studies.
   - `ProjectCard` (`src/components/projects/`): status badge (text + icon), up to 5 technologies, and Source / Live demo / Case study links, each rendered only when it exists. Case study also requires the `/projects` route to be enabled.
   - `PipelineSection`: "Simulated" disclaimer, the interactive `PipelinePreview`, a `<noscript>` list of all stages, and (while `/lab` is enabled) a link to the Pipeline Explorer.
-  - `SkillsSection`: one card per group. The learning group gets a dashed border and a "Currently learning" badge; individual `learning` items in other groups get a small "learning" badge.
+  - `SkillsSection`: one card per group, each technology a logo tile from [Simple Icons](https://simpleicons.org) (via [`techIcon`](src/lib/tech-icons.ts)). Tiles take the brand colour in each theme where it reaches 3:1 on the tile, and the theme's foreground colour where it doesn't. A technology without a logo shows its name as text. Hovering, focusing or tapping a tile shows a `Tooltip` with the experience (computed from `since` and the cached [`currentYear`](src/lib/current-year.ts)) and an optional `note`. The learning group gets dashed borders and a "Currently learning" badge, and its tooltips say "Currently learning" instead of years. The section is an async server component, and the testable markup lives in `SkillGrid`, which takes `year` as a prop.
   - `ContactSection`: one large row per configured link (icon, label, readable address). Renders nothing until a link is set.
-  - Page order ([src/app/page.tsx](src/app/page.tsx)): Hero → Featured projects → Pipeline → Skills → Contact.
+  - Page order ([src/app/[lang]/page.tsx](src/app/[lang]/page.tsx)): Hero → Featured projects → Pipeline → Skills → Contact.
 - **Pipeline preview** ([src/components/pipeline/pipeline-preview.tsx](src/components/pipeline/pipeline-preview.tsx)): implements the WAI-ARIA tabs pattern through the generic [`useRovingTabs`](src/lib/use-roving-tabs.ts) hook. Arrows on both axes move and wrap; Home/End jump; only the selected tab is in the Tab order. Desktop shows five connected nodes in a row; mobile stacks them. A Motion `layoutId` slides the active indicator, and the details panel fades in. Each stage shows its purpose, an explanation, a copyable command and a collapsible workflow excerpt.
 
 ## Projects directory
 
-- **Route:** [src/app/projects/page.tsx](src/app/projects/page.tsx) renders an h1, the `directoryIntro` from `projects.ts`, and `ProjectDirectory`.
+- **Route:** [src/app/[lang]/projects/page.tsx](src/app/[lang]/projects/page.tsx) renders an h1, the `directoryIntro` from `projects.ts`, and `ProjectDirectory`.
 - **`ProjectDirectory`** ([src/components/projects/project-directory.tsx](src/components/projects/project-directory.tsx)): one labelled `<section>` per group (h2 + two-column card grid). The first group renders immediately; the rest fade in with `Reveal`.
 - **Card links:** when the `/projects` route is enabled and a project has a `caseStudy`, both the card title and a "Case study" link point to `/projects/<slug>`. Case-study pages are addressed by **slug**; `caseStudy` only names the MDX file.
 - **`isRouteEnabled(routes, href)`** in `src/lib/links.ts` is the single check for "is this page live", used by the cards and featured section.
@@ -159,11 +165,11 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
 
 ## Case-study pages
 
-- **Route:** [src/app/projects/[slug]/page.tsx](src/app/projects/[slug]/page.tsx). `generateStaticParams` returns `getCaseStudySlugs()`, so every case study is prerendered at build. The page loads the MDX body with a dynamic import and reads the same file to build the table of contents (`getHeadings` in [src/lib/headings.ts](src/lib/headings.ts), which uses `github-slugger` so ids match `rehype-slug`).
+- **Route:** [src/app/[lang]/projects/[slug]/page.tsx](src/app/[lang]/projects/[slug]/page.tsx). `generateStaticParams` returns `getCaseStudySlugs()`, so every case study is prerendered at build. The page loads the MDX body with a dynamic import and reads the same file to build the table of contents (`getHeadings` in [src/lib/headings.ts](src/lib/headings.ts), which uses `github-slugger` so ids match `rehype-slug`).
 - **Instant navigation:** the page itself renders only the static shell (the back link). Everything that reads `params` lives in a `CaseStudy` component inside `<Suspense>`, as the Next 16 instant-navigation validation requires. Known slugs are still fully prerendered, so the fallback is practically never seen.
 - **Layout:** "All projects" back link → `CaseStudyHeader` (group, title, description or summary, status, technologies, Source/Live demo, "Updated" date) → article (max 70ch) with a table of contents: a sticky sidebar on `lg+`, a collapsible "On this page" panel on smaller screens.
 - **Metadata:** title, description and canonical URL per project, plus a generated OG image (`opengraph-image.tsx`) showing the project title and group. Both OG images share [src/lib/og-image.tsx](src/lib/og-image.tsx).
-- **Unknown slugs → real 404:** with Cache Components the page shell streams before `notFound()` runs, which would commit a `200`. [src/proxy.ts](src/proxy.ts) (matcher `/projects/:slug`) rewrites any slug without a published case study to a path no route serves (`UNROUTED_PATH`) before rendering. Both `next start` and Vercel answer that with the not-found page and a `404`. Don't rewrite to `/404` instead: Vercel serves that static file with a `200` when it's a rewrite target, because its `/404 → 404` status route runs before middleware. The `@smoke` check against each preview catches a regression. Projects that only have a card (no `caseStudy`) also get a 404 at their URL.
+- **Unknown slugs → real 404:** with Cache Components the page shell streams before `notFound()` runs, which would commit a `200`. [src/proxy.ts](src/proxy.ts) rewrites any slug without a published case study to a path no route serves (`UNROUTED_PATH`, `/en/__unrouted`) before rendering. Both `next start` and Vercel answer that with the not-found page and a `404`. Don't rewrite to `/404` instead: Vercel serves that static file with a `200` when it's a rewrite target, because its `/404 → 404` status route runs before middleware. The `@smoke` check against each preview catches a regression. Projects that only have a card (no `caseStudy`) also get a 404 at their URL.
 - **Adding a case study:** create `src/content/case-studies/<name>.mdx`, set `caseStudy: "<name>"` on the project, and run `npm test`. The registry test fails if a file is missing, orphaned, or if no case study exists at all (Cache Components needs at least one static param).
 
 ## Writing case studies (MDX)
@@ -178,13 +184,15 @@ Components available without importing:
 | `Figure`  | Image with required `alt` and `caption` (files in `public/case-studies/<slug>/`)                                                                                         | `<Figure src="/case-studies/x/flow.png" alt="…" caption="…" width={1200} height={600} />`                                                                                |
 | `Diagram` | Boxes-and-arrows architecture diagram; nodes are box centres in viewBox units, edges are directed with optional labels. Generates a text description for screen readers. | `<Diagram title="Build flow" width={640} height={110} nodes={[{ id: "a", label: "Git push", x: 100, y: 70 }, …]} edges={[{ from: "a", to: "b", label: "triggers" }]} />` |
 
+**Languages:** each case study has one file per language: `<name>.mdx` (English) and `<name>.pt-br.mdx`. `caseStudyFile(name, locale)` in [src/content/projects.ts](src/content/projects.ts) picks the file, and `case-studies.test.ts` fails if a language is missing or a file has no project. Translate the prose, headings, `Diagram` titles and labels, and `Callout` text; keep code blocks, commands and paths as they are. Heading ids come from the translated text, so anchors differ per language. Diagram boxes are 150 units wide: keep labels to about 20 characters.
+
 Code-fence filenames (` ```yaml title="ci.yml" `) are **not** supported: Turbopack only accepts serializable Shiki options, so the panel shows the language instead.
 
 Wide content scrolls inside its own **`ScrollArea`** ([src/components/ui/scroll-area.tsx](src/components/ui/scroll-area.tsx)), a focusable, labelled region, so keyboard users can scroll it and the page itself never overflows. Tables (min width 36rem) and diagrams use it automatically; Shiki code blocks are already focusable.
 
 ## Lab
 
-`/lab` lists interactive demos as cards ([src/app/lab/page.tsx](src/app/lab/page.tsx), data in `src/content/lab.ts`). Every demo says whether it is simulated or live. The first demo is the **Pipeline Explorer** at `/lab/pipeline`.
+`/lab` lists interactive demos as cards ([src/app/[lang]/lab/page.tsx](src/app/[lang]/lab/page.tsx), data in `src/content/lab.ts`). Every demo says whether it is simulated or live. The first demo is the **Pipeline Explorer** at `/lab/pipeline`.
 
 ### Pipeline Explorer
 
@@ -214,15 +222,55 @@ The Explorer models **this site's real CI workflow** ([.github/workflows/ci.yml]
 
 **When the drift test fails** after a `ci.yml` change, update `src/content/lab-pipeline.ts` in the same change: jobs, `needs`, `events`, step names and excerpts. A new `if:` expression also needs an entry in the test's `CONDITIONS` table. If the model can't express it, simplify the job and mention it in `pipelineScope`.
 
-**Adding a demo:** add a `LabDemo` to `src/content/lab.ts` with `href: "/lab/<slug>"`, create the static route `src/app/lab/<slug>/page.tsx` with `alternates: canonicalFor("/lab/<slug>")`, and label it Simulated unless it's backed by a real service. `lab.test.ts` and the `@smoke` Lab test pick it up from `labDemos`.
+**Adding a demo:** add a `LabDemo` to `src/content/lab.ts` with `href: "/lab/<slug>"`, create the static route `src/app/[lang]/lab/<slug>/page.tsx` with `alternates: canonicalFor("/lab/<slug>")`, and label it Simulated unless it's backed by a real service. `lab.test.ts` and the `@smoke` Lab test pick it up from `labDemos`.
 
 ## SEO and metadata
 
 - Title template `%s · Adriano Matoba Lipski`; the description is the tagline.
 - `robots` is `noindex, nofollow` unless `NEXT_PUBLIC_ALLOW_INDEXING=true`. Set that on production only.
-- `metadataBase` and the canonical URL come from `NEXT_PUBLIC_SITE_URL`. See [.env.example](.env.example). Each page sets its own canonical with `canonicalFor(path)` ([src/lib/canonical.ts](src/lib/canonical.ts)). The root layout sets none, because Next merges metadata shallowly and a layout canonical would leak into every page that doesn't override it. The `@smoke` suite checks that each canonical points at its own page.
-- The Open Graph image ([src/app/opengraph-image.tsx](src/app/opengraph-image.tsx)) and favicon ([src/app/icon.tsx](src/app/icon.tsx)) are generated with `ImageResponse` at build time. Their hex values mirror the dark tokens, because CSS variables aren't available there.
-- [src/app/not-found.tsx](src/app/not-found.tsx) renders the 404 page.
+- `metadataBase`, the canonical URL and the `hreflang` alternates come from `NEXT_PUBLIC_SITE_URL`. See [.env.example](.env.example). Each page sets its own with `canonicalFor(path, locale)` ([src/lib/canonical.ts](src/lib/canonical.ts)): the canonical is the page in its own language (`/pt-br/lab` on the Portuguese page), and `languages` lists `en`, `pt-BR` and `x-default` (English). The root layout sets none, because Next merges metadata shallowly and layout alternates would leak into every page that doesn't override them. Without a site URL, neither is emitted. The `@smoke` suite checks that each canonical points at its own page and each `hreflang` at the right translation.
+- Open Graph: `og:locale` is `en_US` or `pt_BR`, with the other language as `og:locale:alternate`. Titles and descriptions follow the page's language.
+- [src/app/sitemap.ts](src/app/sitemap.ts) serves `/sitemap.xml`: every published page (enabled routes, case studies, Lab demos) in both languages, each with its `hreflang` alternates. The entries come from `sitemapEntries` in [src/lib/sitemap.ts](src/lib/sitemap.ts). URLs use `NEXT_PUBLIC_SITE_URL`, or `http://localhost:3000` until it's set.
+- The Open Graph images ([src/app/[lang]/opengraph-image.tsx](src/app/[lang]/opengraph-image.tsx), and one per case study) and the favicon ([src/app/[lang]/icon.tsx](src/app/[lang]/icon.tsx)) are generated with `ImageResponse` at build time, once per language. The OG images use `generateImageMetadata` so their `alt` text is translated too; that puts an id segment in their URL (`/pt-br/opengraph-image/default`). Their hex values mirror the dark tokens, because CSS variables aren't available there.
+- The 404 page body is `NotFoundView` ([src/components/layout/not-found-view.tsx](src/components/layout/not-found-view.tsx)). [src/app/global-not-found.tsx](src/app/global-not-found.tsx) shows it for URLs no route matches (Next's experimental `globalNotFound`, needed because the root layout sits under `[lang]`), and [src/app/[lang]/not-found.tsx](src/app/[lang]/not-found.tsx) for `notFound()` inside a route.
+
+## Routing and languages
+
+Every route lives under `src/app/[lang]`, and the root layout's `generateStaticParams` prerenders each locale in [src/i18n/locales.ts](src/i18n/locales.ts): English (`en`, the default) and Brazilian Portuguese (`pt-br`). English pages have no URL prefix; Portuguese pages keep theirs and the English path segments (`/pt-br/projects`). [src/proxy.ts](src/proxy.ts) maps public URLs to the internal route:
+
+| Request                       | Proxy                                                  |
+| ----------------------------- | ------------------------------------------------------ |
+| `/projects`                   | rewrite to `/en/projects`                              |
+| `/en/projects`                | `308` to `/projects`, one public URL per page          |
+| `/en/opengraph-image/default` | untouched: Next generates these image URLs itself      |
+| `/pt-br/projects`             | served as is                                           |
+| `/projects/<unknown slug>`    | rewrite to `UNROUTED_PATH` → 404 (same under `/pt-br`) |
+
+There is no automatic language detection. The header's `LanguageSwitch` ("PT" / "EN") links to the same page in the other language; its href is rendered on the server, so it works without JavaScript. Its accessible name starts with the visible text ("PT — Ver em português", WCAG 2.5.3), and it carries `hreflang` and `lang`. `<html lang>` uses the BCP 47 tag from `languageTags` (`en`, `pt-BR`).
+
+Client code that compares paths (e.g. `NavLink`) must use `stripLocale`, because prerendered pages report their internal `/en/...` path to `usePathname`.
+
+How text gets its language:
+
+| Kind of text                                  | Where it lives                                                                                                                | How a component gets it                                         |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Interface text (labels, headings, sentences)  | [src/i18n/messages/en.ts](src/i18n/messages/en.ts); every locale has the same shape                                           | `getMessages(locale)`, or `useMessages()` in a client component |
+| Content (projects, skills, Lab prose, config) | `Localized` fields in `src/content/` and `site-config.ts`                                                                     | the file's `getX(locale)` accessor, which calls `localize`      |
+| Case-study bodies                             | `src/content/case-studies/<name>.mdx` and `<name>.pt-br.mdx`; MDX components get their labels from `getMdxComponents(locale)` | the case-study page passes `components` to the MDX body         |
+
+Every `Localized` field and every message needs a Portuguese version, or typecheck fails. [src/i18n/translations.test.ts](src/i18n/translations.test.ts) also fails when a Portuguese text is identical to the English one; names and terms that are meant to stay in English go in its `SAME_IN_BOTH` allowlist.
+
+Messages with a value in them (e.g. `version: (commit) => ...`) are functions, so each language can word the sentence its own way.
+
+The locale reaches components in one of three ways:
+
+- **Pages and layouts** call `getLocale()` from [src/i18n/server.ts](src/i18n/server.ts), which reads `lang()` from `next/root-params`.
+- **Server components, and components without a directive,** take a `locale` prop. Metadata image routes (`opengraph-image.tsx`) read `params.lang` instead, because root params aren't available there.
+- **Client components** call `useLocale()` or `useMessages()`. `SiteDocument` provides the locale through `LocaleProvider`.
+
+Unit tests render without a provider, which means English.
+
+`AppLink` keeps visitors in their language: pass internal paths without a locale (`/projects`), and it prefixes them with `localizePath`. The default locale stays unprefixed.
 
 ## Continuous integration
 
@@ -276,16 +324,19 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 - **Unit and component tests** sit next to the code they cover (`foo.ts` → `foo.test.ts`) and test behavior through the public interface.
 - **End-to-end tests** live in `e2e/`. Playwright runs `npm run build && npm start -p 3100`, with two projects: `desktop-chromium` and `mobile-chromium` (Pixel 7). Make sure nothing else is listening on port 3100, otherwise Playwright reuses that server.
 
-  | Spec               | Covers                                                                                                                                                                                                                                                                 |
-  | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `smoke.spec.ts`    | `@smoke`: `/` is English HTML with one `h1`, `/projects` and a case study answer 200, `/lab` and each demo answer 200 labelled Simulated, unknown slugs 404, canonicals point at their own page, robots matches the deployment, footer shows the expected commit       |
-  | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, pipeline → Lab link, **axe** in both themes                                                                                                    |
-  | `lab.spec.ts`      | Lab card and nav state, Explorer keyboard path (desktop tabs), scenario switch, mobile accordion position, Run playback frame by frame (`page.clock`), reduced motion, Next pauses, no-JS outcome table, back link, titles, no mobile overflow, **axe** in both themes |
-  | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown slugs, no mobile overflow and **axe** in both themes for every case study                                                        |
-  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                                                                                  |
-  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                                                                                                                                          |
-  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags, generated images, skip link                                                                                                                                                                                                    |
-  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                                                                                       |
+  | Spec               | Covers                                                                                                                                                                                                                                                                                                                                                                                                   |
+  | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `smoke.spec.ts`    | `@smoke`: `/` is English and `/pt-br` is `pt-BR` HTML with one `h1`, `/projects` and a case study answer 200, `/lab` and each demo answer 200 labelled Simulated, unknown slugs 404 in both languages, canonicals point at their own page, `hreflang` points at the right translation, `sitemap.xml` lists every page in both languages, robots matches the deployment, footer shows the expected commit |
+  | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, pipeline → Lab link, **axe** in both themes                                                                                                                                                                                                                                      |
+  | `lab.spec.ts`      | Lab card and nav state, Explorer keyboard path (desktop tabs), scenario switch, mobile accordion position, Run playback frame by frame (`page.clock`), reduced motion, Next pauses, no-JS outcome table, back link, titles, no mobile overflow, **axe** in both themes                                                                                                                                   |
+  | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown slugs, no mobile overflow and **axe** in both themes for every case study                                                                                                                                                                                          |
+  | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                                                                                                                                                                                                                    |
+  | `theme.spec.ts`    | follows the OS, persists across reloads, no wrong-theme flash                                                                                                                                                                                                                                                                                                                                            |
+  | `site.spec.ts`     | 404 page, `noindex`, title and OG tags (incl. `og:locale` and translated `alt` on `/pt-br`), generated images, skip link                                                                                                                                                                                                                                                                                 |
+  | `mobile.spec.ts`   | no horizontal overflow, stacked pipeline, mobile menu (open, Escape, link click)                                                                                                                                                                                                                                                                                                                         |
+  | `i18n.spec.ts`     | `<html lang>` per language, PT/EN switch round trip keeps the page, links stay in Portuguese, switch works without JavaScript, **axe** on every `/pt-br` page in both themes                                                                                                                                                                                                                             |
+
+  Tests that press keys on tabs or radios call `waitForHydration` from [e2e/hydration.ts](e2e/hydration.ts) first: keys pressed before hydration reach the server HTML and are lost.
 
   Some expectations depend on content (hero buttons exist only while projects and contact links are configured). If you remove content, update the specs with it.
 
@@ -329,10 +380,12 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 
 - On wide screens the case-study table of contents comes after the article in the Tab order (it mirrors the visual order); on smaller screens the collapsible "On this page" panel sits before the article.
 - Content (projects, skills, pipeline and Lab copy, the case studies) is not final. It's tracked with `TODO(content)` markers and [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
+- The Portuguese translations are drafts awaiting the owner's review (see the pre-publish checklist).
+- A Portuguese URL that matches no route (e.g. `/pt-br/nope`) gets the English 404 page: unmatched URLs render `global-not-found.tsx`, which sits outside `[lang]` and can't tell the language.
 - `/about` doesn't exist yet; its nav item stays hidden until the route is enabled in `site-config.ts`.
 - The projects directory has no filters (deferred until there are ≥ 6 published projects).
 - The Pipeline Explorer is a simplified, scripted model of `ci.yml`: no fork PRs, cancelled runs, real durations or live data from GitHub Actions. Container Explorer and an observability demo are future phases.
 - The scenario and selection in the Explorer aren't in the URL, so a particular view can't be linked to.
 - The Docker image is a verified, published artifact, but Vercel serves the site. The image is about 300 MB: deleting npm in the runtime stage hides it from scans but doesn't shrink the base layer.
 - No SBOM, provenance attestation or image signing yet. The linter, Trivy and Vercel CLI pins aren't covered by Dependabot (see [docs/operations.md](docs/operations.md)).
-- The production domain isn't chosen yet, so canonical URLs fall back until `NEXT_PUBLIC_SITE_URL` is set, and indexing stays off until launch.
+- The production domain isn't chosen yet, so canonical and `hreflang` links are omitted, and `sitemap.xml` uses `http://localhost:3000`, until `NEXT_PUBLIC_SITE_URL` is set. Indexing stays off until launch. There is no `robots.txt` yet, so search engines find the sitemap only if it's submitted (e.g. in Search Console).

@@ -383,6 +383,7 @@ Typing animation may be used in a small decorative label, but not for essential 
 - Icons should supplement text, not replace it for critical controls.
 - Avoid mixing emoji, multiple icon packs, and unrelated illustration styles throughout the interface.
 - Use official technology logos selectively in project metadata.
+- Exception: the home Skills section shows technology logos from Simple Icons, grouped by domain (never as one undifferentiated wall). They use each brand's colour where it reaches 3:1 on the tile and fall back to the foreground token otherwise. Lucide stays the family for interface icons.
 - Prefer real project diagrams and screenshots over generic stock imagery.
 - Add meaningful alternative text to informative images.
 - Keep decorative assets out of the accessibility tree when appropriate.

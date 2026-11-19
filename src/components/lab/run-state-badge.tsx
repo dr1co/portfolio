@@ -8,32 +8,35 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { RunState } from "@/content/lab-pipeline";
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 import { cn } from "@/lib/cn";
 
 const STATES: Record<
   RunState,
   {
-    label: string;
     icon: LucideIcon;
     tone: "neutral" | "info" | "accent" | "error";
   }
 > = {
-  pending: { label: "Pending", icon: Clock, tone: "neutral" },
-  running: { label: "Running", icon: LoaderCircle, tone: "info" },
-  passed: { label: "Passed", icon: CircleCheck, tone: "accent" },
-  failed: { label: "Failed", icon: CircleX, tone: "error" },
-  skipped: { label: "Skipped", icon: CircleSlash, tone: "neutral" },
+  pending: { icon: Clock, tone: "neutral" },
+  running: { icon: LoaderCircle, tone: "info" },
+  passed: { icon: CircleCheck, tone: "accent" },
+  failed: { icon: CircleX, tone: "error" },
+  skipped: { icon: CircleSlash, tone: "neutral" },
 };
 
 /** Pipeline run state as icon + text. The running icon spins only when motion is allowed. */
 export function RunStateBadge({
   state,
+  locale,
   className,
 }: {
   state: RunState;
+  locale: Locale;
   className?: string;
 }) {
-  const { label, icon, tone } = STATES[state];
+  const { icon, tone } = STATES[state];
   return (
     <Badge
       icon={icon}
@@ -43,7 +46,7 @@ export function RunStateBadge({
         className,
       )}
     >
-      {label}
+      {getMessages(locale).run.states[state]}
     </Badge>
   );
 }

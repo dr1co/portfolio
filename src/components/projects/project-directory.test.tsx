@@ -1,7 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { projectGroups, type Project } from "@/content/projects";
+import { getProjectGroups, type Project } from "@/content/projects";
 import { ProjectDirectory } from "./project-directory";
+
+const projectGroups = getProjectGroups("en");
 
 const project = (slug: string, title: string): Project => ({
   slug,
@@ -18,6 +20,7 @@ describe("ProjectDirectory", () => {
   it("renders an h2 per group with that group's project cards", () => {
     render(
       <ProjectDirectory
+        locale="en"
         directory={[
           {
             group: projectGroups[0],
@@ -33,7 +36,7 @@ describe("ProjectDirectory", () => {
       groups.map(
         (g) => within(g).getByRole("heading", { level: 2 }).textContent,
       ),
-    ).toEqual(["DevOps & Delivery", "Machine Learning"]);
+    ).toEqual(["DevOps and Delivery", "Machine Learning and AI"]);
     expect(within(groups[0]).getAllByRole("article")).toHaveLength(2);
     expect(
       within(groups[1]).getByRole("heading", { level: 3 }),

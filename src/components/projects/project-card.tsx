@@ -2,6 +2,8 @@ import { AppLink } from "@/components/ui/app-link";
 import { Badge } from "@/components/ui/badge";
 import type { Project } from "@/content/projects";
 import { techName } from "@/content/technologies";
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 import { StatusBadge } from "./status-badge";
 
 const MAX_TECHNOLOGIES = 5;
@@ -11,15 +13,18 @@ const linkClass =
 /** Project summary card. Every link is optional and only rendered when it exists. */
 export function ProjectCard({
   project,
+  locale,
   showCaseStudy = false,
 }: {
   project: Project;
+  locale: Locale;
   showCaseStudy?: boolean;
 }) {
   const caseStudyHref =
     showCaseStudy && project.caseStudy
       ? `/projects/${project.slug}`
       : undefined;
+  const t = getMessages(locale).projects;
 
   return (
     <article className="flex h-full flex-col rounded-lg border border-border bg-surface p-6 transition-colors hover:border-accent/50 hover:bg-surface-elevated">
@@ -36,10 +41,10 @@ export function ProjectCard({
             project.title
           )}
         </h3>
-        <StatusBadge status={project.status} />
+        <StatusBadge status={project.status} locale={locale} />
       </div>
       <p className="mt-2 text-muted">{project.summary}</p>
-      <ul aria-label="Technologies" className="mt-4 flex flex-wrap gap-2">
+      <ul aria-label={t.technologies} className="mt-4 flex flex-wrap gap-2">
         {project.technologies.slice(0, MAX_TECHNOLOGIES).map((tech) => (
           <li key={tech}>
             <Badge>{techName(tech)}</Badge>
@@ -49,17 +54,17 @@ export function ProjectCard({
       <div className="mt-auto flex flex-wrap gap-4 pt-6 empty:hidden">
         {caseStudyHref && (
           <AppLink href={caseStudyHref} className={linkClass}>
-            Case study
+            {t.caseStudy}
           </AppLink>
         )}
         {project.repositoryUrl && (
           <AppLink href={project.repositoryUrl} external className={linkClass}>
-            Source
+            {t.source}
           </AppLink>
         )}
         {project.demoUrl && (
           <AppLink href={project.demoUrl} external className={linkClass}>
-            Live demo
+            {t.liveDemo}
           </AppLink>
         )}
       </div>

@@ -11,7 +11,7 @@ describe("lab demos", () => {
   it.each(labDemos.map((demo) => [demo.slug, demo] as const))(
     "%s states what it teaches and links to its own Lab page",
     (slug, demo) => {
-      expect(demo.objective).not.toBe("");
+      expect(demo.objective.en).not.toBe("");
       expect(demo.concepts.length).toBeGreaterThan(0);
       expect(demo.href).toBe(`/lab/${slug}`);
     },

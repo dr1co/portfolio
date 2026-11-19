@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { ciJobs, pipelineScenarios } from "@/content/lab-pipeline";
+import { getLabPipeline } from "@/content/lab-pipeline";
 import {
   describeFrame,
   resolveRun,
@@ -8,6 +8,9 @@ import {
   summarizeRun,
 } from "@/lib/pipeline-run";
 import { TICK_MS } from "@/lib/use-pipeline-playback";
+import { waitForHydration } from "./hydration";
+
+const { jobs: ciJobs, scenarios: pipelineScenarios } = getLabPipeline("en");
 
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
@@ -60,7 +63,7 @@ test.describe("pipeline explorer page", () => {
 
     await expect(page.getByText("Simulated").first()).toBeVisible();
     await expect(
-      page.getByText("Nothing here triggers GitHub Actions"),
+      page.getByText("nothing here triggers anything"),
     ).toBeVisible();
   });
 
@@ -69,6 +72,7 @@ test.describe("pipeline explorer page", () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === "mobile-chromium", "tabs are desktop");
     await page.goto(path);
+    await waitForHydration(page);
     const panel = page.getByRole("tabpanel");
 
     await page.getByRole("radio", { name: "Push to main" }).focus();
@@ -177,7 +181,7 @@ test.describe("pipeline explorer page", () => {
 
 test.describe("pipeline explorer playback", () => {
   const path = "/lab/pipeline";
-  const outcome = resolveRun(ciJobs, pipelineScenarios[0]);
+  const outcome = resolveRun(ciJobs, pipelineScenarios[0], "en");
   const frames = runFrames(ciJobs, outcome);
 
   test("Run plays the scenario frame by frame and announces each one", async ({
@@ -188,14 +192,16 @@ test.describe("pipeline explorer playback", () => {
     const status = page.getByRole("status");
 
     await page.getByRole("button", { name: "Run" }).click();
-    await expect(status).toHaveText(describeFrame(ciJobs, frames, 0));
+    await expect(status).toHaveText(describeFrame(ciJobs, frames, 0, "en"));
 
     for (let frame = 1; frame < frames.length - 1; frame++) {
       await page.clock.runFor(TICK_MS);
-      await expect(status).toHaveText(describeFrame(ciJobs, frames, frame));
+      await expect(status).toHaveText(
+        describeFrame(ciJobs, frames, frame, "en"),
+      );
     }
     await page.clock.runFor(TICK_MS);
-    await expect(status).toHaveText(summarizeRun(outcome));
+    await expect(status).toHaveText(summarizeRun(outcome, "en"));
     await expect(page.getByRole("button", { name: "Run" })).toBeVisible();
   });
 
@@ -207,7 +213,9 @@ test.describe("pipeline explorer playback", () => {
 
     await page.getByRole("button", { name: "Run" }).click();
 
-    await expect(page.getByRole("status")).toHaveText(summarizeRun(outcome));
+    await expect(page.getByRole("status")).toHaveText(
+      summarizeRun(outcome, "en"),
+    );
   });
 
   test("stepping to another job pauses the run", async ({ page }, testInfo) => {

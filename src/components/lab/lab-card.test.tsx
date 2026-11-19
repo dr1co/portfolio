@@ -16,7 +16,7 @@ const demo: LabDemo = {
 
 describe("LabCard", () => {
   it("links its title to the demo and labels it as simulated", () => {
-    render(<LabCard demo={demo} />);
+    render(<LabCard locale="en" demo={demo} />);
 
     expect(
       screen.getByRole("link", { name: "Pipeline Explorer" }),
@@ -25,7 +25,7 @@ describe("LabCard", () => {
   });
 
   it("shows the learning objective and the concepts covered", () => {
-    render(<LabCard demo={demo} />);
+    render(<LabCard locale="en" demo={demo} />);
 
     expect(
       screen.getByText("See how jobs gate each other."),
@@ -36,21 +36,23 @@ describe("LabCard", () => {
   });
 
   it("shows prerequisites only when there are some", () => {
-    const { rerender } = render(<LabCard demo={demo} />);
+    const { rerender } = render(<LabCard locale="en" demo={demo} />);
     expect(screen.queryByText(/Prerequisites/)).not.toBeInTheDocument();
 
-    rerender(<LabCard demo={{ ...demo, prerequisites: "Basic Git" }} />);
+    rerender(
+      <LabCard locale="en" demo={{ ...demo, prerequisites: "Basic Git" }} />,
+    );
     expect(screen.getByText(/Basic Git/)).toBeInTheDocument();
   });
 
   it("links to the source only when the URL is publishable", () => {
-    const { rerender } = render(<LabCard demo={demo} />);
+    const { rerender } = render(<LabCard locale="en" demo={demo} />);
     expect(screen.getByRole("link", { name: /Source/ })).toHaveAttribute(
       "href",
       demo.sourceUrl,
     );
 
-    rerender(<LabCard demo={{ ...demo, sourceUrl: "" }} />);
+    rerender(<LabCard locale="en" demo={{ ...demo, sourceUrl: "" }} />);
     expect(
       screen.queryByRole("link", { name: /Source/ }),
     ).not.toBeInTheDocument();

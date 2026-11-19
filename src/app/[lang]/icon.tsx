@@ -1,7 +1,12 @@
 import { ImageResponse } from "next/og";
+import { locales } from "@/i18n/locales";
 
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
+
+export function generateStaticParams() {
+  return locales.map((lang) => ({ lang }));
+}
 
 /** `>_` favicon. Hex values mirror the dark tokens in globals.css. */
 export default function Icon() {

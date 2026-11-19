@@ -20,18 +20,21 @@ describe("getMissingLinks", () => {
 
 describe("getContactLinks", () => {
   it("returns nothing when no link is configured", () => {
-    expect(getContactLinks({ github: "", linkedin: "", email: "" })).toEqual(
-      [],
-    );
+    expect(
+      getContactLinks({ github: "", linkedin: "", email: "" }, "en"),
+    ).toEqual([]);
   });
 
   it("keeps valid links in github, linkedin, email order with readable display text", () => {
     expect(
-      getContactLinks({
-        email: "me@example.com",
-        linkedin: "https://www.linkedin.com/in/someone/",
-        github: "https://github.com/someone",
-      }),
+      getContactLinks(
+        {
+          email: "me@example.com",
+          linkedin: "https://www.linkedin.com/in/someone/",
+          github: "https://github.com/someone",
+        },
+        "en",
+      ),
     ).toEqual([
       {
         kind: "github",
@@ -56,11 +59,14 @@ describe("getContactLinks", () => {
 
   it("drops malformed, non-https and placeholder values", () => {
     expect(
-      getContactLinks({
-        github: "http://github.com/someone",
-        linkedin: "not a url",
-        email: "nobody@",
-      }),
+      getContactLinks(
+        {
+          github: "http://github.com/someone",
+          linkedin: "not a url",
+          email: "nobody@",
+        },
+        "en",
+      ),
     ).toEqual([]);
   });
 });

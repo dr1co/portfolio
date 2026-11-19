@@ -6,8 +6,12 @@ const github = "https://github.com/someone";
 describe("resolveHeroCtas", () => {
   it("points the primary action at featured projects when there are any", () => {
     expect(
-      resolveHeroCtas({ featuredCount: 2, githubUrl: github, hasContact: true })
-        .primary,
+      resolveHeroCtas({
+        featuredCount: 2,
+        githubUrl: github,
+        hasContact: true,
+        locale: "en",
+      }).primary,
     ).toEqual({
       label: "Explore Projects",
       href: "#projects",
@@ -20,6 +24,7 @@ describe("resolveHeroCtas", () => {
         featuredCount: 0,
         githubUrl: github,
         hasContact: false,
+        locale: "en",
       }).primary,
     ).toEqual({
       label: "Open GitHub",
@@ -30,8 +35,12 @@ describe("resolveHeroCtas", () => {
 
   it("falls back to the pipeline when neither projects nor GitHub exist", () => {
     expect(
-      resolveHeroCtas({ featuredCount: 0, githubUrl: "", hasContact: false })
-        .primary,
+      resolveHeroCtas({
+        featuredCount: 0,
+        githubUrl: "",
+        hasContact: false,
+        locale: "en",
+      }).primary,
     ).toEqual({
       label: "See the pipeline",
       href: "#pipeline",
@@ -39,7 +48,7 @@ describe("resolveHeroCtas", () => {
   });
 
   it("offers contact as the secondary action only when a contact link exists", () => {
-    const base = { featuredCount: 0, githubUrl: "" };
+    const base = { featuredCount: 0, githubUrl: "", locale: "en" as const };
     expect(resolveHeroCtas({ ...base, hasContact: true }).secondary).toEqual({
       label: "Get in touch",
       href: "#contact",

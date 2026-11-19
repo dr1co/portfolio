@@ -109,7 +109,7 @@ fix_ownership() {
 trap fix_ownership EXIT
 ```
 
-Most of the real data in our projects lived in existing company systems, not in the app's own database. `BaseDBConnector` is the single way to query them: a subclass builds the connection string for its database, and the base class handles a lazily created, pooled SQLAlchemy engine and turns rows into dictionaries. Queries always take bind parameters, which is the template's protection against SQL injection:
+Most of the real data in our projects lived in existing company systems, not in the app's own database. `BaseDBConnector` is the standardized way to query them: a subclass builds the connection string for its database, and the base class handles a pooled SQLAlchemy engine and turns rows into dictionaries for better treatment straight away. Queries always take bind parameters, which is the template's protection against SQL injection:
 
 ```python
 class ErpConnector(BaseDBConnector):
@@ -128,15 +128,15 @@ employee = ErpConnector(**credentials).fetchone_read_query(
 
 ## Technical decisions
 
-**A Docker image instead of a cookiecutter or `startproject --template`.** A static template can only copy files. Generating a project here also means running real setup steps: creating the secret key, applying migrations, running `tailwind init`, downloading Tailwind's binary and building the CSS. Packaging the generator as an image runs those steps with the same toolchain on every machine, and developers only need Docker. Publishing to GHCR from CI means `docker pull` always gets the latest conventions.
+**A Docker image instead of a cookiecutter or `startproject --template`**: A static template can only copy files. Generating a project here also means running real setup steps: creating the secret key, applying migrations, running `tailwind init`, downloading Tailwind's binary and building the CSS. Packaging the generator as an image runs those steps with the same toolchain on every machine, and developers only need Docker. Publishing to GHCR from CI means `docker pull` always gets the latest conventions.
 
-**Tailwind without Node.js.** django-tailwind runs Tailwind v4's standalone binary, so neither the generator nor the generated project needs Node.js or npm. The design system is a single CSS file. It defines tokens for both themes, exposes them as Tailwind utilities (`bg-surface`, `text-fg`, `border-line`) and adds components such as `.btn`, `.card`, `.alert` and `.table`. To rebrand a project, you change the tokens in that one file instead of editing every template. I wrote the visual identity and checked every text and background pair against WCAG AA. Two colors are slightly darker than the identity document so they pass.
+**Tailwind without Node.js**: django-tailwind runs Tailwind v4's standalone binary, so neither the generator nor the generated project needs Node.js or npm. The design system is a single CSS file. It defines tokens for both themes, exposes them as Tailwind utilities (`bg-surface`, `text-fg`, `border-line`) and adds components such as `.btn`, `.card`, `.alert` and `.table`. To rebrand a project, you change the tokens in that one file instead of editing every template. I wrote the visual identity and checked every text and background pair against WCAG AA. Two colors are slightly darker than the identity document so they pass.
 
-**Sessions instead of `django.contrib.auth`.** Users in our projects were already registered in an external company system, so a Django `User` table would only duplicate them. Logging in writes a `user_data` dictionary to the session, the `@auth_required` decorator protects views, and a context processor exposes the user to every template as `current_user`. It isn't called `user` so it doesn't collide with Django's own variable.
+**Sessions instead of `django.contrib.auth`**: Users in our projects were already registered in an external company system, so a Django `User` table would only duplicate them. Logging in writes a `user_data` dictionary to the session, the `@auth_required` decorator protects views, and a context processor exposes the user to every template as `current_user`. It isn't called `user` so it doesn't collide with Django's own variable.
 
-**SQLite and a database cache.** The projects were internal tools with few concurrent users, and their business data lived in external databases. The local database only holds sessions, the cache and a few app tables. SQLite plus Django's `DatabaseCache` means no Postgres or Redis container to run and maintain: a deployment is just `web` and `nginx`.
+**SQLite and a database cache**: The projects were internal tools with few concurrent users, and their business data lived in external databases. The local database only holds sessions, the cache and a few app tables . SQLite plus Django's `DatabaseCache` means no Postgres or Redis container to run and maintain: a deployment is just `web` and `nginx`.
 
-**Conventions written into every project.** Each generated project ships an `AGENTS.md` and opens every structural file with a long docstring that says what the file does, why it exists, and gives numbered examples. The `AGENTS.md` lists the "still a template" markers to remove, naming rules for views and routes, the testing workflow, and a checklist before production. It serves three readers: AI coding agents, which follow the house rules instead of improvising; newer developers, who learn where code goes; and the team, because projects drift apart after generation unless the conventions are written down where the code is.
+**Conventions written into every project**: Each generated project ships an `AGENTS.md` and opens every structural file with a long docstring that says what the file does, why it exists, and gives numbered examples. The `AGENTS.md` lists the "still a template" markers to remove, naming rules for views and routes, the testing workflow, and a checklist before production. It serves three readers: AI coding agents, which follow the house rules instead of improvising; newer developers, who learn where code goes; and the team, because projects drift apart after generation unless the conventions are written down where the code is.
 
 ## Testing and validation
 
@@ -166,7 +166,7 @@ Other checks built into the template:
 
 ## Limitations and future work
 
-- CI builds and publishes the image, but never runs it. Nothing automatically checks that a generated project boots, passes `manage.py check` and runs its tests.
+- CI builds and publishes the image, but never runs it, so nothing automatically checks that a generated project boots, passes `manage.py check` and runs its tests today.
 - Versions aren't pinned. The generator installs the latest Django, django-tailwind and SQLAlchemy, the image is only tagged `:latest`, and the base images float (`python:3-slim`). Two runs a month apart can produce different projects. `pip freeze` pins versions only after generation.
 - Containers run as root, and file ownership is fixed afterwards with `chown`. SQLite also limits write concurrency, so a project with heavy writes should move to another database.
 

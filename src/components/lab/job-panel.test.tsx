@@ -1,13 +1,14 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
-  ciJobs,
-  pipelineScenarios,
+  getLabPipeline,
   type CiJobId,
   type Scenario,
 } from "@/content/lab-pipeline";
 import { resolveRun } from "@/lib/pipeline-run";
 import { JobPanel } from "./job-panel";
+
+const { jobs: ciJobs, scenarios: pipelineScenarios } = getLabPipeline("en");
 
 const workflowUrl = "https://github.com/someone/repo/blob/main/ci.yml";
 
@@ -16,8 +17,9 @@ function renderPanel(scenarioId: Scenario["id"], jobId: CiJobId) {
   const job = ciJobs.find((candidate) => candidate.id === jobId)!;
   render(
     <JobPanel
+      locale="en"
       job={job}
-      outcome={resolveRun(ciJobs, scenario)[jobId]}
+      outcome={resolveRun(ciJobs, scenario, "en")[jobId]}
       workflowUrl={workflowUrl}
     />,
   );
@@ -74,8 +76,9 @@ describe("JobPanel", () => {
     const job = ciJobs.find((candidate) => candidate.id === "e2e")!;
     render(
       <JobPanel
+        locale="en"
         job={job}
-        outcome={resolveRun(ciJobs, scenario).e2e}
+        outcome={resolveRun(ciJobs, scenario, "en").e2e}
         state="running"
         workflowUrl={workflowUrl}
       />,

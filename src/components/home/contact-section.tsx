@@ -1,23 +1,28 @@
 import { AppLink } from "@/components/ui/app-link";
 import { contactIcons } from "@/components/ui/contact-icons";
 import { Section } from "@/components/ui/section";
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 import { getContactLinks, type ContactLink } from "@/lib/links";
 import { siteConfig } from "@/lib/site-config";
 
 /** Configured contact channels as large tappable rows; renders nothing when none are set. */
 export function ContactSection({
-  links = getContactLinks(siteConfig.links),
+  locale,
+  links = getContactLinks(siteConfig.links, locale),
 }: {
+  locale: Locale;
   links?: readonly ContactLink[];
 }) {
   if (links.length === 0) return null;
+  const t = getMessages(locale).contact;
 
   return (
     <Section
       id="contact"
-      eyebrow="// contact"
-      title="Get in touch"
-      description="Reach out through any of these channels."
+      eyebrow={t.eyebrow}
+      title={t.title}
+      description={t.description}
     >
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {links.map((link) => {

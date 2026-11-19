@@ -6,24 +6,28 @@ Everything the home page needs from the owner before it goes public. Each item p
 
 - [x] **Links** — GitHub, LinkedIn and email are set in [src/lib/site-config.ts](../src/lib/site-config.ts). The header GitHub icon, "Contact" nav item, Contact section, footer icons and the hero's "Get in touch" button are live.
 - [ ] **Intro and hero tags** — review `intro` and `heroTags` in `site-config.ts`.
-- [ ] **Skills** — review [src/content/skills.ts](../src/content/skills.ts). Only list technologies you can discuss, and check the `learning` flags.
+- [ ] **Skills** — review [src/content/skills.ts](../src/content/skills.ts). Only list technologies you can discuss, check that the learning group is current, and that each `since` year is right (it drives the "N+ years" tooltips).
 - [ ] **Projects** — two projects are in [src/content/projects.ts](../src/content/projects.ts) (Django template, thesis). Review each `summary`, `description`, `status` and `technologies` before launch.
 - [x] **Django template description** — reworded to make clear it is a generic template derived from client work. Confirm the wording.
-- [ ] **Pipeline copy** — review the stage text in [src/content/pipeline.ts](../src/content/pipeline.ts) for accuracy.
-- [ ] **Lab pipeline copy**: review each job's `purpose` and `explanation`, the trigger text and the four scenario summaries in [src/content/lab-pipeline.ts](../src/content/lab-pipeline.ts). Jobs, steps, conditions and excerpts are checked against `ci.yml` by a test, so only the prose needs review. Also review `pipelineIntro` and `pipelineScope` there, and the Lab intro and demo card in [src/content/lab.ts](../src/content/lab.ts).
+- [x] **Pipeline copy** — review the stage text in [src/content/pipeline.ts](../src/content/pipeline.ts) for accuracy.
+- [x] **Lab pipeline copy**: review each job's `purpose` and `explanation`, the trigger text and the four scenario summaries in [src/content/lab-pipeline.ts](../src/content/lab-pipeline.ts). Jobs, steps, conditions and excerpts are checked against `ci.yml` by a test, so only the prose needs review. Also review `pipelineIntro` and `pipelineScope` there, and the Lab intro and demo card in [src/content/lab.ts](../src/content/lab.ts).
 - [ ] **Projects page intro** — review `directoryIntro` in [src/content/projects.ts](../src/content/projects.ts).
 - [ ] **Thesis technologies** — confirmed: the repo's `requirements.txt` has no PyTorch (stack is TensorFlow/Keras, Keras Tuner, pandas, scikit-learn). Remove `pytorch` from the thesis entry in `projects.ts`, and consider adding `scikit-learn`/`pandas` to `technologies.ts`.
 - [ ] **Thesis description** — drafted from the repo README (including its negative result). Confirm the wording.
 - [ ] **Thesis case study** — [src/content/case-studies/tcc-engsoftware.mdx](../src/content/case-studies/tcc-engsoftware.mdx) was drafted from the public repo (README, `src/`, scenario docstrings). Every number comes from the repo's own reported results; check wording, the "Limitations" list and that you are comfortable publishing the negative result.
 - [ ] **Django template case study** — [src/content/case-studies/django-project-template.mdx](../src/content/case-studies/django-project-template.mdx) was drafted from the public repo and an interview with the owner. The outcome figures (2–5 devs, several projects, several days → minutes) are approximate; replace them with exact numbers if you have them. Also check that the company context (external user system, internal tools) is fine to publish.
+- [x] **Brazilian Portuguese interface** — I drafted [src/i18n/messages/pt-br.ts](../src/i18n/messages/pt-br.ts) (buttons, labels, Lab status sentences). Check the tone and the terms kept in English (job, pipeline, deploy, pull request).
+- [x] **Brazilian Portuguese content** — every `"pt-br"` field in `site-config.ts` and `src/content/*.ts` is a draft. Review each one next to its English text, especially project descriptions and the Lab prose. Texts left identical on purpose (e.g. "Deploy", "Pull request") are allowlisted in [src/i18n/translations.test.ts](../src/i18n/translations.test.ts).
+- [x] **Brazilian Portuguese case studies**: [tcc-engsoftware.pt-br.mdx](../src/content/case-studies/tcc-engsoftware.pt-br.mdx) and [django-project-template.pt-br.mdx](../src/content/case-studies/django-project-template.pt-br.mdx) are drafted translations of the English files. Review the wording, and check the thesis text against the original thesis terminology. Any later change to an English case study needs the same change in its `.pt-br.mdx`.
 - [x] **Source link** — `sourceRepoUrl` is set. Make sure the repository is actually public before launch, or the footer link 404s.
-- [ ] `grep -rn "TODO(content)" src` returns nothing.
+- [x] `grep -rn "TODO(content)" src` returns nothing.
 
 ## Deployment configuration
 
 Steps and context are in [operations.md](operations.md#secrets-and-configuration).
 
 - [ ] Set `NEXT_PUBLIC_SITE_URL` to the production origin in Vercel (Production), and the GitHub `SITE_URL` variable to the same value (used by the Docker image).
+- [ ] After the domain is set, open `/sitemap.xml` on production and check that every URL uses the production origin. Submit it in Google Search Console once indexing is on.
 - [ ] The production smoke test passes on the final commit, and the footer shows that commit.
 - [ ] **Last:** set `NEXT_PUBLIC_ALLOW_INDEXING=true` in Vercel for **Production only**, then redeploy. The production smoke test then expects `index`.
 

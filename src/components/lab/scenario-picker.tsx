@@ -1,18 +1,24 @@
 import type { Scenario } from "@/content/lab-pipeline";
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 
 /** Native radio group styled as a segmented control; the browser provides arrow-key behaviour. */
 export function ScenarioPicker({
   scenarios,
   selected,
   onSelect,
+  locale,
 }: {
   scenarios: readonly Scenario[];
   selected: Scenario["id"];
   onSelect: (id: Scenario["id"]) => void;
+  locale: Locale;
 }) {
   return (
     <fieldset>
-      <legend className="font-mono text-sm text-muted">Scenario</legend>
+      <legend className="font-mono text-sm text-muted">
+        {getMessages(locale).explorer.scenario}
+      </legend>
       <div className="mt-2 flex flex-wrap gap-2">
         {scenarios.map((scenario) => (
           <label

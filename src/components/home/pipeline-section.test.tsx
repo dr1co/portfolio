@@ -4,21 +4,21 @@ import { PipelineSection } from "./pipeline-section";
 
 describe("PipelineSection", () => {
   it("states up front that the walkthrough is simulated", () => {
-    render(<PipelineSection />);
+    render(<PipelineSection locale="en" />);
 
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: "How code reaches production",
+        name: "How my code reaches production",
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/does not run or trigger a real pipeline/),
+      screen.getByText(/won't trigger a real pipeline/),
     ).toBeInTheDocument();
   });
 
   it("links to the Lab's Pipeline Explorer while the Lab is enabled", () => {
-    render(<PipelineSection />);
+    render(<PipelineSection locale="en" />);
 
     expect(
       screen.getByRole("link", {

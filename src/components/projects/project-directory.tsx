@@ -1,6 +1,7 @@
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/ui/reveal";
 import type { getProjectDirectory } from "@/content/projects";
+import type { Locale } from "@/i18n/locales";
 import { isRouteEnabled } from "@/lib/links";
 import { siteConfig } from "@/lib/site-config";
 import { ProjectCard } from "./project-card";
@@ -8,8 +9,10 @@ import { ProjectCard } from "./project-card";
 /** Project groups, each as a labelled region with an h2 and a grid of cards. Only the first group skips the reveal. */
 export function ProjectDirectory({
   directory,
+  locale,
 }: {
   directory: ReturnType<typeof getProjectDirectory>;
+  locale: Locale;
 }) {
   const showCaseStudy = isRouteEnabled(siteConfig.routes, "/projects");
 
@@ -29,6 +32,7 @@ export function ProjectDirectory({
                 <ProjectCard
                   key={project.slug}
                   project={project}
+                  locale={locale}
                   showCaseStudy={showCaseStudy}
                 />
               ))}

@@ -1,7 +1,7 @@
 import { act, render, renderHook, screen } from "@testing-library/react";
 import { Activity } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ciJobs, pipelineScenarios } from "@/content/lab-pipeline";
+import { getLabPipeline } from "@/content/lab-pipeline";
 import { resolveRun, runFrames } from "./pipeline-run";
 import {
   IDLE,
@@ -11,7 +11,12 @@ import {
   type PlaybackState,
 } from "./use-pipeline-playback";
 
-const frames = runFrames(ciJobs, resolveRun(ciJobs, pipelineScenarios[0]));
+const { jobs: ciJobs, scenarios: pipelineScenarios } = getLabPipeline("en");
+
+const frames = runFrames(
+  ciJobs,
+  resolveRun(ciJobs, pipelineScenarios[0], "en"),
+);
 const last = frames.length - 1;
 
 describe("usePipelinePlayback", () => {

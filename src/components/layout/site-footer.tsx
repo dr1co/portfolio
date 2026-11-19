@@ -3,14 +3,17 @@ import { iconButtonClass } from "@/components/ui/icon-button";
 import { contactIcons } from "@/components/ui/contact-icons";
 import { Container } from "@/components/ui/container";
 import { getBuildInfo } from "@/lib/build-info";
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 import { getContactLinks, isHttpsUrl } from "@/lib/links";
 import { siteConfig } from "@/lib/site-config";
 import { BuildVersion } from "./build-version";
 import { CopyrightYear } from "./copyright-year";
 
 /** Copyright, stack attribution, optional source link and build version, and contact icons. */
-export function SiteFooter() {
-  const contactLinks = getContactLinks(siteConfig.links);
+export function SiteFooter({ locale }: { locale: Locale }) {
+  const t = getMessages(locale).layout;
+  const contactLinks = getContactLinks(siteConfig.links, locale);
   const buildInfo = getBuildInfo();
 
   return (
@@ -21,7 +24,7 @@ export function SiteFooter() {
             © <CopyrightYear /> {siteConfig.name}
           </p>
           <p>
-            Built with Next.js, TypeScript and Tailwind CSS
+            {t.builtWith}
             {isHttpsUrl(siteConfig.sourceRepoUrl) && (
               <>
                 {" · "}
@@ -30,14 +33,14 @@ export function SiteFooter() {
                   external
                   className="inline-flex items-center gap-1 hover:text-foreground"
                 >
-                  Source
+                  {t.source}
                 </AppLink>
               </>
             )}
             {buildInfo && (
               <>
                 {" · "}
-                <BuildVersion info={buildInfo} />
+                <BuildVersion info={buildInfo} locale={locale} />
               </>
             )}
           </p>

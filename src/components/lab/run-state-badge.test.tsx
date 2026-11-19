@@ -10,13 +10,13 @@ describe("RunStateBadge", () => {
     ["failed", "Failed"],
     ["skipped", "Skipped"],
   ] as const)("shows the %s state as text", (state, label) => {
-    render(<RunStateBadge state={state} />);
+    render(<RunStateBadge locale="en" state={state} />);
 
     expect(screen.getByText(label)).toBeInTheDocument();
   });
 
   it("keeps the state icon decorative", () => {
-    const { container } = render(<RunStateBadge state="failed" />);
+    const { container } = render(<RunStateBadge locale="en" state="failed" />);
 
     expect(container.querySelector("svg")).toHaveAttribute(
       "aria-hidden",

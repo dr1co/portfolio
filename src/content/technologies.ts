@@ -2,6 +2,7 @@
 export const technologies = {
   aws: "AWS",
   bash: "Bash",
+  css: "CSS",
   "dev-containers": "Dev Containers",
   django: "Django",
   docker: "Docker",
@@ -11,19 +12,23 @@ export const technologies = {
   git: "Git",
   "github-actions": "GitHub Actions",
   "github-packages": "GitHub Packages",
+  html: "HTML",
   keras: "Keras",
   kubernetes: "Kubernetes",
   linux: "Linux",
   metatrader5: "MetaTrader 5",
   mongodb: "MongoDB",
+  nextjs: "Next.js",
   nodejs: "Node.js",
   postgresql: "PostgreSQL",
   python: "Python",
   pytorch: "PyTorch",
+  react: "React",
   redis: "Redis",
   tailwind: "Tailwind CSS",
   tensorflow: "TensorFlow",
   terraform: "Terraform",
+  typescript: "TypeScript",
 } as const satisfies Record<string, string>;
 
 export type TechnologyId = keyof typeof technologies;

@@ -18,7 +18,7 @@ const base: Project = {
 
 describe("ProjectCard", () => {
   it("shows title, summary, technologies and a text status", () => {
-    render(<ProjectCard project={base} />);
+    render(<ProjectCard locale="en" project={base} />);
 
     expect(
       screen.getByRole("heading", { level: 3, name: "Django Docker Template" }),
@@ -29,7 +29,7 @@ describe("ProjectCard", () => {
   });
 
   it("renders no links when none are available", () => {
-    render(<ProjectCard project={base} />);
+    render(<ProjectCard locale="en" project={base} />);
 
     expect(screen.queryAllByRole("link")).toHaveLength(0);
   });
@@ -37,6 +37,7 @@ describe("ProjectCard", () => {
   it("links to source, demo and case study only when each exists", () => {
     render(
       <ProjectCard
+        locale="en"
         project={{
           ...base,
           status: "in-progress",
@@ -66,6 +67,7 @@ describe("ProjectCard", () => {
   it("links the title to the case study page, addressed by slug", () => {
     render(
       <ProjectCard
+        locale="en"
         project={{
           ...base,
           slug: "django-template",
@@ -86,7 +88,9 @@ describe("ProjectCard", () => {
   });
 
   it("keeps the title as plain text when there is no case study page", () => {
-    render(<ProjectCard project={{ ...base, caseStudy: "story" }} />);
+    render(
+      <ProjectCard locale="en" project={{ ...base, caseStudy: "story" }} />,
+    );
 
     expect(
       within(screen.getByRole("heading", { level: 3 })).queryByRole("link"),
@@ -96,7 +100,9 @@ describe("ProjectCard", () => {
 
 describe("FeaturedProjects", () => {
   it("renders nothing when no project is featured", () => {
-    const { container } = render(<FeaturedProjects projects={[]} />);
+    const { container } = render(
+      <FeaturedProjects locale="en" projects={[]} />,
+    );
 
     expect(container).toBeEmptyDOMElement();
   });
@@ -104,6 +110,7 @@ describe("FeaturedProjects", () => {
   it("renders a card per featured project under a section heading", () => {
     render(
       <FeaturedProjects
+        locale="en"
         projects={[
           base,
           { ...base, slug: "flask", title: "Flask API Template" },
@@ -118,7 +125,7 @@ describe("FeaturedProjects", () => {
   });
 
   it("links to the full directory while the projects page is enabled", () => {
-    render(<FeaturedProjects projects={[base]} />);
+    render(<FeaturedProjects locale="en" projects={[base]} />);
 
     expect(
       screen.getByRole("link", { name: "View all projects" }),

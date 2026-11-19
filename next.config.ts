@@ -4,12 +4,14 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: {
     agentFeedback: true,
+    // Routes live under app/[lang], so URLs nothing matches need a 404 that doesn't depend on that layout.
+    globalNotFound: true,
   },
   // Only the Docker build sets BUILD_STANDALONE; `next start` and Vercel need the regular output.
   output: process.env.BUILD_STANDALONE === "1" ? "standalone" : undefined,
   // The case-study page reads its MDX source from disk to build the table of contents.
   outputFileTracingIncludes: {
-    "/projects/*": ["src/content/case-studies/**/*.mdx"],
+    "/[lang]/projects/*": ["src/content/case-studies/**/*.mdx"],
   },
   cacheComponents: true,
   partialPrefetching: true,

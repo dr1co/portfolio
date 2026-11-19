@@ -1,5 +1,7 @@
 import { useId } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { Locale } from "@/i18n/locales";
+import { getMessages } from "@/i18n/messages";
 
 type DiagramNode = { id: string; label: string; x: number; y: number };
 type DiagramEdge = { from: string; to: string; label?: string };
@@ -43,14 +45,17 @@ export function Diagram({
   edges,
   width,
   height,
+  locale,
 }: {
   title: string;
   nodes: readonly DiagramNode[];
   edges: readonly DiagramEdge[];
   width: number;
   height: number;
+  locale: Locale;
 }) {
   const id = useId();
+  const t = getMessages(locale).mdx;
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const resolved = edges.flatMap((edge) => {
     const from = byId.get(edge.from);
@@ -61,7 +66,7 @@ export function Diagram({
   return (
     <figure className="my-8">
       <ScrollArea
-        label={`${title} (scrollable)`}
+        label={t.scrollable(title)}
         className="rounded-lg border border-border bg-surface p-4"
       >
         <svg
@@ -141,7 +146,7 @@ export function Diagram({
       <figcaption className="mt-2 text-center text-sm text-muted">
         {title}
       </figcaption>
-      <ul aria-label={`${title}, described`} className="sr-only">
+      <ul aria-label={t.described(title)} className="sr-only">
         {resolved.map(({ from, to, label }) => (
           <li key={`${from.id}-${to.id}`}>
             {`${from.label} → ${to.label}${label ? `: ${label}` : ""}`}
