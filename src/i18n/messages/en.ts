@@ -74,6 +74,19 @@ export const en = {
     years: (years: number) => `${years}+ ${years === 1 ? "year" : "years"}`,
   },
   about: {
+    eyebrow: "// about",
+    title: "About",
+    sections: {
+      whoami: "Who I am",
+      experience: "Experience",
+      education: "Education",
+      learning: "Currently learning",
+      "how-i-work": "How I work",
+      achievements: "Achievements",
+      "beyond-code": "Beyond the code",
+    },
+    thesisLink: "Read the thesis case study",
+    languages: "Languages",
     jobs: "whoami workflow",
     identity: (nickname: string, age: number, location: string) =>
       `${nickname}, ${age} years old, ${location}`,

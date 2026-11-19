@@ -73,6 +73,19 @@ export const ptBr: Messages = {
     years: (years) => `${years}+ ${years === 1 ? "ano" : "anos"}`,
   },
   about: {
+    eyebrow: "// sobre",
+    title: "Sobre",
+    sections: {
+      whoami: "Quem sou",
+      experience: "Experiência",
+      education: "Formação",
+      learning: "Estudando agora",
+      "how-i-work": "Como trabalho",
+      achievements: "Conquistas",
+      "beyond-code": "Além do código",
+    },
+    thesisLink: "Ler o estudo de caso do TCC",
+    languages: "Idiomas",
     jobs: "workflow whoami",
     identity: (nickname, age, location) =>
       `${nickname}, ${age} anos, ${location}`,

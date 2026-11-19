@@ -233,6 +233,14 @@ Suggested commit: `[feat.] whoami job strip`
 
 Suggested commit: `[feat.] about page`
 
+**Done.** Notes from implementing:
+
+- Sections use a small `AboutTopic` (`section[id]` + mono `// id` eyebrow + `h2`), not `Section`, which brings its own container, padding and reveal animation. `globals.css` already gives `section[id]` a `scroll-margin-top`, so no `scroll-mt` classes were needed. The page ends with the home's `ContactSection`, reused as is.
+- A fact's link carries its own `Localized` label in `about.ts` (`link: { href, label }`), instead of the page labelling every fact link "WCA profile".
+- `sitemap.test.ts` used `/about` as its example of a switched-off route. With no route switched off, it now checks that `/about` is listed; filtering stays covered by `getEnabledRoutes` in `links.test.ts`.
+- `next dev`: no `instant-shell-url-data` warnings on `/about`, visited directly or through the nav. The owner's dev server already held the project, so the probe ran against it on port 3000. The only browser warning, `scroll-behavior: smooth` on `<html>`, comes from `globals.css` and appears on every page.
+- The full e2e run passed every about test. The Lab playback race from Step 1 failed again (2 tests).
+
 ### Step 6 — Home integration
 
 1. **E2E first** (`home.spec.ts`): the about section follows the hero; a job link lands on its `/about` section, also under `/pt-br`.

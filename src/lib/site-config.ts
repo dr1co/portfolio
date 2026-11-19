@@ -65,7 +65,7 @@ export const siteConfig: SiteConfigEntry = {
     {
       href: "/about",
       label: { en: "About", "pt-br": "Sobre" },
-      enabled: false,
+      enabled: true,
     },
   ],
   links: {

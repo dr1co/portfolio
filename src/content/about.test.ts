@@ -33,7 +33,9 @@ describe("about content", () => {
 
   it("links facts to publishable URLs only", () => {
     for (const fact of about.facts) {
-      if (fact.href !== undefined) expect(isHttpsUrl(fact.href)).toBe(true);
+      if (fact.link !== undefined) {
+        expect(isHttpsUrl(fact.link.href)).toBe(true);
+      }
     }
   });
 

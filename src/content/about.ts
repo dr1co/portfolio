@@ -34,7 +34,10 @@ type AboutEntry = {
   principles: readonly { title: Localized; body: Localized }[];
   achievements: readonly { year: number; title: Localized }[];
   languages: readonly { name: Localized; level: Localized }[];
-  facts: readonly { body: Localized; href?: string }[];
+  facts: readonly {
+    body: Localized;
+    link?: { href: string; label: Localized };
+  }[];
 };
 
 export type About = Resolved<AboutEntry>;
@@ -374,7 +377,10 @@ export const about: AboutEntry = {
         en: "I've been speedcubing since 2016, though I'm retired now.",
         "pt-br": "Pratico speedcubing desde 2016, mas hoje estou aposentado.",
       },
-      href: "https://www.worldcubeassociation.org/persons/2016LIPS01",
+      link: {
+        href: "https://www.worldcubeassociation.org/persons/2016LIPS01",
+        label: { en: "WCA profile", "pt-br": "Perfil na WCA" },
+      },
     },
     {
       body: {
