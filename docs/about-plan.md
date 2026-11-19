@@ -187,6 +187,12 @@ Suggested commit: `[fix.] align skills with the career doc`
 
 Suggested commit: `[feat.] age computed from the birth month`
 
+**Done.** Notes from implementing:
+
+- `age.test.ts` also checks that `siteConfig.birthMonth` matches `YYYY-MM`, so a full date (with the day) fails the suite. The privacy rule from A9 is enforced, not just documented.
+- `ageOn` reads local date parts, like `currentYear()`. Servers run in UTC, so around midnight on the 1st the age can turn a few hours early or late. That's within the rule's stated precision.
+- Nothing renders the age yet (Step 3 composes it into the whoami text), so build and e2e are unaffected by this step.
+
 ### Step 3 — About content
 
 1. **Content test first** (`about.test.ts`), then `src/content/about.ts`.

@@ -9,6 +9,10 @@ export type ProfileLinks = {
 
 type SiteConfigEntry = {
   name: string;
+  nickname: string;
+  /** `"YYYY-MM"` only: the repo is public, so the day is never stored. Drives the shown age. */
+  birthMonth: string;
+  location: Localized;
   wordmark: string;
   descriptor: Localized;
   headline: Localized;
@@ -30,6 +34,9 @@ export type NavRoute = SiteConfig["routes"][number];
 /** Site-wide identity, navigation and public links. Empty links are never rendered. */
 export const siteConfig: SiteConfigEntry = {
   name: "Adriano Matoba Lipski",
+  nickname: "Drico",
+  birthMonth: "2001-11",
+  location: { en: "Ponta Grossa, Brazil", "pt-br": "Ponta Grossa, Brasil" },
   wordmark: "adriano.dev",
   descriptor: { en: "DevOps and Automation", "pt-br": "DevOps e Automação" },
   headline: {
