@@ -264,6 +264,13 @@ Suggested commit: `[feat.] whoami section on the home page`
 
 Suggested commit: `[feat.] résumé download on the about page`
 
+**Done (code only).** Amended while implementing:
+
+- The link is a `ResumeLink` component (unit-tested: renders the PDF link, and nothing for `""`). It's the last item of the page body, before the contact section, and opens in a new tab. It's `external` so `AppLink` doesn't add a locale prefix.
+- `siteConfig.resume` is `{ en: "", "pt-br": "" }` until the PDFs exist. `translations.test.ts` now treats empty values as "not set" instead of untranslated.
+- `resume.test.ts` (node env) checks each set path matches `/resume/<file>.pdf` and exists in `public/`.
+- Item 3 (`public/`, the Dockerfile `COPY`, the AGENTS.md gotcha, `docker:smoke`) waits for the PDFs: a `COPY` of a missing folder would break the image build. The steps are in the pre-publish checklist. No e2e test yet either, since there's no link to test; add one with the files.
+
 ### Step 8 — Docs and QA
 
 1. `README.md`: the about page, where its content lives, how the age is computed, where résumé files go.

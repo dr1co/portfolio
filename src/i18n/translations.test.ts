@@ -45,7 +45,8 @@ function untranslatedContent(value: unknown): string[] {
   if (value === null || typeof value !== "object") return [];
   if ("en" in value && "pt-br" in value) {
     const { en, "pt-br": pt } = value as Record<string, string>;
-    return en === pt && !SAME_IN_BOTH.has(en) ? [en] : [];
+    // An empty value means "not set yet" (e.g. a résumé path); it's never rendered.
+    return en === pt && en !== "" && !SAME_IN_BOTH.has(en) ? [en] : [];
   }
   return Object.values(value).flatMap(untranslatedContent);
 }

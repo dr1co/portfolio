@@ -25,6 +25,8 @@ type SiteConfigEntry = {
     enabled: boolean;
   }[];
   links: ProfileLinks;
+  /** Path of the résumé PDF in `public/` per language (`/resume/<file>.pdf`), or `""` to hide the link. */
+  resume: Localized;
   sourceRepoUrl: string;
 };
 
@@ -73,6 +75,8 @@ export const siteConfig: SiteConfigEntry = {
     linkedin: "https://linkedin.com/in/amlipski",
     email: "adrianolipski@gmail.com",
   },
+  // TODO(content): add the refreshed DevOps résumés to public/resume/ and set their paths.
+  resume: { en: "", "pt-br": "" },
   sourceRepoUrl: "https://github.com/dr1co/portfolio",
 };
 

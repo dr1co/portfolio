@@ -90,6 +90,7 @@ export const en = {
     homeEyebrow: "// whoami",
     homeTitle: "A little about me",
     fullStory: "Read the full story",
+    resume: "Download my résumé (PDF)",
     jobs: "whoami workflow",
     identity: (nickname: string, age: number, location: string) =>
       `${nickname}, ${age} years old, ${location}`,

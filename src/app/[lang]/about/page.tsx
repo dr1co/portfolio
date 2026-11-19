@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AboutPipeline } from "@/components/about/about-pipeline";
 import { AboutTopic } from "@/components/about/about-topic";
+import { ResumeLink } from "@/components/about/resume-link";
 import { ContactSection } from "@/components/home/contact-section";
 import { AppLink } from "@/components/ui/app-link";
 import { Container } from "@/components/ui/container";
@@ -152,6 +153,8 @@ export default async function AboutPage() {
               </p>
             ))}
           </AboutTopic>
+
+          <ResumeLink locale={locale} />
         </div>
       </Container>
       <ContactSection locale={locale} />

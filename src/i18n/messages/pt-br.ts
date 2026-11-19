@@ -89,6 +89,7 @@ export const ptBr: Messages = {
     homeEyebrow: "// whoami",
     homeTitle: "Um pouco sobre mim",
     fullStory: "Ler a história completa",
+    resume: "Baixar meu currículo (PDF)",
     jobs: "workflow whoami",
     identity: (nickname, age, location) =>
       `${nickname}, ${age} anos, ${location}`,
