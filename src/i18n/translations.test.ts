@@ -16,6 +16,7 @@ const SAME_IN_BOTH = new Set([
   "Lab",
   "// lab",
   "// pipeline",
+  "// whoami",
   "Job",
   "Frontend",
   "Git Push",

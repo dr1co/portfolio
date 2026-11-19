@@ -86,6 +86,9 @@ export const ptBr: Messages = {
     },
     thesisLink: "Ler o estudo de caso do TCC",
     languages: "Idiomas",
+    homeEyebrow: "// whoami",
+    homeTitle: "Um pouco sobre mim",
+    fullStory: "Ler a história completa",
     jobs: "workflow whoami",
     identity: (nickname, age, location) =>
       `${nickname}, ${age} anos, ${location}`,

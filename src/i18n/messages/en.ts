@@ -87,6 +87,9 @@ export const en = {
     },
     thesisLink: "Read the thesis case study",
     languages: "Languages",
+    homeEyebrow: "// whoami",
+    homeTitle: "A little about me",
+    fullStory: "Read the full story",
     jobs: "whoami workflow",
     identity: (nickname: string, age: number, location: string) =>
       `${nickname}, ${age} years old, ${location}`,

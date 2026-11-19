@@ -249,6 +249,13 @@ Suggested commit: `[feat.] about page`
 
 Suggested commit: `[feat.] whoami section on the home page`
 
+**Done.** Notes from implementing:
+
+- The section's title is "A little about me" under the `// whoami` eyebrow (allowlisted in `translations.test.ts`, as it's the same in both languages). It ends with "Read the full story →", styled like the pipeline section's Lab link.
+- The home page awaits `age(siteConfig.birthMonth)` once and passes it down, like `/about`. The home stays prerendered.
+- `mobile.spec.ts` needed no change: nothing in it depends on section order.
+- Full e2e run: 188 passed, and the Lab playback race didn't trigger this time.
+
 ### Step 7 — Résumé
 
 1. **Test first** (`resume.test.ts`, node env) and a component test that an empty path renders no link.
