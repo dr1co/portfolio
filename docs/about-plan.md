@@ -4,7 +4,7 @@
 **Source specs:** [features-specification.md §2.1, §3.1, §3.2, §13 Phase 2](features-specification.md), [visual-identity.md §2.5, §5.5, §10](visual-identity.md)
 **Content sources:** the owner's career master document (facts) and GitHub profile README (story and tone). Nothing in the copy may go beyond what these two documents say. Both are **private**: they live outside the repo, in its parent folder (`../adriano-career-master-document.md`, `../github-readme.md`), and must never be copied into it (the master doc has contact details).
 **Branch:** `feat/about`, cut from `main`. The owner makes all commits. Each step ends with a suggested commit message and a green check run.
-**Status:** Planned. Decisions were settled in a grilling session on 2026-11-19. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
+**Status:** Done (Steps 0–8, 2026-11-19), except the résumé files: the link ships hidden until the owner adds the PDFs (steps in [prepublish-checklist.md](prepublish-checklist.md)). About copy is drafted and awaits review. Decisions were settled in a grilling session on 2026-11-19. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
 ---
 
@@ -280,18 +280,31 @@ Suggested commit: `[feat.] résumé download on the about page`
 
 Suggested commit: `[docs.] about page docs and QA`
 
+**Done.** Item 2 changed: `public/` doesn't exist yet (A13 waits for the PDFs), so AGENTS.md keeps its gotcha; it gained notes on the `/about` anchors and `spin={false}`, the birth month rule, where the private source notes live, and the click-before-hydration race in the Lab tests.
+
+QA results (production build, scripted with Playwright, 2026-11-19):
+
+- No horizontal overflow on `/`, `/about` and `/pt-br/about` at 360, 414, 768, 1024, 1440 and 1920 px, in both themes.
+- Keyboard on `/`: skip link → header → hero buttons → `whoami` → `experience` → `education` → `learning` → "Read the full story" → featured projects. Enter on a job lands on its `/about` section.
+- Reduced motion: no running animations on `/` or `/about`.
+- JavaScript disabled: the home about section is visible (opacity 1) with its four jobs, and `/about` shows every section, contact included.
+- axe in both themes: covered by `about.spec.ts` and `home.spec.ts`, green.
+- Lighthouse (mobile) on `/about`: Performance 92, Accessibility 100, Best Practices 100, SEO 54. SEO fails only `is-crawlable` (the expected local `noindex`) and `robots-txt`: the site has no `robots.txt` route, so `/robots.txt` is the not-found page. That's site-wide and outside this plan.
+- No internal product or vendor names (A10) and no birth day anywhere in `src/` or `e2e/`.
+- Not done: a manual screen-reader pass. It's on the pre-publish checklist's Final QA list.
+
 ---
 
 ## 6. Definition of done
 
-- [ ] `/about` renders in both locales, is prerendered at build, and is in the nav, the mobile menu and the sitemap.
-- [ ] The home about section sits after the hero; every job links to its `/about` section in both locales.
-- [ ] Every run state is true, shown as icon + text, and nothing on the strip moves on its own.
-- [ ] The age comes from `birthMonth`, never fails prerendering, and no birth day appears anywhere in the repo.
-- [ ] No internal product names or vendors from the employer appear (A10).
-- [ ] The résumé link appears only when its file exists.
-- [ ] `npm run check`, `npm run build` and `npm run test:e2e` pass, including axe in both themes.
-- [ ] README, AGENTS.md and the checklist are updated; drafted copy is marked `TODO(content)`.
+- [x] `/about` renders in both locales, is prerendered at build, and is in the nav, the mobile menu and the sitemap.
+- [x] The home about section sits after the hero; every job links to its `/about` section in both locales.
+- [x] Every run state is true, shown as icon + text, and nothing on the strip moves on its own.
+- [x] The age comes from `birthMonth`, never fails prerendering, and no birth day appears anywhere in the repo.
+- [x] No internal product names or vendors from the employer appear (A10).
+- [x] The résumé link appears only when its file exists.
+- [x] `npm run check`, `npm run build` and `npm run test:e2e` pass, including axe in both themes. (The Lab playback tests flake under full-suite load; see AGENTS.md. Step 6's run was fully green.)
+- [x] README, AGENTS.md and the checklist are updated; drafted copy is marked `TODO(content)`.
 
 ## 7. Not in this plan
 
