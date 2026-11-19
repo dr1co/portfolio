@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import * as about from "@/content/about";
 import * as lab from "@/content/lab";
 import * as labPipeline from "@/content/lab-pipeline";
 import * as pipeline from "@/content/pipeline";
@@ -15,6 +16,7 @@ const SAME_IN_BOTH = new Set([
   "Lab",
   "// lab",
   "// pipeline",
+  "// whoami",
   "Job",
   "Frontend",
   "Git Push",
@@ -23,6 +25,7 @@ const SAME_IN_BOTH = new Set([
   "Pull request",
   "pull request",
   "pull requests",
+  "Driven Education",
 ]);
 
 function untranslatedMessages(a: unknown, b: unknown, path = ""): string[] {
@@ -42,7 +45,8 @@ function untranslatedContent(value: unknown): string[] {
   if (value === null || typeof value !== "object") return [];
   if ("en" in value && "pt-br" in value) {
     const { en, "pt-br": pt } = value as Record<string, string>;
-    return en === pt && !SAME_IN_BOTH.has(en) ? [en] : [];
+    // An empty value means "not set yet" (e.g. a résumé path); it's never rendered.
+    return en === pt && en !== "" && !SAME_IN_BOTH.has(en) ? [en] : [];
   }
   return Object.values(value).flatMap(untranslatedContent);
 }
@@ -53,7 +57,15 @@ describe("Brazilian Portuguese translations", () => {
   });
 
   it("translate every content text", () => {
-    const content = [siteConfig, lab, labPipeline, pipeline, projects, skills];
+    const content = [
+      siteConfig,
+      about,
+      lab,
+      labPipeline,
+      pipeline,
+      projects,
+      skills,
+    ];
     expect(content.flatMap(untranslatedContent)).toEqual([]);
   });
 });

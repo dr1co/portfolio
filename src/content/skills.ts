@@ -61,7 +61,6 @@ export const skillGroups: readonly SkillGroupEntry[] = [
     skills: [
       { tech: "postgresql", since: 2022 },
       { tech: "mongodb", since: 2022 },
-      { tech: "redis", since: 2025 },
     ],
   },
   {
@@ -80,7 +79,12 @@ export const skillGroups: readonly SkillGroupEntry[] = [
     id: "learning",
     title: { en: "Learning Next", "pt-br": "Próximos estudos" },
     learning: true,
-    skills: [{ tech: "kubernetes" }, { tech: "terraform" }, { tech: "aws" }],
+    skills: [
+      { tech: "terraform" },
+      { tech: "aws" },
+      { tech: "kubernetes" },
+      { tech: "grafana" },
+    ],
   },
 ];
 

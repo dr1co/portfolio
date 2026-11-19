@@ -132,6 +132,57 @@ test("links from the pipeline preview to the Lab's Pipeline Explorer", async ({
   ).toBeVisible();
 });
 
+test("introduces the owner right after the hero", async ({ page }) => {
+  const sections = page.locator("main > section");
+
+  await expect(sections.nth(0)).toHaveAttribute(
+    "aria-labelledby",
+    "hero-heading",
+  );
+  await expect(sections.nth(1)).toHaveAttribute("id", "about");
+  await expect(
+    sections
+      .nth(1)
+      .getByRole("list", { name: "whoami workflow" })
+      .getByRole("listitem"),
+  ).toHaveCount(4);
+});
+
+test("links a whoami job to its section on the about page", async ({
+  page,
+}) => {
+  await page
+    .locator("#about")
+    .getByRole("link", { name: "experience" })
+    .click();
+
+  await expect(page).toHaveURL(/\/about#experience$/);
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Experience" }),
+  ).toBeInViewport();
+});
+
+test("links from the whoami section to the full about page", async ({
+  page,
+}) => {
+  await page.getByRole("link", { name: "Read the full story" }).click();
+
+  await expect(page).toHaveURL(/\/about$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "About" }),
+  ).toBeVisible();
+});
+
+test("keeps the about links in Portuguese", async ({ page }) => {
+  await page.goto("/pt-br");
+  await page.locator("#about").getByRole("link", { name: "education" }).click();
+
+  await expect(page).toHaveURL(/\/pt-br\/about#education$/);
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Formação" }),
+  ).toBeInViewport();
+});
+
 test("opens a featured project's case study from its card title", async ({
   page,
 }) => {

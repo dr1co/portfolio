@@ -24,7 +24,7 @@ Personal portfolio for **Adriano Matoba Lipski**: a professional profile and a s
 | CI/CD: checks, Docker image on GHCR, Vercel deploys | Done; see [docs/operations.md](docs/operations.md)                                               |
 | `/lab` and the Pipeline Explorer                    | Done; copy drafted from `ci.yml`, awaiting review                                                |
 | Brazilian Portuguese (`/pt-br`), hreflang, sitemap  | Done; translations reviewed                                                                      |
-| `/about`                                            | Not started                                                                                      |
+| `/about` and the home whoami section                | Done; copy drafted from the owner's career notes, awaiting review; résumé PDFs still to add      |
 
 ## Tech stack
 
@@ -78,10 +78,10 @@ npx playwright install chromium
 ```text
 src/
   app/                global styles and tokens, the global 404, sitemap.xml
-    [lang]/           root layout and every route (/, /projects, /projects/[slug], /lab, /lab/pipeline), OG images, favicon
+    [lang]/           root layout and every route (/, /projects, /projects/[slug], /lab, /lab/pipeline, /about), OG images, favicon
   i18n/               locales, path helpers, `localize`, UI messages, the client locale context
-  components/         UI grouped by domain: layout, navigation, theme, home, projects, pipeline, lab, terminal, mdx, ui
-  content/            typed content: projects, technologies, skills, pipeline stages, Lab demos, the model of ci.yml
+  components/         UI grouped by domain: layout, navigation, theme, home, about, projects, pipeline, lab, terminal, mdx, ui
+  content/            typed content: projects, technologies, skills, pipeline stages, Lab demos, the model of ci.yml, the about profile
     case-studies/     one MDX file per case study
   lib/                site config and small pure helpers (links, headings, OG layout, pipeline run model, hooks)
   test/               shared test helpers (e.g. stubMatchMedia)
@@ -106,6 +106,8 @@ Content (text, links, projects, case studies) is kept separate from components, 
 [src/lib/site-config.ts](src/lib/site-config.ts) holds identity, hero copy, navigation routes and public links:
 
 - `routes[].enabled` controls which pages appear in navigation. Turn a route on when its page ships.
+- `nickname`, `birthMonth` and `location` feed the whoami line ("Drico, 24 years old, Ponta Grossa, Brazil"). `birthMonth` is `"YYYY-MM"` only: the repo is public, so the birth day is never stored, and `age.test.ts` fails on a full date. The age is computed, never typed (see [About](#about)).
+- `resume` is the path of the résumé PDF in `public/` per language (`/resume/<file>.pdf`), or `""` to hide the link. `resume.test.ts` fails if a set path has no file.
 - `links.github`, `links.linkedin` and `links.email` are rendered only when valid (`https:` URLs, a well-formed email). In `npm run dev`, a console warning lists the missing ones.
 - Helpers in [src/lib/links.ts](src/lib/links.ts) (`getContactLinks`, `getEnabledRoutes`, `getMissingLinks`) and [src/lib/hero-ctas.ts](src/lib/hero-ctas.ts) (hero buttons fall back from projects → GitHub → pipeline) turn the config into UI-ready data.
 
@@ -120,7 +122,9 @@ Typed content lives in `src/content/`:
 | [lab.ts](src/content/lab.ts)                   | Lab intro and demo cards                                                                                                 | Each demo has an objective, concepts, a `mode` (`simulated` / `live`), optional prerequisites and source link, and its own `/lab/<slug>` route.                                                                                                                                                                                                                                                                               |
 | [lab-pipeline.ts](src/content/lab-pipeline.ts) | The Pipeline Explorer's model of `.github/workflows/ci.yml`: trigger, jobs, steps, excerpts, scenarios                   | Kept in sync with `ci.yml` by a drift test (see [Lab](#lab)). Only the prose (`purpose`, `explanation`, scenario summaries, page intro) is free to edit.                                                                                                                                                                                                                                                                      |
 
-Texts that change with the language are `Localized` (`{ en: "…" }`). Each file exports a `getX(locale)` accessor (`getSiteConfig`, `getProjects`, `getSkillGroups`, `getPipelineStages`, `getLabDemos`, `getLabPipeline`) that returns the data with plain strings, so components never see `Localized` values. Ids, URLs, commands, workflow excerpts and step names are not translated.
+[about.ts](src/content/about.ts) holds the about profile: the four whoami jobs (id, run state, summary lines), the story, experience, education, learning, principles, achievements, languages and facts. `about.test.ts` keeps the job order, checks links, and requires `learning` to list the same technologies, in the same order, as the skills section's learning group.
+
+Texts that change with the language are `Localized` (`{ en: "…" }`). Each file exports a `getX(locale)` accessor (`getSiteConfig`, `getProjects`, `getSkillGroups`, `getPipelineStages`, `getLabDemos`, `getLabPipeline`, `getAbout`) that returns the data with plain strings, so components never see `Localized` values. Ids, URLs, commands, workflow excerpts and step names are not translated.
 
 Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(content)" src`.
 
@@ -146,7 +150,8 @@ Unreviewed content is marked `// TODO(content):`. List it with `grep -rn "TODO(c
   - `PipelineSection`: "Simulated" disclaimer, the interactive `PipelinePreview`, a `<noscript>` list of all stages, and (while `/lab` is enabled) a link to the Pipeline Explorer.
   - `SkillsSection`: one card per group, each technology a logo tile from [Simple Icons](https://simpleicons.org) (via [`techIcon`](src/lib/tech-icons.ts)). Tiles take the brand colour in each theme where it reaches 3:1 on the tile, and the theme's foreground colour where it doesn't. A technology without a logo shows its name as text. Hovering, focusing or tapping a tile shows a `Tooltip` with the experience (computed from `since` and the cached [`currentYear`](src/lib/current-year.ts)) and an optional `note`. The learning group gets dashed borders and a "Currently learning" badge, and its tooltips say "Currently learning" instead of years. The section is an async server component, and the testable markup lives in `SkillGrid`, which takes `year` as a prop.
   - `ContactSection`: one large row per configured link (icon, label, readable address). Renders nothing until a link is set.
-  - Page order ([src/app/[lang]/page.tsx](src/app/[lang]/page.tsx)): Hero → Featured projects → Pipeline → Skills → Contact.
+  - `AboutSection` (`src/components/about/`): the whoami job strip and a "Read the full story" link to `/about` (see [About](#about)).
+  - Page order ([src/app/[lang]/page.tsx](src/app/[lang]/page.tsx)): Hero → About (whoami) → Featured projects → Pipeline → Skills → Contact.
 - **Pipeline preview** ([src/components/pipeline/pipeline-preview.tsx](src/components/pipeline/pipeline-preview.tsx)): implements the WAI-ARIA tabs pattern through the generic [`useRovingTabs`](src/lib/use-roving-tabs.ts) hook. Arrows on both axes move and wrap; Home/End jump; only the selected tab is in the Tab order. Desktop shows five connected nodes in a row; mobile stacks them. A Motion `layoutId` slides the active indicator, and the details panel fades in. Each stage shows its purpose, an explanation, a copyable command and a collapsible workflow excerpt.
 
 ## Projects directory
@@ -223,6 +228,20 @@ The Explorer models **this site's real CI workflow** ([.github/workflows/ci.yml]
 **When the drift test fails** after a `ci.yml` change, update `src/content/lab-pipeline.ts` in the same change: jobs, `needs`, `events`, step names and excerpts. A new `if:` expression also needs an entry in the test's `CONDITIONS` table. If the model can't express it, simplify the job and mention it in `pipelineScope`.
 
 **Adding a demo:** add a `LabDemo` to `src/content/lab.ts` with `href: "/lab/<slug>"`, create the static route `src/app/[lang]/lab/<slug>/page.tsx` with `alternates: canonicalFor("/lab/<slug>")`, and label it Simulated unless it's backed by a real service. `lab.test.ts` and the `@smoke` Lab test pick it up from `labDemos`.
+
+## About
+
+The owner's profile appears twice, from one data source ([src/content/about.ts](src/content/about.ts)):
+
+- **Home:** `AboutSection`, right after the hero, shows the **whoami workflow**: four jobs (`whoami`, `experience`, `education`, `learning`) rendered as a static strip by `AboutPipeline` ([src/components/about/about-pipeline.tsx](src/components/about/about-pipeline.tsx)). It's a server component with no tabs and no client JavaScript, so it doesn't compete with the interactive delivery pipeline further down.
+- **`/about`** ([src/app/[lang]/about/page.tsx](src/app/[lang]/about/page.tsx)): the same strip under the page header, then one section per job and three more (How I work, Achievements, Beyond the code), the résumé link and the contact section. Each section is an `AboutTopic`.
+
+Details:
+
+- **Run states are the metaphor, so they must be true:** passed (done), running (ongoing), pending (not started). `RunStateBadge` gets `spin={false}` here: a job that runs for years would otherwise spin forever. When the degree is awarded, flip `education` to `"passed"` (it's on the pre-publish checklist).
+- **Anchors:** each job links to `/about#<job id>`. Section ids are fixed English keys (`#experience`, `#how-i-work`) in both languages, so links work in Portuguese too. `section[id]` already has a `scroll-margin-top` for the sticky header.
+- **Age:** [`ageOn`](src/lib/age.ts) counts the birthday from the 1st of the month after `birthMonth` (never early, at most a month late). Pages call the cached `age()` (`'use cache'` + `cacheLife("days")`, like `currentYear()`) and pass the number down, so components stay synchronous and the pages stay prerendered.
+- **Résumé:** `ResumeLink` renders the PDF for the page's language in a new tab, and nothing while `siteConfig.resume` is empty. It's an `external` link so `AppLink` doesn't put `/pt-br` in front of the file path. The first PDF also needs a `COPY` of `public/` in the Dockerfile; the steps are in [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
 
 ## SEO and metadata
 
@@ -327,7 +346,8 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
   | Spec               | Covers                                                                                                                                                                                                                                                                                                                                                                                                   |
   | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
   | `smoke.spec.ts`    | `@smoke`: `/` is English and `/pt-br` is `pt-BR` HTML with one `h1`, `/projects` and a case study answer 200, `/lab` and each demo answer 200 labelled Simulated, unknown slugs 404 in both languages, canonicals point at their own page, `hreflang` points at the right translation, `sitemap.xml` lists every page in both languages, robots matches the deployment, footer shows the expected commit |
-  | `home.spec.ts`     | single `h1`, sections present, hero buttons scroll to Projects / Contact, "View all projects", card title → case study, pipeline → Lab link, **axe** in both themes                                                                                                                                                                                                                                      |
+  | `home.spec.ts`     | single `h1`, sections present, about section right after the hero, whoami job → its `/about` section (also in Portuguese), "Read the full story", hero buttons scroll to Projects / Contact, "View all projects", card title → case study, pipeline → Lab link, **axe** in both themes                                                                                                                   |
+  | `about.spec.ts`    | header, job strip and section order, job → section anchor, thesis link, nav state, title, Portuguese page and anchors, no mobile overflow, **axe** in both themes                                                                                                                                                                                                                                        |
   | `lab.spec.ts`      | Lab card and nav state, Explorer keyboard path (desktop tabs), scenario switch, mobile accordion position, Run playback frame by frame (`page.clock`), reduced motion, Next pauses, no-JS outcome table, back link, titles, no mobile overflow, **axe** in both themes                                                                                                                                   |
   | `projects.spec.ts` | directory groups and nav state, case study header/TOC/back link, section marked current, per-page title and OG image, 404 for unknown slugs, no mobile overflow and **axe** in both themes for every case study                                                                                                                                                                                          |
   | `pipeline.spec.ts` | keyboard navigation, workflow excerpt, copy-to-clipboard confirmation                                                                                                                                                                                                                                                                                                                                    |
@@ -379,7 +399,7 @@ npm run docker:smoke -- ghcr.io/dr1co/portfolio:sha-abc1234   # test an existing
 ## Known limitations
 
 - On wide screens the case-study table of contents comes after the article in the Tab order (it mirrors the visual order); on smaller screens the collapsible "On this page" panel sits before the article.
-- Content (projects, skills, pipeline and Lab copy, the case studies) is not final. It's tracked with `TODO(content)` markers and [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
+- Content (projects, skills, pipeline and Lab copy, the case studies, the about profile) is not final. It's tracked with `TODO(content)` markers and [docs/prepublish-checklist.md](docs/prepublish-checklist.md).
 - The Portuguese translations are drafts awaiting the owner's review (see the pre-publish checklist).
 - A Portuguese URL that matches no route (e.g. `/pt-br/nope`) gets the English 404 page: unmatched URLs render `global-not-found.tsx`, which sits outside `[lang]` and can't tell the language.
 - `/about` doesn't exist yet; its nav item stays hidden until the route is enabled in `site-config.ts`.

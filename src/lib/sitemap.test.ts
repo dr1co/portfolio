@@ -11,7 +11,13 @@ describe("sitemapEntries", () => {
 
   it("lists every published page in both languages", () => {
     const [slug] = getCaseStudySlugs();
-    const paths = ["/projects", `/projects/${slug}`, "/lab", labDemos[0].href];
+    const paths = [
+      "/projects",
+      `/projects/${slug}`,
+      "/lab",
+      labDemos[0].href,
+      "/about",
+    ];
 
     expect(urls).toContain(`${site}/`);
     expect(urls).toContain(`${site}/pt-br`);
@@ -19,10 +25,6 @@ describe("sitemapEntries", () => {
       expect(urls).toContain(`${site}${path}`);
       expect(urls).toContain(`${site}/pt-br${path}`);
     }
-  });
-
-  it("leaves out routes that are switched off", () => {
-    expect(urls.some((url) => url.includes("/about"))).toBe(false);
   });
 
   it("links each page to its translations with absolute URLs", () => {

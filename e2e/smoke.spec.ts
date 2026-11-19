@@ -15,6 +15,7 @@ const pagePaths = () => [
   `/projects/${getCaseStudySlugs()[0]}`,
   "/lab",
   ...labDemos.map((demo) => demo.href),
+  "/about",
 ];
 
 test.describe("smoke", { tag: "@smoke" }, () => {

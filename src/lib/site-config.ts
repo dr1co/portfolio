@@ -9,6 +9,10 @@ export type ProfileLinks = {
 
 type SiteConfigEntry = {
   name: string;
+  nickname: string;
+  /** `"YYYY-MM"` only: the repo is public, so the day is never stored. Drives the shown age. */
+  birthMonth: string;
+  location: Localized;
   wordmark: string;
   descriptor: Localized;
   headline: Localized;
@@ -21,6 +25,8 @@ type SiteConfigEntry = {
     enabled: boolean;
   }[];
   links: ProfileLinks;
+  /** Path of the résumé PDF in `public/` per language (`/resume/<file>.pdf`), or `""` to hide the link. */
+  resume: Localized;
   sourceRepoUrl: string;
 };
 
@@ -30,6 +36,9 @@ export type NavRoute = SiteConfig["routes"][number];
 /** Site-wide identity, navigation and public links. Empty links are never rendered. */
 export const siteConfig: SiteConfigEntry = {
   name: "Adriano Matoba Lipski",
+  nickname: "Drico",
+  birthMonth: "2001-11",
+  location: { en: "Ponta Grossa, Brazil", "pt-br": "Ponta Grossa, Brasil" },
   wordmark: "adriano.dev",
   descriptor: { en: "DevOps and Automation", "pt-br": "DevOps e Automação" },
   headline: {
@@ -58,7 +67,7 @@ export const siteConfig: SiteConfigEntry = {
     {
       href: "/about",
       label: { en: "About", "pt-br": "Sobre" },
-      enabled: false,
+      enabled: true,
     },
   ],
   links: {
@@ -66,6 +75,8 @@ export const siteConfig: SiteConfigEntry = {
     linkedin: "https://linkedin.com/in/amlipski",
     email: "adrianolipski@gmail.com",
   },
+  // TODO(content): add the refreshed DevOps résumés to public/resume/ and set their paths.
+  resume: { en: "", "pt-br": "" },
   sourceRepoUrl: "https://github.com/dr1co/portfolio",
 };
 

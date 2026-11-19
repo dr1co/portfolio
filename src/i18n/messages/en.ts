@@ -73,6 +73,28 @@ export const en = {
     lessThanAYear: "Less than a year",
     years: (years: number) => `${years}+ ${years === 1 ? "year" : "years"}`,
   },
+  about: {
+    eyebrow: "// about",
+    title: "About",
+    sections: {
+      whoami: "Who I am",
+      experience: "Experience",
+      education: "Education",
+      learning: "Currently learning",
+      "how-i-work": "How I work",
+      achievements: "Achievements",
+      "beyond-code": "Beyond the code",
+    },
+    thesisLink: "Read the thesis case study",
+    languages: "Languages",
+    homeEyebrow: "// whoami",
+    homeTitle: "A little about me",
+    fullStory: "Read the full story",
+    resume: "Download my résumé (PDF)",
+    jobs: "whoami workflow",
+    identity: (nickname: string, age: number, location: string) =>
+      `${nickname}, ${age} years old, ${location}`,
+  },
   contact: {
     eyebrow: "// contact",
     title: "Get in touch",
