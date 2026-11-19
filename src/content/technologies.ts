@@ -12,6 +12,7 @@ export const technologies = {
   git: "Git",
   "github-actions": "GitHub Actions",
   "github-packages": "GitHub Packages",
+  grafana: "Grafana",
   html: "HTML",
   keras: "Keras",
   kubernetes: "Kubernetes",

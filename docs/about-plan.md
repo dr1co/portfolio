@@ -2,7 +2,7 @@
 
 **Feature:** a `whoami` workflow section on the home page and the full profile page (`/about`)
 **Source specs:** [features-specification.md §2.1, §3.1, §3.2, §13 Phase 2](features-specification.md), [visual-identity.md §2.5, §5.5, §10](visual-identity.md)
-**Content sources:** [adriano-career-master-document.md](adriano-career-master-document.md) (facts) and [github-readme.md](github-readme.md) (story and tone). Nothing in the copy may go beyond what these two documents say. Both are **private and local only**: they're listed in `.git/info/exclude` and must never be committed (the master doc has contact details).
+**Content sources:** the owner's career master document (facts) and GitHub profile README (story and tone). Nothing in the copy may go beyond what these two documents say. Both are **private**: they live outside the repo, in its parent folder (`../adriano-career-master-document.md`, `../github-readme.md`), and must never be copied into it (the master doc has contact details).
 **Branch:** `feat/about`, cut from `main`. The owner makes all commits. Each step ends with a suggested commit message and a green check run.
 **Status:** Planned. Decisions were settled in a grilling session on 2026-11-19. Working rules (TDD, owner commits, KISS, docs in sync) are in [AGENTS.md](../AGENTS.md).
 
@@ -10,9 +10,11 @@
 
 ## 0. Gate (check before Step 1)
 
-- [ ] `feat/about` is based on an up-to-date `main`.
-- [ ] `npm run check`, `npm run build` and `npm run test:e2e` are green on that base.
-- [ ] The network is available (builds need Google Fonts).
+- [x] `feat/about` is based on an up-to-date `main`.
+- [x] `npm run check`, `npm run build` and `npm run test:e2e` are green on that base.
+- [x] The network is available (builds need Google Fonts).
+
+Gate met on 2026-11-19 (findings under Step 0).
 
 Content the owner supplies. None of it blocks a step; each has a placeholder until it arrives:
 
@@ -155,6 +157,13 @@ Work test-first in vertical slices, per AGENTS.md. Each step must pass `npm run 
 
 No commit.
 
+**Findings (2026-11-19):**
+
+- The branch was one commit (this plan) ahead of an up-to-date `main`. `npm run build` and `npm run test:e2e` (163 passed, 15 skipped) were green. `npm run check` failed only because Prettier checked the private source documents while they still sat in `docs/`. Prettier reads `.gitignore` and `.prettierignore`, not `.git/info/exclude`. Moving them out of the repo fixed it without listing their names in a public ignore file.
+- Files in `public/` are served from `/` with `Cache-Control: public, max-age=0`. That's fine for the résumé PDFs (Step 7).
+- The `days` cache profile revalidates daily (stale 5 min, expire 1 week), so `age()` is correct within a day, the same as `currentYear()`.
+- `ensureStatic` (a new segment config) could require `/about` to stay fully static. Not adopted: the build already prerenders it, and nothing in the plan needs the extra guarantee.
+
 ### Step 1 — Skills data fixes (A19)
 
 1. **Test first**, where a rule is worth keeping: none is (it's content). Just make the change.
@@ -163,6 +172,12 @@ No commit.
 4. Update any e2e expectation that counts skills.
 
 Suggested commit: `[fix.] align skills with the career doc`
+
+**Done.** Notes from implementing:
+
+- `redis` stays in `technologies.ts`: it's the vocabulary, not a claim, and `skills-section.test.tsx` uses it as a fixture. Only the skill entry is gone.
+- Grafana's orange is below 3:1 on the light tile, so it falls back to `--foreground` there and keeps its brand colour in dark (the existing `techIcon` rule; no new code).
+- No e2e expectation depended on the changed skills. The full e2e run hit three Lab playback failures (`lab.spec.ts`: Run clicked before hydration, status never changed). They passed 25/25 when repeated alone, so they're a load-dependent race, not a regression. Those tests call `goto` then click without `waitForHydration`.
 
 ### Step 2 — Age
 
