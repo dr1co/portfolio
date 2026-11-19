@@ -15,6 +15,18 @@ describe("RunStateBadge", () => {
     expect(screen.getByText(label)).toBeInTheDocument();
   });
 
+  it("spins the running icon unless told not to", () => {
+    const { container, rerender } = render(
+      <RunStateBadge locale="en" state="running" />,
+    );
+    expect(container.firstElementChild?.className).toContain("animate-spin");
+
+    rerender(<RunStateBadge locale="en" state="running" spin={false} />);
+    expect(container.firstElementChild?.className).not.toContain(
+      "animate-spin",
+    );
+  });
+
   it("keeps the state icon decorative", () => {
     const { container } = render(<RunStateBadge locale="en" state="failed" />);
 

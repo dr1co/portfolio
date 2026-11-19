@@ -26,14 +26,19 @@ const STATES: Record<
   skipped: { icon: CircleSlash, tone: "neutral" },
 };
 
-/** Pipeline run state as icon + text. The running icon spins only when motion is allowed. */
+/**
+ * Pipeline run state as icon + text. The running icon spins only when motion is allowed,
+ * and never with `spin={false}` (for states that last long, where spinning would be endless decoration).
+ */
 export function RunStateBadge({
   state,
   locale,
+  spin = true,
   className,
 }: {
   state: RunState;
   locale: Locale;
+  spin?: boolean;
   className?: string;
 }) {
   const { icon, tone } = STATES[state];
@@ -42,7 +47,7 @@ export function RunStateBadge({
       icon={icon}
       tone={tone}
       className={cn(
-        state === "running" && "[&>svg]:motion-safe:animate-spin",
+        spin && state === "running" && "[&>svg]:motion-safe:animate-spin",
         className,
       )}
     >

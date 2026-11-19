@@ -215,6 +215,13 @@ Suggested commit: `[feat.] about page content`
 
 Suggested commit: `[feat.] whoami job strip`
 
+**Done.** Notes from implementing:
+
+- `AboutPipeline` takes the age as a prop (`{ locale, age }`). The page awaits the cached `age()` and passes it down, so the component stays synchronous and testable without the cache.
+- The whoami card's first line comes from `t.about.identity(nickname, age, location)` ("Drico, 24 years old, Ponta Grossa, Brazil"), followed by the content's summary lines.
+- The job id is the link (`/about#<id>`), stretched over the card with an `after:` overlay, so the whole card is clickable while the link's accessible name stays short ("experience"). Summary lines are paragraphs, not a nested list, so each job is a single list item.
+- Nothing renders the strip yet. Its look is checked in a real build in Step 5.
+
 ### Step 5 — `/about` page
 
 1. **E2E first** (`e2e/about.spec.ts`): h1, the strip, h2 per section, nav `aria-current`.

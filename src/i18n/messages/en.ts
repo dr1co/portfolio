@@ -73,6 +73,11 @@ export const en = {
     lessThanAYear: "Less than a year",
     years: (years: number) => `${years}+ ${years === 1 ? "year" : "years"}`,
   },
+  about: {
+    jobs: "whoami workflow",
+    identity: (nickname: string, age: number, location: string) =>
+      `${nickname}, ${age} years old, ${location}`,
+  },
   contact: {
     eyebrow: "// contact",
     title: "Get in touch",

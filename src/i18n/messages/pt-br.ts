@@ -72,6 +72,11 @@ export const ptBr: Messages = {
     lessThanAYear: "Menos de um ano",
     years: (years) => `${years}+ ${years === 1 ? "ano" : "anos"}`,
   },
+  about: {
+    jobs: "workflow whoami",
+    identity: (nickname, age, location) =>
+      `${nickname}, ${age} anos, ${location}`,
+  },
   contact: {
     eyebrow: "// contato",
     title: "Entre em contato",
