@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: {
     agentFeedback: true,
+    agentUpgrade: "security",
     // Routes live under app/[lang], so URLs nothing matches need a 404 that doesn't depend on that layout.
     globalNotFound: true,
   },
